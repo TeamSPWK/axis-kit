@@ -171,30 +171,35 @@ Act     → Adaptive 사이클로 규칙 갱신, 개선 반영
 
 ## 7. 도입 전략 (Adoption Roadmap)
 
-### Phase 1: Foundation (1~2주)
-- [ ] CLAUDE.md + 린터 규칙 정비 (Structured)
-- [ ] CPS 프레임워크로 문서 작성 프로세스 수립
-- [ ] 기본 PDCA 사이클 도입
+### Phase 1: Foundation (1~2주) ✅
+- [x] CLAUDE.md + 린터 규칙 정비 (Structured)
+- [x] CPS 프레임워크로 문서 작성 프로세스 수립
+- [x] 기본 PDCA 사이클 도입
+- 산출물: CPS 템플릿, 5개 슬래시 커맨드, 스크립트
 
-### Phase 2: Verification (3~4주)
-- [ ] 멀티 AI 교차 검증 파이프라인 구축 (X-Verification)
-- [ ] 역방향 검증(갭 탐지) 자동화
-- [ ] 합의 프로토콜 임계치 설정
+### Phase 2: Verification (3~4주) ✅
+- [x] 멀티 AI 교차 검증 파이프라인 구축 (X-Verification)
+- [x] 역방향 검증(갭 탐지) 자동화
+- [x] 합의 프로토콜 임계치 설정
+- 산출물: `x-verify.sh`, `gap-check.sh`, `/xv`, `/gap` 커맨드
 
-### Phase 3: Memory (5~6주)
-- [ ] 3계층 메모리 아키텍처 구축 (Context Chain)
-- [ ] 세션 간 컨텍스트 복원 프로토콜 표준화
-- [ ] 의사결정 기록 자동화
+### Phase 3: Context Chain (5~6주) ✅
+- [x] 3계층 메모리 아키텍처 구축 — 파일 기반 컨텍스트 체계
+- [x] 세션 간 컨텍스트 복원 프로토콜 표준화
+- [x] 의사결정 기록 구조화
+- 산출물: `context-chain.md`, CLAUDE.md 템플릿, Decision Record 템플릿
 
-### Phase 4: Evolution (7~8주)
-- [ ] 패턴 감지 → 규칙 제안 시스템 구축 (Adaptive)
-- [ ] 규칙 변경 관리 + 롤백 체계
-- [ ] 진화 사이클 모니터링 대시보드
+### Phase 4: Adaptive (7~8주) ✅
+- [x] 패턴 감지 → 규칙 제안 시스템 구축 (`/propose` 커맨드)
+- [x] 규칙 변경 관리 + 이력 추적 (`rules-changelog.md`)
+- [x] 규칙 제안 템플릿 (감지 → 제안 → 승인 → 적용 → 검증)
+- 산출물: `/propose` 커맨드, Rule Proposal 템플릿, Rules Changelog
 
-### Phase 5: Optimization (9주~)
-- [ ] Eval 지표 기반 품질 추적
-- [ ] 프로젝트별 하네스 템플릿 라이브러리화
-- [ ] 조직 내 확산 및 교육
+### Phase 5: Optimization (9주~) ✅
+- [x] Eval 지표 기반 품질 추적 — 자가 평가 체크리스트
+- [x] 프로젝트별 하네스 템플릿 라이브러리화
+- [ ] 조직 내 확산 및 교육 (ongoing)
+- 산출물: `eval-checklist.md`, 완성된 템플릿 라이브러리
 
 ---
 
