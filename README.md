@@ -133,7 +133,7 @@ EOF
 | Persistent | CLAUDE.md, docs/decisions/ | 프로젝트 전체 |
 | Structural | 설계 문서, git history, 린터 | 영구 |
 
-새 세션 시작 시: CLAUDE.md 로드 → git log 확인 → 의사결정 기록 참조 → 이어서 작업
+새 세션 시작 시: CLAUDE.md 로드 → git log 확인 → 의사결정 기록 참조 → 계속 작업
 
 상세: `docs/context-chain.md`
 
