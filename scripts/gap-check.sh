@@ -24,6 +24,18 @@ if [[ -f "$ENV_FILE" ]]; then
   set +a
 fi
 
+# 입력 확인 (Usage를 먼저 — API 키 없어도 도움말은 보여줘야 함)
+if [[ $# -lt 2 ]]; then
+  echo "Usage: $0 <design-doc.md> <code-dir>"
+  echo ""
+  echo "설계 문서와 구현 코드를 비교하여 갭을 탐지합니다."
+  echo ""
+  echo "Examples:"
+  echo "  $0 docs/designs/auth.md src/"
+  echo "  $0 docs/designs/api.md apps/backend/"
+  exit 1
+fi
+
 # 필수 도구 확인
 for cmd in jq curl; do
   if ! command -v "$cmd" &> /dev/null; then
@@ -38,18 +50,6 @@ done
 if [[ -z "${GEMINI_API_KEY:-}" ]]; then
   echo -e "${RED}ERROR: GEMINI_API_KEY가 .env에 설정되지 않았습니다.${NC}"
   echo "  .env 파일에 GEMINI_API_KEY=your-key 를 추가하세요."
-  exit 1
-fi
-
-# 입력 확인
-if [[ $# -lt 2 ]]; then
-  echo "Usage: $0 <design-doc.md> <code-dir>"
-  echo ""
-  echo "설계 문서와 구현 코드를 비교하여 갭을 탐지합니다."
-  echo ""
-  echo "Examples:"
-  echo "  $0 docs/designs/auth.md src/"
-  echo "  $0 docs/designs/api.md apps/backend/"
   exit 1
 fi
 
