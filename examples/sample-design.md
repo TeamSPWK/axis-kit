@@ -1,21 +1,21 @@
 # [Design] 사용자 인증
 
 > AXIS Engineering — CPS Framework
-> 작성일: 2026-03-22
-> Plan 문서: `examples/sample-plan.md`
+> 작성일: 2026-03-21
+> Plan 문서: examples/sample-plan.md
 
 ---
 
 ## Context (설계 배경)
 
 ### Plan 요약
-- 핵심 문제: 사용자 식별 및 권한 관리 시스템 부재로 개인화 서비스와 데이터 보호 불가
-- 선택한 방안: JWT Access Token(15분) + Refresh Token 로테이션(7일), HttpOnly 쿠키 저장
+- 핵심 문제: 인증 시스템이 없어 사용자를 식별할 수 없고, API를 보호할 수 없다
+- 선택한 방안: JWT 이중 토큰 (Access 15분 + Refresh 7일) 기반 인증
 
 ### 설계 원칙
-- **보안 우선**: 금융 데이터를 다루므로 토큰 관리, 비밀번호 해싱 등 보안을 최우선
-- **점진적 확장**: MVP에서는 이메일+카카오 인증만, 이후 소셜 로그인 추가가 용이한 구조
-- **단순성**: 불필요한 추상화를 피하고, 인증 미들웨어 하나로 보호 API를 일관 처리
+- **보안 우선**: 비밀번호 해싱, 토큰 회전, HTTPS 전제
+- **단순성**: 필요 최소한의 인증 흐름만 구현 (소셜 로그인은 2차)
+- **Stateless 지향**: Access Token 검증에 DB 조회 불필요
 
 ---
 
@@ -25,16 +25,17 @@
 
 | # | 과제 | 복잡도 | 의존성 |
 |---|------|--------|--------|
-| 1 | JWT 발급/검증 미들웨어 구현 | 중간 | 없음 |
-| 2 | Refresh Token 로테이션 및 DB 저장 로직 | 높음 | 과제 1 |
-| 3 | 카카오 OAuth 2.0 연동 | 중간 | 과제 1 |
-| 4 | 역할 기반 접근 제어 (RBAC) 미들웨어 | 낮음 | 과제 1 |
-| 5 | 비밀번호 해싱 및 검증 | 낮음 | 없음 |
+| 1 | 사용자 테이블 스키마 확장 (password_hash, refresh_token) | 낮음 | 없음 |
+| 2 | JWT 발급/검증 모듈 구현 | 중간 | 없음 |
+| 3 | 인증 API 엔드포인트 (register, login, refresh, logout) | 중간 | 과제#1, #2 |
+| 4 | AuthGuard 미들웨어 및 기존 라우트 적용 | 중간 | 과제#2 |
+| 5 | Refresh Token 회전(rotation) 및 탈취 감지 | 높음 | 과제#3 |
+| 6 | 비밀번호 재설정 이메일 흐름 | 중간 | 과제#1 |
 
 ### 기존 시스템과의 접점
-- **Express.js 라우터**: 기존 API 라우터에 인증 미들웨어를 추가해야 함
-- **PostgreSQL**: 기존 DB에 users, refresh_tokens 테이블 추가
-- **Next.js 프론트엔드**: 로그인 페이지 추가, API 호출 시 쿠키 자동 전송 설정 (credentials: 'include')
+- `users` 테이블: 기존 email, name 필드에 인증 관련 컬럼 추가
+- API 라우트: 기존 비보호 라우트에 AuthGuard 적용 필요 (점진적 적용)
+- 프론트엔드: axios interceptor에서 401 수신 시 자동 토큰 갱신 로직 필요
 
 ---
 
@@ -43,149 +44,155 @@
 ### 아키텍처
 
 ```
-┌─────────────────┐         ┌──────────────────────────────────┐
-│   Next.js App   │         │         Express.js API            │
-│                 │         │                                    │
-│  /login         │ ──────> │  POST /api/auth/login              │
-│  /signup        │ ──────> │  POST /api/auth/signup             │
-│  /oauth/kakao   │ ──────> │  GET  /api/auth/kakao              │
-│                 │         │  GET  /api/auth/kakao/callback      │
-│                 │         │                                    │
-│  보호된 페이지   │ ──────> │  [authMiddleware] 보호된 API        │
-│                 │ <────── │  401 → 자동으로 /api/auth/refresh   │
-└─────────────────┘         └────────────┬───────────────────────┘
-                                         │
-                                         ▼
-                            ┌──────────────────────┐
-                            │     PostgreSQL        │
-                            │  ┌────────────────┐   │
-                            │  │ users           │   │
-                            │  │ refresh_tokens  │   │
-                            │  └────────────────┘   │
-                            └──────────────────────┘
+┌──────────────┐     ┌────────────────────────────────┐     ┌──────────┐
+│   Frontend   │────→│          NestJS Backend         │────→│ PostgreSQL│
+│   (Next.js)  │←────│                                 │←────│          │
+└──────────────┘     │  ┌──────────┐  ┌────────────┐  │     └──────────┘
+                     │  │AuthModule│  │ AuthGuard   │  │
+                     │  │          │  │ (미들웨어)   │  │
+                     │  │ - register│  │             │  │
+                     │  │ - login  │  │ JWT 검증    │  │
+                     │  │ - refresh│  │ → 통과/거부  │  │
+                     │  │ - logout │  │             │  │
+                     │  └──────────┘  └────────────┘  │
+                     └────────────────────────────────┘
+
+[인증 흐름]
+1. 로그인 → Access Token + Refresh Token 발급
+2. API 호출 → Authorization: Bearer {accessToken}
+3. AuthGuard → JWT 서명 검증 (DB 조회 없음)
+4. Access Token 만료 → Refresh Token으로 갱신
+5. Refresh Token 사용 시 → 기존 폐기 + 새 쌍 발급 (회전)
 ```
 
 ### 데이터 모델
 
 ```sql
--- 사용자 테이블
-CREATE TABLE users (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    email       VARCHAR(255) UNIQUE NOT NULL,
-    password    VARCHAR(255),           -- 소셜 로그인 전용 사용자는 NULL
-    name        VARCHAR(100) NOT NULL,
-    role        VARCHAR(20) DEFAULT 'user',  -- 'user' | 'admin'
-    provider    VARCHAR(20) DEFAULT 'local', -- 'local' | 'kakao'
-    provider_id VARCHAR(255),           -- 소셜 로그인 시 외부 ID
-    created_at  TIMESTAMPTZ DEFAULT NOW(),
-    updated_at  TIMESTAMPTZ DEFAULT NOW()
-);
-
--- Refresh Token 테이블
-CREATE TABLE refresh_tokens (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id     UUID REFERENCES users(id) ON DELETE CASCADE,
-    token       VARCHAR(512) NOT NULL,
-    device_info VARCHAR(255),           -- User-Agent 기반 디바이스 식별
-    expires_at  TIMESTAMPTZ NOT NULL,
-    created_at  TIMESTAMPTZ DEFAULT NOW()
-);
-
-CREATE INDEX idx_refresh_tokens_user_id ON refresh_tokens(user_id);
-CREATE INDEX idx_refresh_tokens_token ON refresh_tokens(token);
+-- 기존 users 테이블 확장 마이그레이션
+ALTER TABLE users ADD COLUMN password_hash VARCHAR(255) NOT NULL;
+ALTER TABLE users ADD COLUMN refresh_token_hash VARCHAR(255);
+ALTER TABLE users ADD COLUMN refresh_token_expires_at TIMESTAMP;
+ALTER TABLE users ADD COLUMN password_reset_token VARCHAR(255);
+ALTER TABLE users ADD COLUMN password_reset_expires_at TIMESTAMP;
+ALTER TABLE users ADD COLUMN failed_login_attempts INTEGER DEFAULT 0;
+ALTER TABLE users ADD COLUMN locked_until TIMESTAMP;
 ```
 
 ```typescript
-// src/types/auth.ts
-interface User {
-    id: string;
-    email: string;
-    name: string;
-    role: 'user' | 'admin';
-    provider: 'local' | 'kakao';
+// src/auth/entities/user.entity.ts (인증 관련 필드)
+interface UserAuth {
+  id: string;              // UUID, PK
+  email: string;           // UNIQUE, 로그인 식별자
+  password_hash: string;   // bcrypt 해시 (라운드 12)
+  refresh_token_hash: string | null;    // 해시된 Refresh Token
+  refresh_token_expires_at: Date | null;
+  failed_login_attempts: number;        // 연속 실패 횟수
+  locked_until: Date | null;            // 계정 잠금 시각
 }
+```
 
+```typescript
+// JWT Payload
 interface JwtPayload {
-    sub: string;      // user.id
-    email: string;
-    role: string;
-    iat: number;
-    exp: number;
-}
-
-interface TokenPair {
-    accessToken: string;
-    refreshToken: string;
+  sub: string;    // user.id
+  email: string;
+  iat: number;    // 발급 시각
+  exp: number;    // 만료 시각
 }
 ```
 
 ### API 설계
 
-| Method | Endpoint | 설명 | 인증 |
-|--------|----------|------|------|
-| POST | /api/auth/signup | 이메일 회원가입 | 불필요 |
-| POST | /api/auth/login | 이메일 로그인 | 불필요 |
-| POST | /api/auth/refresh | Access Token 갱신 | Refresh Token |
-| POST | /api/auth/logout | 로그아웃 (Refresh Token 폐기) | 필요 |
-| GET | /api/auth/me | 현재 사용자 정보 조회 | 필요 |
-| GET | /api/auth/kakao | 카카오 OAuth 시작 (리다이렉트) | 불필요 |
-| GET | /api/auth/kakao/callback | 카카오 OAuth 콜백 처리 | 불필요 |
+| Method | Endpoint | 설명 | 인증 필요 |
+|--------|----------|------|----------|
+| POST | /auth/register | 회원가입 | X |
+| POST | /auth/login | 로그인 (토큰 발급) | X |
+| POST | /auth/refresh | Access Token 갱신 | X (Refresh Token) |
+| POST | /auth/logout | 로그아웃 (Refresh Token 무효화) | O |
+| POST | /auth/reset-password/request | 비밀번호 재설정 요청 (이메일 발송) | X |
+| POST | /auth/reset-password/confirm | 비밀번호 재설정 확인 | X (Reset Token) |
+| GET | /auth/me | 현재 사용자 정보 조회 | O |
 
-**요청/응답 예시 (로그인)**:
+**POST /auth/register**
+```json
+// Request
+{ "email": "user@example.com", "password": "SecureP@ss1", "name": "홍길동" }
+
+// Response 201
+{ "id": "uuid", "email": "user@example.com", "name": "홍길동", "createdAt": "2026-03-21T..." }
+
+// Error 409
+{ "statusCode": 409, "message": "이미 등록된 이메일입니다" }
 ```
-POST /api/auth/login
-Content-Type: application/json
 
+**POST /auth/login**
+```json
+// Request
 { "email": "user@example.com", "password": "SecureP@ss1" }
 
-→ 200 OK
-Set-Cookie: access_token=eyJ...; HttpOnly; Secure; SameSite=Strict; Max-Age=900
-Set-Cookie: refresh_token=eyJ...; HttpOnly; Secure; SameSite=Strict; Path=/api/auth/refresh; Max-Age=604800
+// Response 200
+{
+  "accessToken": "eyJhbG...",
+  "refreshToken": "dGhpcyBpcyBh...",
+  "expiresIn": 900
+}
 
-{ "user": { "id": "uuid", "email": "user@example.com", "name": "홍길동", "role": "user" } }
+// Error 401
+{ "statusCode": 401, "message": "이메일 또는 비밀번호가 올바르지 않습니다" }
+```
+
+**POST /auth/refresh**
+```json
+// Request
+{ "refreshToken": "dGhpcyBpcyBh..." }
+
+// Response 200 — 새 토큰 쌍 발급 (Refresh Token 회전)
+{
+  "accessToken": "eyJhbG...(new)",
+  "refreshToken": "bmV3IHJl...(new)",
+  "expiresIn": 900
+}
 ```
 
 ### 핵심 로직
 
 ```
-[회원가입 플로우]
-1. 이메일 중복 확인
-2. 비밀번호 검증 (8자 이상, 영문+숫자+특수문자)
-3. bcrypt로 비밀번호 해싱 (salt rounds: 12)
-4. users 테이블에 저장
-5. Token Pair 발급 → 쿠키에 설정
-6. 사용자 정보 반환
+[회원가입 흐름]
+1. 이메일 중복 확인 → 중복 시 409 반환
+2. 비밀번호 유효성 검증 (8자 이상, 대소문자+숫자+특수문자)
+3. bcrypt.hash(password, 12) → password_hash 저장
+4. 사용자 레코드 생성 → 201 반환
 
-[Refresh Token 로테이션 플로우]
-1. 클라이언트가 /api/auth/refresh 요청
-2. 쿠키에서 Refresh Token 추출
-3. DB에서 해당 토큰 조회
-   - 없으면 → 401 (토큰 탈취 의심, 해당 user의 모든 Refresh Token 삭제)
-   - 만료 → 401
-4. 기존 Refresh Token 삭제
-5. 새 Access Token + 새 Refresh Token 발급
-6. 새 Refresh Token DB 저장
-7. 쿠키에 새 토큰 설정
+[로그인 흐름]
+1. 이메일로 사용자 조회 → 없으면 401
+2. 계정 잠금 여부 확인 → locked_until > now 이면 423
+3. bcrypt.compare(password, password_hash) → 불일치 시:
+   - failed_login_attempts += 1
+   - 5회 이상 실패 시 locked_until = now + 30분
+   - 401 반환
+4. 일치 시:
+   - failed_login_attempts = 0
+   - Access Token 생성 (만료: 15분)
+   - Refresh Token 생성 (만료: 7일)
+   - Refresh Token 해시하여 DB 저장
+   - 토큰 쌍 반환
 
-[카카오 OAuth 플로우]
-1. /api/auth/kakao → 카카오 인증 페이지로 리다이렉트
-2. 사용자가 카카오에서 인증
-3. /api/auth/kakao/callback으로 authorization code 수신
-4. 카카오 API에서 access token 교환
-5. 카카오 API에서 사용자 프로필 조회
-6. provider_id로 기존 사용자 확인
-   - 있으면 → 기존 계정으로 로그인
-   - 없으면 → 신규 계정 생성 (password: NULL)
-7. Token Pair 발급 → 프론트엔드로 리다이렉트
+[Refresh Token 회전]
+1. 전달된 Refresh Token을 해시하여 DB의 해시와 비교
+2. 불일치 → 탈취 의심 → 해당 사용자의 모든 Refresh Token 무효화 + 401
+3. 일치 + 만료 전 → 새 Access Token + 새 Refresh Token 발급
+4. 기존 Refresh Token 해시 교체 (회전 완료)
 ```
 
 ### 에러 처리
-- **이메일 중복 (409)**: "이미 등록된 이메일입니다" 메시지 반환. 소셜 로그인 계정이면 해당 provider 안내
-- **잘못된 비밀번호 (401)**: "이메일 또는 비밀번호가 올바르지 않습니다" (보안상 어느 쪽이 틀린지 구분하지 않음)
-- **토큰 만료 (401)**: Access Token 만료 시 프론트엔드가 자동으로 /refresh 호출, Refresh Token도 만료면 로그인 페이지로 리다이렉트
-- **토큰 탈취 감지 (401)**: Refresh Token이 DB에 없는 경우 해당 사용자의 모든 세션 강제 만료
-- **카카오 API 장애 (502)**: "소셜 로그인 서비스가 일시적으로 불안정합니다. 잠시 후 다시 시도해주세요"
-- **권한 부족 (403)**: "이 기능에 대한 접근 권한이 없습니다"
+
+- **이메일 중복 (409 Conflict)**: "이미 등록된 이메일입니다" — 가입 화면에서 안내
+- **잘못된 자격증명 (401 Unauthorized)**: "이메일 또는 비밀번호가 올바르지 않습니다" — 어느 쪽이 틀렸는지 구분하지 않음 (보안)
+- **계정 잠금 (423 Locked)**: "로그인 시도가 너무 많습니다. 30분 후 다시 시도해주세요"
+- **만료된 Access Token (401)**: 프론트엔드 interceptor가 자동으로 /auth/refresh 호출
+- **만료/무효 Refresh Token (401)**: 로그인 페이지로 리다이렉트
+- **Refresh Token 재사용 감지 (401)**: 모든 세션 무효화, 강제 재로그인 유도
+- **비밀번호 정책 위반 (400 Bad Request)**: 구체적 위반 사항 안내
 
 ---
 
@@ -198,24 +205,31 @@ Set-Cookie: refresh_token=eyJ...; HttpOnly; Secure; SameSite=Strict; Path=/api/a
 
 | # | 조건 | 우선순위 |
 |---|------|---------|
-| 1 | 사용자가 이메일/비밀번호로 회원가입하면 계정이 생성되고 자동 로그인되어야 한다 | Critical |
-| 2 | 로그인 성공 시 Access Token(15분)과 Refresh Token(7일)이 HttpOnly 쿠키로 설정되어야 한다 | Critical |
-| 3 | Access Token 만료 후 /api/auth/refresh 호출 시 새 토큰 쌍이 발급되어야 한다 | Critical |
-| 4 | Refresh Token 재사용 시 해당 사용자의 모든 Refresh Token이 삭제되어야 한다 (탈취 감지) | Critical |
-| 5 | 카카오 로그인으로 신규 가입과 기존 계정 로그인이 모두 동작해야 한다 | Critical |
-| 6 | admin 역할이 아닌 사용자가 관리자 API 접근 시 403이 반환되어야 한다 | Critical |
-| 7 | 비밀번호는 bcrypt로 해싱되어 DB에 평문이 저장되지 않아야 한다 | Critical |
-| 8 | 로그아웃 시 Refresh Token이 DB에서 삭제되고 쿠키가 제거되어야 한다 | Critical |
-| 9 | 잘못된 비밀번호로 로그인 시 이메일/비밀번호 중 어느 것이 틀렸는지 구분하지 않아야 한다 | Nice-to-have |
-| 10 | 동시에 여러 디바이스에서 로그인이 가능해야 한다 | Nice-to-have |
+| 1 | 유효한 이메일/비밀번호로 회원가입하면 201과 사용자 정보가 반환되어야 한다 | Critical |
+| 2 | 등록된 이메일/비밀번호로 로그인하면 accessToken과 refreshToken이 반환되어야 한다 | Critical |
+| 3 | 유효한 Access Token으로 보호된 API에 접근하면 정상 응답을 받아야 한다 | Critical |
+| 4 | 만료되었거나 유효하지 않은 Access Token으로 접근하면 401이 반환되어야 한다 | Critical |
+| 5 | 유효한 Refresh Token으로 갱신 요청하면 새 토큰 쌍이 발급되어야 한다 | Critical |
+| 6 | 사용된 Refresh Token은 재사용 시 401이 반환되고 모든 세션이 무효화되어야 한다 | Critical |
+| 7 | 비밀번호가 DB에 bcrypt 해시로 저장되어야 한다 (평문 저장 금지) | Critical |
+| 8 | 로그인 5회 연속 실패 시 계정이 30분간 잠금되어야 한다 | Critical |
+| 9 | 로그아웃 시 Refresh Token이 DB에서 무효화되어야 한다 | Critical |
+| 10 | 비밀번호 재설정 요청 시 이메일로 재설정 링크가 발송되어야 한다 | Nice-to-have |
+| 11 | 재설정 토큰은 1시간 후 만료되어야 한다 | Nice-to-have |
 
 ### 역방향 검증 체크리스트
-- [ ] Plan의 MECE 4개 영역(인증, 인가, 세션 관리, 계정 관리)이 모두 설계에 반영되었는가?
-- [ ] 설계의 각 API 엔드포인트가 Plan의 구현 범위 항목과 1:1 매핑되는가?
-- [ ] Refresh Token 로테이션 로직에서 동시 요청(race condition) 엣지 케이스가 처리되는가?
-- [ ] 카카오 로그인 실패 시(사용자 취소, API 장애) 에러 처리가 정의되었는가?
+- [ ] 모든 Plan 요구사항이 설계에 반영되었는가?
+  - 신원 확인 → register/login API ✓
+  - 세션 유지 → JWT 이중 토큰 ✓
+  - API 보호 → AuthGuard ✓
+  - 비밀번호 보안 → bcrypt + 계정 잠금 ✓
+  - 소셜 로그인 → 2차 범위로 명시 ✓
+- [ ] 설계의 각 컴포넌트가 Plan의 문제를 해결하는가?
+- [ ] 누락된 엣지 케이스가 없는가?
+  - Refresh Token 탈취 시나리오 ✓
+  - 동시 다중 기기 로그인 → 현재 설계는 단일 Refresh Token (추후 확장 가능)
 
 ### 평가 기준
-- **기능**: 검증 조건 #1~#8이 모두 통과하는가?
-- **설계 품질**: 인증 미들웨어가 일관되게 적용되고, 소셜 로그인 추가가 용이한 구조인가?
-- **단순성**: 자체 인증 서버 없이 Express.js 미들웨어로 깔끔하게 처리되는가?
+- **기능**: 검증 조건 #1~#9 (Critical)이 모두 동작하는가?
+- **설계 품질**: AuthModule이 독립적으로 동작하며 다른 모듈에 영향을 주지 않는가?
+- **단순성**: JWT 라이브러리(jsonwebtoken/passport-jwt) 표준 사용, 자체 암호화 구현 없음
