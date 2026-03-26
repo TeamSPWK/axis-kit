@@ -76,10 +76,27 @@ fi
 
 # 옵션 처리
 SAVE_RESULT=true
-if [[ "${1:-}" == "--no-save" ]]; then
-  SAVE_RESULT=false
-  shift
-fi
+CLAUDE_MODEL="claude-sonnet-4-20250514"
+while [[ "${1:-}" == --* ]]; do
+  case "$1" in
+    --no-save)
+      SAVE_RESULT=false
+      shift
+      ;;
+    --model)
+      case "${2:-}" in
+        opus)  CLAUDE_MODEL="claude-opus-4-20250514" ;;
+        haiku) CLAUDE_MODEL="claude-haiku-4-5-20251001" ;;
+        sonnet) CLAUDE_MODEL="claude-sonnet-4-20250514" ;;
+        *) echo -e "${RED}ERROR: 알 수 없는 모델: ${2:-}. (opus, sonnet, haiku 중 선택)${NC}"; exit 1 ;;
+      esac
+      shift 2
+      ;;
+    *)
+      echo -e "${RED}ERROR: 알 수 없는 옵션: $1${NC}"; exit 1
+      ;;
+  esac
+done
 
 # 입력 처리
 if [[ "${1:-}" == "-f" && -n "${2:-}" ]]; then
@@ -87,8 +104,8 @@ if [[ "${1:-}" == "-f" && -n "${2:-}" ]]; then
 elif [[ -n "${1:-}" ]]; then
   QUESTION="$1"
 else
-  echo "Usage: $0 [--no-save] \"질문 내용\""
-  echo "       $0 [--no-save] -f question.txt"
+  echo "Usage: $0 [--no-save] [--model opus|sonnet|haiku] \"질문 내용\""
+  echo "       $0 [--no-save] [--model opus|sonnet|haiku] -f question.txt"
   exit 1
 fi
 
@@ -96,6 +113,7 @@ SYSTEM_PROMPT="당신은 소프트웨어 아키텍처 전문가입니다. 질문
 
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${CYAN}  AXIS X-Verification v2 — 멀티 AI 교차검증${NC}"
+echo -e "${CYAN}  Claude 모델: ${CLAUDE_MODEL}${NC}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 echo -e "${YELLOW}질문:${NC} $QUESTION"
@@ -114,8 +132,8 @@ call_claude() {
       -H "x-api-key: $ANTHROPIC_API_KEY" \
       -H "anthropic-version: 2023-06-01" \
       -H "content-type: application/json" \
-      -d "$(jq -n --arg q "$QUESTION" --arg s "$SYSTEM_PROMPT" '{
-        model: "claude-sonnet-4-20250514",
+      -d "$(jq -n --arg q "$QUESTION" --arg s "$SYSTEM_PROMPT" --arg m "$CLAUDE_MODEL" '{
+        model: $m,
         max_tokens: 1024,
         system: $s,
         messages: [{role: "user", content: $q}]

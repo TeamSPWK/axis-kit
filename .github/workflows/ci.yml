@@ -1,0 +1,21 @@
+name: AXIS Kit CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify dependencies
+        run: |
+          jq --version
+          curl --version | head -1
+
+      - name: Run tests
+        run: bash tests/test-scripts.sh
