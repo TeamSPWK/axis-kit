@@ -54,10 +54,16 @@ Level 3: Human-Review    — 사람이 최종 판단
 - 합의율 70~89% → AI가 차이점 요약 후 사람이 판단
 - 합의율 70% 미만 → 사람 필수 개입, 요구사항 재정의 검토
 
+**Generator-Evaluator 분리 원칙:**
+- 구현하는 AI(Generator)와 검증하는 AI(Evaluator)는 독립적으로 동작
+- 자기 평가 편향을 제거: "모델은 자기 결과물을 칭찬하는 경향이 있다"
+- 설계 문서의 "검증 계약"이 Generator와 Evaluator 사이의 합의 기준
+
 **역방향 검증 (Bidirectional Traceability):**
 - 정방향: 설계 → 구현 (의도대로 만들었는가?)
 - 역방향: 구현 → 설계 (구현이 설계를 벗어나지 않았는가?)
 - 갭 탐지 시 자동 리포트 생성 → PDCA 루프 진입
+- 개선 추세면 계속, 정체되면 접근 전환 (Iterative Refinement vs Pivot)
 
 ### Pillar 4: Adaptive — 규칙이 스스로 진화한다
 
@@ -231,6 +237,12 @@ AXIS Engineering (Evolution)
 ```
 
 AXIS는 하네스 엔지니어링의 대체가 아닌 **확장**이다.
+
+---
+
+## 10. 참고 자료
+
+- [Anthropic: Harness Design for Long-Running Apps](https://www.anthropic.com/engineering/harness-design-long-running-apps) — Generator-Evaluator 패턴, 검증 계약, 컨텍스트 관리 등 AXIS의 X-Verification 설계에 영향
 
 ---
 

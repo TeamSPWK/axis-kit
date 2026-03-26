@@ -21,3 +21,6 @@ docs/verifications/
 
 # Dependencies
 node_modules/
+
+# AXIS Engineering
+docs/.pdca-status.json

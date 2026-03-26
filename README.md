@@ -48,15 +48,30 @@ S — Structured  : CPS + MECE + 린터로 구조가 품질을 만든다
 
 ## 빠른 시작
 
+### 한 줄 설치
+
+![설치 데모](assets/install-demo.gif)
+
 ```bash
-# 1. 프로젝트 루트에 복사
+curl -fsSL https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/install.sh | bash
+```
+
+### 또는 직접 복사
+
+```bash
 cp -r axis-kit/.claude/commands/ your-project/.claude/commands/
 cp -r axis-kit/scripts/ your-project/scripts/
 cp -r axis-kit/docs/templates/ your-project/docs/templates/
+```
 
-# 2. 초기화 (CLAUDE.md + 디렉토리 구조 자동 생성)
-cd your-project
+### 초기화
+
+```bash
+# 신규 프로젝트
 bash scripts/init.sh my-project "Next.js + TypeScript"
+
+# 기존 프로젝트 (CLAUDE.md 비파괴적 도입)
+bash scripts/init.sh --adopt my-project
 
 # 3. API 키 설정 (교차검증용)
 cat > .env << 'EOF'
