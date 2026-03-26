@@ -1,0 +1,23 @@
+# Credentials
+.env
+.env.*
+!.env.example
+.secret/
+*.pem
+*accessKeys*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project outputs (사용자별 산출물)
+docs/plans/
+docs/designs/
+docs/verifications/
+
+# IDE
+.vscode/
+.idea/
+
+# Dependencies
+node_modules/
