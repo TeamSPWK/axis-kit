@@ -48,35 +48,32 @@ S — Structured  : CPS + MECE + 린터로 구조가 품질을 만든다
 
 ## 빠른 시작
 
-### 1. 설치
-
 ```bash
-# 프로젝트 루트에 복사
+# 1. 프로젝트 루트에 복사
 cp -r axis-kit/.claude/commands/ your-project/.claude/commands/
 cp -r axis-kit/scripts/ your-project/scripts/
 cp -r axis-kit/docs/templates/ your-project/docs/templates/
-```
 
-### 2. API 키 설정
+# 2. 초기화 (CLAUDE.md + 디렉토리 구조 자동 생성)
+cd your-project
+bash scripts/init.sh my-project "Next.js + TypeScript"
 
-```bash
-# 프로젝트 루트에 .env 생성
+# 3. API 키 설정 (교차검증용)
 cat > .env << 'EOF'
 ANTHROPIC_API_KEY="your-key"
 OPENAI_API_KEY="your-key"
 GEMINI_API_KEY="your-key"
 EOF
-```
 
-### 3. 사용
-
-```bash
-# Claude Code에서 슬래시 커맨드로 사용
-/xv "Next.js에서 서버 액션 vs API 라우트, 어떤 걸 기본으로?"
-/plan 아파트 비교 기능
-/design 아파트 비교 기능
-/gap docs/designs/compare.md src/
-/review src/components/CompareTable.tsx
+# 4. 시작!
+/next                    # 뭘 해야 하지?
+/plan 사용자 인증        # 기능 기획
+/xv "JWT vs 세션?"      # 교차검증
+/design 사용자 인증      # 기술 설계
+# ... 구현 ...
+/gap docs/designs/auth.md src/   # 설계 vs 구현 검증
+/review src/auth/        # 코드 리뷰
+/metrics                 # 도입 수준 확인
 ```
 
 ## 커맨드
@@ -233,14 +230,25 @@ axis-kit/
 └── examples/                # 사용 예시
 ```
 
-## CLAUDE.md 설정
+## 도입 방법
 
-프로젝트에 AXIS를 도입할 때, `docs/templates/claude-md.md` 템플릿을 참고하여 CLAUDE.md를 작성합니다.
+### 신규 프로젝트
+```bash
+cp -r axis-kit/.claude/commands/ your-project/.claude/commands/
+cp -r axis-kit/scripts/ your-project/scripts/
+cp -r axis-kit/docs/templates/ your-project/docs/templates/
+cd your-project && bash scripts/init.sh 프로젝트명
+```
 
-핵심 포인트:
-- CLAUDE.md가 모든 맥락의 **입구** — 여기서부터 추적 가능해야 함
-- AI 응답 언어, 커맨드, 컨벤션, Human-AI Boundary 필수 포함
-- 상세 가이드: `docs/templates/claude-md.md`
+### 기존 프로젝트 (비파괴적)
+기존 CLAUDE.md와 컨벤션을 유지하면서, 필요한 것만 점진적으로 도입합니다:
+
+1. **커맨드만 복사** → 바로 `/xv`, `/gap`, `/next` 사용 가능
+2. **CLAUDE.md에 AXIS 섹션 추가** → 기존 내용 수정 없이 끝에 추가
+3. **docs/ 디렉토리 확장** → 기존 문서 구조와 공존
+4. **`/metrics`로 현황 파악** → 부족한 부분부터 채워나감
+
+상세 가이드: **[docs/adoption-guide.md](docs/adoption-guide.md)**
 
 ## 요구사항
 

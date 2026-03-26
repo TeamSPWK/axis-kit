@@ -6,9 +6,17 @@
 # 예시:
 #   bash scripts/init.sh my-app "Next.js + TypeScript" "한국어"
 #   bash scripts/init.sh my-app
+#   bash scripts/init.sh --adopt my-app   # 기존 프로젝트에 비파괴적 도입
 #
 
 set -euo pipefail
+
+# --- 모드 감지 ---
+ADOPT_MODE=false
+if [[ "${1:-}" == "--adopt" ]]; then
+  ADOPT_MODE=true
+  shift
+fi
 
 # --- 인자 파싱 ---
 PROJECT_NAME="${1:-}"
@@ -16,14 +24,19 @@ TECH_STACK="${2:-}"
 LANGUAGE="${3:-한국어}"
 
 if [ -z "$PROJECT_NAME" ]; then
-  echo "사용법: bash scripts/init.sh <프로젝트명> [기술스택] [언어]"
+  echo "사용법: bash scripts/init.sh [--adopt] <프로젝트명> [기술스택] [언어]"
   echo ""
   echo "예시:"
   echo "  bash scripts/init.sh my-app \"Next.js + TypeScript\" \"한국어\""
+  echo "  bash scripts/init.sh --adopt my-app   # 기존 프로젝트에 비파괴적 도입"
   exit 1
 fi
 
-echo "🔧 AXIS Kit 초기화: $PROJECT_NAME"
+if [ "$ADOPT_MODE" = true ]; then
+  echo "🔧 AXIS Kit 기존 프로젝트 도입: $PROJECT_NAME"
+else
+  echo "🔧 AXIS Kit 초기화: $PROJECT_NAME"
+fi
 echo ""
 
 # --- 디렉토리 생성 ---
@@ -47,10 +60,40 @@ done
 
 echo ""
 
-# --- CLAUDE.md 생성 ---
-if [ -f "CLAUDE.md" ]; then
+# --- CLAUDE.md 생성/업데이트 ---
+if [ -f "CLAUDE.md" ] && [ "$ADOPT_MODE" = true ]; then
+  # 기존 프로젝트: AXIS 섹션만 추가
+  if grep -q "AXIS Engineering" CLAUDE.md 2>/dev/null; then
+    echo "  📄 CLAUDE.md — AXIS 섹션이 이미 존재합니다."
+  else
+    cat >> CLAUDE.md << 'AXIS_SECTION'
+
+## AXIS Engineering
+
+이 프로젝트는 AXIS Engineering 방법론을 따른다.
+
+### Commands
+| 커맨드 | 설명 |
+|--------|------|
+| `/next` | 다음 할 일 추천 |
+| `/plan 기능명` | CPS Plan 문서 작성 |
+| `/xv "질문"` | 멀티 AI 교차검증 |
+| `/design 기능명` | CPS Design 문서 작성 |
+| `/gap 설계.md 코드/` | 역방향 검증 |
+| `/review 코드` | 코드 리뷰 |
+| `/propose 패턴` | 규칙 제안 |
+| `/metrics` | 도입 수준 측정 |
+
+### 합의 프로토콜
+- 90%+ → 자동 채택
+- 70~89% → 사람 판단
+- 70% 미만 → 재정의 필요
+AXIS_SECTION
+    echo "  📄 CLAUDE.md — AXIS 섹션 추가 완료 (기존 내용 유지)"
+  fi
+elif [ -f "CLAUDE.md" ]; then
   echo "  ⚠️  CLAUDE.md가 이미 존재합니다. 건너뜁니다."
-  echo "     덮어쓰려면 삭제 후 다시 실행하세요."
+  echo "     기존 프로젝트에 도입하려면: bash scripts/init.sh --adopt $PROJECT_NAME"
 else
   TECH_SECTION=""
   if [ -n "$TECH_STACK" ]; then
