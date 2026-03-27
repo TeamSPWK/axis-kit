@@ -36,7 +36,7 @@ refactor: 리팩토링 | chore: 설정/기타
 
 ### 테스트
 ```bash
-bash tests/test-scripts.sh  # 전체 테스트 (35개 항목)
+bash tests/test-scripts.sh  # 전체 테스트 (44개 항목)
 ```
 
 ## 디렉토리 가이드
