@@ -23,13 +23,8 @@ PROJECT_NAME="${1:-}"
 TECH_STACK="${2:-}"
 LANGUAGE="${3:-한국어}"
 
-# 색상
-BOLD='\033[1m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-CYAN='\033[0;36m'
-RED='\033[0;31m'
-NC='\033[0m'
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+source "${SCRIPT_DIR}/lib/common.sh"
 
 if [ -z "$PROJECT_NAME" ]; then
   echo -e "${BOLD}사용법:${NC}"
@@ -41,13 +36,11 @@ if [ -z "$PROJECT_NAME" ]; then
   exit 1
 fi
 
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 if [ "$ADOPT_MODE" = true ]; then
-  echo -e "${CYAN}  🔧 AXIS Kit 기존 프로젝트 도입: ${BOLD}$PROJECT_NAME${NC}"
+  banner "🔧 AXIS Kit 기존 프로젝트 도입: ${BOLD}$PROJECT_NAME"
 else
-  echo -e "${CYAN}  🔧 AXIS Kit 초기화: ${BOLD}$PROJECT_NAME${NC}"
+  banner "🔧 AXIS Kit 초기화: ${BOLD}$PROJECT_NAME"
 fi
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
 # --- 디렉토리 생성 ---
@@ -232,9 +225,9 @@ fi
 
 # --- 완료 ---
 echo ""
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+divider
 echo -e "${GREEN}  ✅ AXIS Kit 초기화 완료: ${BOLD}${PROJECT_NAME}${NC}"
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+divider
 echo ""
 if [ "$ADOPT_MODE" = true ]; then
   echo -e "${BOLD}👉 다음 단계:${NC}"

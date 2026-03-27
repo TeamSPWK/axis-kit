@@ -2,15 +2,12 @@
 # AXIS Kit — 스크립트 기본 테스트
 # Usage: bash tests/test-scripts.sh
 
-set -uo pipefail
+set -uo pipefail  # -e 제외: assert 함수에서 eval 실패를 허용해야 함
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-YELLOW='\033[1;33m'
-NC='\033[0m'
+source "${ROOT_DIR}/scripts/lib/common.sh"
 
 PASS=0
 FAIL=0

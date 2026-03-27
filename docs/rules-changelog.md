@@ -21,6 +21,30 @@
 
 ## 이력
 
+### [2026-03-27] 공통 쉘 프리앰블 분리
+- **변경**: 추가
+- **내용**: `scripts/lib/common.sh` 생성 — 색상, `load_env`, `require_commands`, `banner`, `divider` 공통 함수
+- **사유**: 5개 스크립트에서 동일 코드 반복 (색상 5회, 의존성 검사 2회, 배너 15회)
+- **제안**: AI
+- **승인**: jay
+- **참조**: `docs/proposals/001-shared-shell-preamble.md`
+
+### [2026-03-27] 쉘 strict 모드 통일
+- **변경**: 추가
+- **내용**: 모든 스크립트는 `set -euo pipefail` 사용. 테스트 스크립트는 assert 특성상 `-e` 제외 허용 (주석 명시)
+- **사유**: gap-check.sh, test-scripts.sh에서 `-e` 누락으로 일관성 부재
+- **제안**: AI
+- **승인**: jay
+- **참조**: `docs/proposals/002-strict-mode-convention.md`
+
+### [2026-03-27] 배너 출력 함수화
+- **변경**: 추가
+- **내용**: `banner()`, `divider()` 함수를 common.sh에 포함. 각 스크립트에서 raw echo 대신 함수 사용
+- **사유**: 4개 스크립트에서 동일 구분선 15회 반복
+- **제안**: AI
+- **승인**: jay
+- **참조**: `docs/proposals/003-banner-function.md`
+
 ### [2026-03-26] AXIS Kit 초기 규칙 체계
 - **변경**: 추가
 - **내용**: CPS 문서 구조, git 커밋 컨벤션, 보안 규칙, 교차검증 프로토콜

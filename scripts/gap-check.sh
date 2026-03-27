@@ -3,27 +3,13 @@
 # Usage: ./scripts/gap-check.sh <design-doc.md> <code-dir>
 # Example: ./scripts/gap-check.sh docs/designs/feature-x.md src/
 
-set -uo pipefail
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
-ENV_FILE="$ROOT_DIR/.env"
 
-# 색상
-BOLD='\033[1m'
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-NC='\033[0m'
-
-# .env 로드
-if [[ -f "$ENV_FILE" ]]; then
-  set -a
-  source "$ENV_FILE"
-  set +a
-fi
+source "${SCRIPT_DIR}/lib/common.sh"
+load_env "$ROOT_DIR/.env"
 
 # 입력 확인 (Usage를 먼저 — API 키 없어도 도움말은 보여줘야 함)
 if [[ $# -lt 2 ]]; then
@@ -38,15 +24,7 @@ if [[ $# -lt 2 ]]; then
   exit 1
 fi
 
-# 필수 도구 확인
-for cmd in jq curl; do
-  if ! command -v "$cmd" &> /dev/null; then
-    echo -e "${RED}ERROR: '${BOLD}$cmd${NC}${RED}'이 설치되어 있지 않습니다.${NC}"
-    echo -e "  ${YELLOW}\$ brew install $cmd${NC}  (macOS)"
-    echo -e "  ${YELLOW}\$ apt install $cmd${NC}   (Ubuntu)"
-    exit 1
-  fi
-done
+require_commands jq curl
 
 # API 키 확인
 if [[ -z "${GEMINI_API_KEY:-}" ]]; then
@@ -68,9 +46,7 @@ if [[ ! -d "$CODE_DIR" ]]; then
   exit 1
 fi
 
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-echo -e "${CYAN}  AXIS Gap Check — 역방향 검증 (설계 ↔ 구현)${NC}"
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+banner "AXIS Gap Check — 역방향 검증 (설계 ↔ 구현)"
 echo ""
 echo -e "  ${BOLD}📄 설계 문서:${NC} ${CYAN}$DESIGN_DOC${NC}"
 echo -e "  ${BOLD}📂 코드 경로:${NC} ${CYAN}$CODE_DIR${NC}"
@@ -193,7 +169,7 @@ else
   VERDICT="❓ PARSE ERROR"
 fi
 
-echo -e "${CYAN}━━━ 📊 갭 분석 결과 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+divider
 echo ""
 echo -e "  ${BOLD}매칭률:${NC}  ${RATE_COLOR}${BOLD}${MATCH_RATE}%${NC}"
 echo -e "  ${BOLD}판정:${NC}    ${VERDICT}"
@@ -232,4 +208,4 @@ if [[ -n "$RISKS" ]]; then
   echo ""
 fi
 
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+divider

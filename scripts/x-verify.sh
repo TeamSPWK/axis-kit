@@ -11,35 +11,16 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 ENV_FILE="$ROOT_DIR/.env"
 VERIFY_DIR="$ROOT_DIR/docs/verifications"
 
-# 색상
-BOLD='\033[1m'
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-CYAN='\033[0;36m'
-MAGENTA='\033[0;35m'
-NC='\033[0m'
+source "${SCRIPT_DIR}/lib/common.sh"
 
-# .env 로드
-if [[ -f "$ENV_FILE" ]]; then
-  set -a
-  source "$ENV_FILE"
-  set +a
-else
+# .env 로드 (필수)
+if [[ ! -f "$ENV_FILE" ]]; then
   echo -e "${RED}ERROR: ${CYAN}$ENV_FILE${NC}${RED} 파일을 찾을 수 없습니다.${NC}"
   exit 1
 fi
+load_env "$ENV_FILE"
 
-# 필수 도구 확인
-for cmd in jq curl; do
-  if ! command -v "$cmd" &> /dev/null; then
-    echo -e "${RED}ERROR: '${BOLD}$cmd${NC}${RED}'이 설치되어 있지 않습니다.${NC}"
-    echo -e "  ${YELLOW}\$ brew install $cmd${NC}  (macOS)"
-    echo -e "  ${YELLOW}\$ apt install $cmd${NC}   (Ubuntu)"
-    exit 1
-  fi
-done
+require_commands jq curl
 
 # API 키 확인
 AVAILABLE_AIS=()
@@ -113,10 +94,10 @@ fi
 
 SYSTEM_PROMPT="당신은 소프트웨어 아키텍처 전문가입니다. 질문에 대해 명확하고 구조화된 의견을 한국어로 제시하세요. 답변은 500자 이내로 핵심만 간결하게."
 
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+divider
 echo -e "${CYAN}  AXIS X-Verification v2 — 멀티 AI 교차검증${NC}"
 echo -e "${CYAN}  Claude 모델: ${CLAUDE_MODEL}${NC}"
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+divider
 echo ""
 echo -e "  ${BOLD}❓ 질문:${NC} $QUESTION"
 echo ""
@@ -337,7 +318,7 @@ if [[ -n "$DIFFS" ]]; then
   echo ""
 fi
 
-echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+divider
 
 # ── Phase 3: 결과 저장 ──
 
