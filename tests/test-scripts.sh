@@ -48,7 +48,7 @@ assert ".axis-version (시맨틱)" "grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$' '$ROOT_D
 
 # 커맨드: 개수만 확인 (개별 파일 검증은 install E2E에서)
 CMD_COUNT=$(ls "$ROOT_DIR/.claude/commands/"*.md 2>/dev/null | wc -l | tr -d ' ')
-assert "커맨드 9개" "[ '$CMD_COUNT' -eq 9 ]"
+assert "커맨드 10개" "[ '$CMD_COUNT' -eq 10 ]"
 
 # 에이전트: 개수만 확인
 AGENT_COUNT=$(ls "$ROOT_DIR/.claude/agents/"*.md 2>/dev/null | wc -l | tr -d ' ')
@@ -111,7 +111,7 @@ echo -e "${YELLOW}[기능: install full]${NC}"
 INSTALL_DIR=$(mktemp -d)
 bash "$ROOT_DIR/install.sh" "$INSTALL_DIR" > /dev/null 2>&1 || true
 
-assert "full: 커맨드 9개" "[ \$(ls '$INSTALL_DIR/.claude/commands/'*.md 2>/dev/null | wc -l) -eq 9 ]"
+assert "full: 커맨드 10개" "[ \$(ls '$INSTALL_DIR/.claude/commands/'*.md 2>/dev/null | wc -l) -eq 10 ]"
 assert "full: 스크립트 3개 + common.sh" \
   "[ \$(ls '$INSTALL_DIR/scripts/'*.sh 2>/dev/null | wc -l) -eq 3 ] && [ -f '$INSTALL_DIR/scripts/lib/common.sh' ]"
 assert "full: 템플릿 5개" "[ \$(ls '$INSTALL_DIR/docs/templates/'*.md 2>/dev/null | wc -l) -eq 5 ]"

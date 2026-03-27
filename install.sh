@@ -61,7 +61,7 @@ if $UNINSTALL_MODE; then
   COUNT_REMOVED=0
 
   # AXIS가 설치한 커맨드 파일 제거
-  COMMANDS_UNINSTALL=(next init plan xv design gap review propose metrics)
+  COMMANDS_UNINSTALL=(next init plan xv design gap review propose metrics team)
   echo -e "${BOLD}🔧 커맨드 제거 중...${NC}"
   for cmd in "${COMMANDS_UNINSTALL[@]}"; do
     local_path="${TARGET_DIR}/.claude/commands/${cmd}.md"
@@ -185,7 +185,7 @@ skip() {
 }
 
 # 모드별 파일 목록 결정
-COMMANDS_ALL=(next init plan xv design gap review propose metrics)
+COMMANDS_ALL=(next init plan xv design gap review propose metrics team)
 COMMANDS_MINIMAL=(next plan review)
 SCRIPTS_ALL=(.axis-version lib/common.sh x-verify.sh gap-check.sh init.sh)
 SCRIPTS_MINIMAL=(.axis-version lib/common.sh init.sh)
@@ -293,5 +293,19 @@ echo -e "${BOLD}🔧 기존 프로젝트에 도입:${NC}"
 echo -e "     ${YELLOW}\$ bash scripts/init.sh --adopt 프로젝트명${NC}"
 echo ""
 echo -e "📚 상세 가이드: ${CYAN}docs/adoption-guide.md${NC}"
+echo ""
+fi
+
+# Agent Teams 활성화 안내 (전체 설치/업데이트 시)
+if ! $MINIMAL_MODE && ! $UNINSTALL_MODE; then
+echo -e "${BOLD}🤝 Agent Teams (선택):${NC}"
+echo -e "  ${CYAN}/team${NC} 커맨드로 병렬 에이전트 팀을 구성할 수 있습니다."
+echo -e "  활성화하려면 ${CYAN}.claude/settings.json${NC}에 다음을 추가하세요:"
+echo ""
+echo -e "  ${YELLOW}{${NC}"
+echo -e "  ${YELLOW}  \"env\": {${NC}"
+echo -e "  ${YELLOW}    \"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS\": \"1\"${NC}"
+echo -e "  ${YELLOW}  }${NC}"
+echo -e "  ${YELLOW}}${NC}"
 echo ""
 fi
