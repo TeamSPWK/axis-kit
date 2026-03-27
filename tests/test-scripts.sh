@@ -90,6 +90,16 @@ assert "init: CLAUDE.md에 AXIS 섹션 포함" "grep -q 'AXIS Engineering' '$TES
 assert "adopt: 기존 CLAUDE.md 유지" "grep -q 'test-project' '$TEST_DIR/CLAUDE.md'"
 echo ""
 
+# --- common.sh 테스트 ---
+echo -e "${YELLOW}[common.sh 공통 유틸리티]${NC}"
+assert "common.sh 존재" "[ -f '$ROOT_DIR/scripts/lib/common.sh' ]"
+assert "common.sh: 색상 변수 로드됨" "[ -n '$BOLD' ] && [ -n '$NC' ]"
+assert "common.sh: load_env 함수 존재" "type load_env &>/dev/null"
+assert "common.sh: require_commands 함수 존재" "type require_commands &>/dev/null"
+assert "common.sh: banner 함수 존재" "type banner &>/dev/null"
+assert "common.sh: divider 함수 존재" "type divider &>/dev/null"
+echo ""
+
 # --- x-verify.sh 기본 테스트 (인자 없이, .env 필요) ---
 echo -e "${YELLOW}[x-verify.sh 기본]${NC}"
 XV_OUTPUT=$(bash "$ROOT_DIR/scripts/x-verify.sh" 2>&1 || true)
@@ -100,6 +110,32 @@ echo ""
 echo -e "${YELLOW}[gap-check.sh 기본]${NC}"
 GAP_OUTPUT=$(bash "$ROOT_DIR/scripts/gap-check.sh" 2>&1 || true)
 assert "gap-check: 인자 없으면 Usage 또는 API 키 에러" "echo '$GAP_OUTPUT' | grep -qE 'Usage|GEMINI_API_KEY|design-doc'"
+echo ""
+
+# --- install.sh 모드별 테스트 ---
+echo -e "${YELLOW}[install.sh 모드별]${NC}"
+INSTALL_DIR=$(mktemp -d)
+
+# full 모드
+bash "$ROOT_DIR/install.sh" "$INSTALL_DIR" > /dev/null 2>&1 || true
+assert "install full: 커맨드 9개 설치" "[ \$(ls '$INSTALL_DIR/.claude/commands/'*.md 2>/dev/null | wc -l) -eq 9 ]"
+assert "install full: 스크립트 3개 설치" "[ \$(ls '$INSTALL_DIR/scripts/'*.sh 2>/dev/null | wc -l) -eq 3 ]"
+assert "install full: 템플릿 5개 설치" "[ \$(ls '$INSTALL_DIR/docs/templates/'*.md 2>/dev/null | wc -l) -eq 5 ]"
+assert "install full: 가이드 3개 설치" "[ -f '$INSTALL_DIR/docs/context-chain.md' ] && [ -f '$INSTALL_DIR/docs/eval-checklist.md' ] && [ -f '$INSTALL_DIR/docs/adoption-guide.md' ]"
+
+# minimal 모드 (새 디렉토리)
+MINIMAL_DIR=$(mktemp -d)
+bash "$ROOT_DIR/install.sh" --minimal "$MINIMAL_DIR" > /dev/null 2>&1 || true
+assert "install minimal: 커맨드 3개만 설치" "[ \$(ls '$MINIMAL_DIR/.claude/commands/'*.md 2>/dev/null | wc -l) -eq 3 ]"
+assert "install minimal: init.sh만 설치" "[ \$(ls '$MINIMAL_DIR/scripts/'*.sh 2>/dev/null | wc -l) -eq 1 ]"
+assert "install minimal: 템플릿 없음" "[ ! -d '$MINIMAL_DIR/docs/templates' ] || [ \$(ls '$MINIMAL_DIR/docs/templates/'*.md 2>/dev/null | wc -l) -eq 0 ]"
+
+# update 모드 (full 위에 덮어쓰기)
+bash "$ROOT_DIR/install.sh" --update "$INSTALL_DIR" > /dev/null 2>&1 || true
+assert "install update: 커맨드 9개 유지" "[ \$(ls '$INSTALL_DIR/.claude/commands/'*.md 2>/dev/null | wc -l) -eq 9 ]"
+assert "install update: 템플릿 보존" "[ \$(ls '$INSTALL_DIR/docs/templates/'*.md 2>/dev/null | wc -l) -eq 5 ]"
+
+rm -rf "$INSTALL_DIR" "$MINIMAL_DIR"
 echo ""
 
 # --- 결과 ---
