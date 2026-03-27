@@ -133,8 +133,8 @@ echo ""
 echo -e "  ${BOLD}❓ 질문:${NC} $QUESTION"
 echo ""
 
-TMPDIR=$(mktemp -d)
-trap "rm -rf $TMPDIR" EXIT
+XV_TMPDIR=$(mktemp -d)
+trap "rm -rf $XV_TMPDIR" EXIT
 
 # ── Phase 1: 3개 AI 병렬 호출 ──
 
@@ -151,7 +151,7 @@ extract_text() {
 # 범용 API 호출 (재시도 + 파일 저장)
 call_api() {
   local name="$1"
-  local outfile="$TMPDIR/${name}.txt"
+  local outfile="$XV_TMPDIR/${name}.txt"
   shift
   local attempt
   for attempt in 1 2; do
@@ -219,8 +219,8 @@ SUCCESS_COUNT=0
 
 if [[ " ${AVAILABLE_AIS[*]} " =~ " claude " ]]; then
   echo -e "${GREEN}━━━ 🟣 Claude (Anthropic) ━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  cat "$TMPDIR/claude.txt"
-  grep -q "^ERROR:" "$TMPDIR/claude.txt" 2>/dev/null || ((SUCCESS_COUNT++)) || true
+  cat "$XV_TMPDIR/claude.txt"
+  grep -q "^ERROR:" "$XV_TMPDIR/claude.txt" 2>/dev/null || ((SUCCESS_COUNT++)) || true
   echo ""
 else
   echo -e "${YELLOW}━━━ 🟣 Claude (Anthropic) ━━━ [건너뜀: API 키 없음] ━━━${NC}"
@@ -229,8 +229,8 @@ fi
 
 if [[ " ${AVAILABLE_AIS[*]} " =~ " gpt " ]]; then
   echo -e "${GREEN}━━━ 🟢 GPT-4o (OpenAI) ━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  cat "$TMPDIR/gpt.txt"
-  grep -q "^ERROR:" "$TMPDIR/gpt.txt" 2>/dev/null || ((SUCCESS_COUNT++)) || true
+  cat "$XV_TMPDIR/gpt.txt"
+  grep -q "^ERROR:" "$XV_TMPDIR/gpt.txt" 2>/dev/null || ((SUCCESS_COUNT++)) || true
   echo ""
 else
   echo -e "${YELLOW}━━━ 🟢 GPT-4o (OpenAI) ━━━ [건너뜀: API 키 없음] ━━━${NC}"
@@ -239,8 +239,8 @@ fi
 
 if [[ " ${AVAILABLE_AIS[*]} " =~ " gemini " ]]; then
   echo -e "${GREEN}━━━ 🔵 Gemini (Google) ━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
-  cat "$TMPDIR/gemini.txt"
-  grep -q "^ERROR:" "$TMPDIR/gemini.txt" 2>/dev/null || ((SUCCESS_COUNT++)) || true
+  cat "$XV_TMPDIR/gemini.txt"
+  grep -q "^ERROR:" "$XV_TMPDIR/gemini.txt" 2>/dev/null || ((SUCCESS_COUNT++)) || true
   echo ""
 else
   echo -e "${YELLOW}━━━ 🔵 Gemini (Google) ━━━ [건너뜀: API 키 없음] ━━━${NC}"
@@ -257,8 +257,8 @@ fi
 # 호출된 AI 응답 수집
 RESPONSES=""
 for ai in claude gpt gemini; do
-  if [[ -f "$TMPDIR/${ai}.txt" ]] && ! grep -q "^ERROR:" "$TMPDIR/${ai}.txt" 2>/dev/null; then
-    RESP=$(cat "$TMPDIR/${ai}.txt")
+  if [[ -f "$XV_TMPDIR/${ai}.txt" ]] && ! grep -q "^ERROR:" "$XV_TMPDIR/${ai}.txt" 2>/dev/null; then
+    RESP=$(cat "$XV_TMPDIR/${ai}.txt")
     RESPONSES+="## ${ai} 응답"$'\n'"${RESP}"$'\n\n'
   fi
 done
@@ -375,9 +375,9 @@ if [[ "$SAVE_RESULT" == true ]]; then
   # 호출된 AI 응답만 수집
   AI_SECTIONS=""
   for ai in claude gpt gemini; do
-    if [[ -f "$TMPDIR/${ai}.txt" ]]; then
+    if [[ -f "$XV_TMPDIR/${ai}.txt" ]]; then
       AI_SECTIONS+="## ${ai}"$'\n'
-      AI_SECTIONS+="$(cat "$TMPDIR/${ai}.txt")"$'\n\n'
+      AI_SECTIONS+="$(cat "$XV_TMPDIR/${ai}.txt")"$'\n\n'
     fi
   done
 

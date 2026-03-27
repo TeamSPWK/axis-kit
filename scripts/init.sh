@@ -88,6 +88,7 @@ if [ -f "CLAUDE.md" ] && [ "$ADOPT_MODE" = true ]; then
 | `/review 코드` | 코드 리뷰 |
 | `/propose 패턴` | 규칙 제안 |
 | `/metrics` | 도입 수준 측정 |
+| `/team 프리셋` | Agent Teams 병렬 구성 |
 
 ### Workflow Hint
 - 작업이 끝나면 `/next`를 실행하여 다음 단계를 확인한다.
@@ -97,6 +98,11 @@ if [ -f "CLAUDE.md" ] && [ "$ADOPT_MODE" = true ]; then
 - 90%+ → 자동 채택
 - 70~89% → 사람 판단
 - 70% 미만 → 재정의 필요
+
+### AXIS Kit 업데이트
+```bash
+curl -fsSL https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/install.sh | bash -s -- --update
+```
 AXIS_SECTION
     echo -e "  ${GREEN}✓${NC} 📄 ${CYAN}CLAUDE.md${NC} — AXIS 섹션 추가 완료 (기존 내용 유지)"
   fi
@@ -127,11 +133,13 @@ else
 ### Commands
 | 커맨드 | 설명 |
 |--------|------|
-| \`/xv "질문"\` | 멀티 AI 교차검증 |
+| \`/next\` | 다음 할 일 자동 추천 |
 | \`/plan 기능명\` | CPS Plan 문서 작성 |
+| \`/xv "질문"\` | 멀티 AI 교차검증 |
 | \`/design 기능명\` | CPS Design 문서 작성 |
 | \`/gap 설계.md 코드/\` | 역방향 검증 |
 | \`/review 코드\` | 코드 리뷰 |
+| \`/team 프리셋\` | Agent Teams 병렬 구성 |
 
 ### Workflow
 \`\`\`
@@ -142,6 +150,12 @@ else
 - 90%+ → 자동 채택
 - 70~89% → 사람 판단
 - 70% 미만 → 재정의 필요
+
+### AXIS Kit 업데이트
+AXIS Kit을 최신 버전으로 업데이트하려면:
+\`\`\`bash
+curl -fsSL https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/install.sh | bash -s -- --update
+\`\`\`
 
 ## Tech Stack
 

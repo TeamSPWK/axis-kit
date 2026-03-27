@@ -87,16 +87,18 @@ fi
 # 파일 수 및 총 줄 수 계산
 FILE_COUNT=0
 TOTAL_LINES=0
-for f in $CODE_FILES; do
+while IFS= read -r f; do
+  [[ -z "$f" ]] && continue
   ((FILE_COUNT++)) || true
   lines=$(wc -l < "$f" 2>/dev/null || echo "0")
   TOTAL_LINES=$((TOTAL_LINES + lines))
-done
+done <<< "$CODE_FILES"
 echo -e "  ${BLUE}🔍 분석 대상: ${BOLD}${FILE_COUNT}개${NC}${BLUE} 파일 (총 ${BOLD}${TOTAL_LINES}줄${NC}${BLUE})${NC}"
 echo ""
 
 CODE_SUMMARY=""
-for f in $CODE_FILES; do
+while IFS= read -r f; do
+  [[ -z "$f" ]] && continue
   LINES=$(wc -l < "$f" 2>/dev/null || echo "0")
   CODE_SUMMARY+="### $f ($LINES lines)"$'\n'
   # 파일 상위 200줄 + 시그니처 추출 (200줄 이후 함수/클래스 정의)
@@ -109,7 +111,7 @@ for f in $CODE_FILES; do
     fi
   fi
   CODE_SUMMARY+=$'\n\n'
-done
+done <<< "$CODE_FILES"
 
 CODE_SUMMARY="${CODE_SUMMARY:0:20000}"
 

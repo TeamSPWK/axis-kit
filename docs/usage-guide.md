@@ -78,7 +78,7 @@ curl -fsSL https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/install.sh |
 
 | 구분 | 수량 | 내용 |
 |------|------|------|
-| 커맨드 | 9개 | `.claude/commands/*.md` |
+| 커맨드 | 10개 | `.claude/commands/*.md` |
 | 에이전트 | 5개 | `.claude/agents/*.md` |
 | 스크립트 | 5개 | `scripts/*.sh`, `scripts/lib/common.sh`, `scripts/.axis-version` |
 | 템플릿 | 5개 | `docs/templates/*.md` |

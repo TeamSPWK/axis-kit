@@ -12,13 +12,19 @@ MAGENTA='\033[0;35m'
 CYAN='\033[0;36m'
 NC='\033[0m'
 
-# .env 로드
+# .env 로드 (KEY=VALUE 파싱만 수행, 셸 명령 실행 방지)
 load_env() {
   local env_file="${1:-.env}"
   if [[ -f "$env_file" ]]; then
-    set -a
-    source "$env_file"
-    set +a
+    while IFS='=' read -r key value; do
+      # 빈 줄, 주석 무시
+      [[ -z "$key" || "$key" =~ ^[[:space:]]*# ]] && continue
+      # 키 이름 정제 (앞뒤 공백 제거)
+      key=$(echo "$key" | tr -d '[:space:]')
+      # 값에서 따옴표 제거
+      value=$(echo "$value" | sed -e 's/^[[:space:]]*//' -e 's/^"//' -e 's/"$//' -e "s/^'//" -e "s/'$//")
+      export "$key=$value"
+    done < "$env_file"
   fi
 }
 
