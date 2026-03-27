@@ -12,6 +12,7 @@ ENV_FILE="$ROOT_DIR/.env"
 VERIFY_DIR="$ROOT_DIR/docs/verifications"
 
 # 색상
+BOLD='\033[1m'
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -26,16 +27,16 @@ if [[ -f "$ENV_FILE" ]]; then
   source "$ENV_FILE"
   set +a
 else
-  echo -e "${RED}ERROR: .env 파일을 찾을 수 없습니다: $ENV_FILE${NC}"
+  echo -e "${RED}ERROR: ${CYAN}$ENV_FILE${NC}${RED} 파일을 찾을 수 없습니다.${NC}"
   exit 1
 fi
 
 # 필수 도구 확인
 for cmd in jq curl; do
   if ! command -v "$cmd" &> /dev/null; then
-    echo -e "${RED}ERROR: '$cmd'이 설치되어 있지 않습니다.${NC}"
-    echo "  brew install $cmd  (macOS)"
-    echo "  apt install $cmd   (Ubuntu)"
+    echo -e "${RED}ERROR: '${BOLD}$cmd${NC}${RED}'이 설치되어 있지 않습니다.${NC}"
+    echo -e "  ${YELLOW}\$ brew install $cmd${NC}  (macOS)"
+    echo -e "  ${YELLOW}\$ apt install $cmd${NC}   (Ubuntu)"
     exit 1
   fi
 done
@@ -48,21 +49,21 @@ if [[ -n "${ANTHROPIC_API_KEY:-}" ]]; then
   AVAILABLE_AIS+=("claude")
 else
   MISSING_KEYS+=("ANTHROPIC_API_KEY")
-  echo -e "${YELLOW}WARNING: ANTHROPIC_API_KEY가 .env에 설정되지 않았습니다. Claude를 건너뜁니다.${NC}"
+  echo -e "${YELLOW}⚠️  WARNING: ${BOLD}ANTHROPIC_API_KEY${NC}${YELLOW}가 .env에 설정되지 않았습니다. Claude를 건너뜁니다.${NC}"
 fi
 
 if [[ -n "${OPENAI_API_KEY:-}" ]]; then
   AVAILABLE_AIS+=("gpt")
 else
   MISSING_KEYS+=("OPENAI_API_KEY")
-  echo -e "${YELLOW}WARNING: OPENAI_API_KEY가 .env에 설정되지 않았습니다. GPT를 건너뜁니다.${NC}"
+  echo -e "${YELLOW}⚠️  WARNING: ${BOLD}OPENAI_API_KEY${NC}${YELLOW}가 .env에 설정되지 않았습니다. GPT를 건너뜁니다.${NC}"
 fi
 
 if [[ -n "${GEMINI_API_KEY:-}" ]]; then
   AVAILABLE_AIS+=("gemini")
 else
   MISSING_KEYS+=("GEMINI_API_KEY")
-  echo -e "${YELLOW}WARNING: GEMINI_API_KEY가 .env에 설정되지 않았습니다. Gemini를 건너뜁니다.${NC}"
+  echo -e "${YELLOW}⚠️  WARNING: ${BOLD}GEMINI_API_KEY${NC}${YELLOW}가 .env에 설정되지 않았습니다. Gemini를 건너뜁니다.${NC}"
 fi
 
 if [[ ${#AVAILABLE_AIS[@]} -eq 0 ]]; then
@@ -104,8 +105,9 @@ if [[ "${1:-}" == "-f" && -n "${2:-}" ]]; then
 elif [[ -n "${1:-}" ]]; then
   QUESTION="$1"
 else
-  echo "Usage: $0 [--no-save] [--model opus|sonnet|haiku] \"질문 내용\""
-  echo "       $0 [--no-save] [--model opus|sonnet|haiku] -f question.txt"
+  echo -e "${BOLD}Usage:${NC}"
+  echo -e "  ${YELLOW}\$ $0 [--no-save] [--model opus|sonnet|haiku] \"질문 내용\"${NC}"
+  echo -e "  ${YELLOW}\$ $0 [--no-save] [--model opus|sonnet|haiku] -f question.txt${NC}"
   exit 1
 fi
 
@@ -116,7 +118,7 @@ echo -e "${CYAN}  AXIS X-Verification v2 — 멀티 AI 교차검증${NC}"
 echo -e "${CYAN}  Claude 모델: ${CLAUDE_MODEL}${NC}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo -e "${YELLOW}질문:${NC} $QUESTION"
+echo -e "  ${BOLD}❓ 질문:${NC} $QUESTION"
 echo ""
 
 TMPDIR=$(mktemp -d)
@@ -330,9 +332,9 @@ esac
 
 echo -e "${MAGENTA}━━━ 📊 합의 분석 결과 ━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo -e "  합의율:  ${CYAN}${RATE}%${NC}"
-echo -e "  판정:    ${VERDICT_COLOR}"
-echo -e "  요약:    ${SUMMARY}"
+echo -e "  ${BOLD}합의율:${NC}  ${CYAN}${BOLD}${RATE}%${NC}"
+echo -e "  ${BOLD}판정:${NC}    ${VERDICT_COLOR}"
+echo -e "  ${BOLD}요약:${NC}    ${SUMMARY}"
 echo ""
 
 # 공통점/차이점 출력
@@ -393,5 +395,6 @@ $(echo "$COMMON" | while read -r line; do echo "- $line"; done)
 $(echo "$DIFFS" | while read -r line; do echo "- $line"; done)
 MDEOF
 
-  echo -e "${GREEN}📁 결과 저장: $FILEPATH${NC}"
+  echo ""
+echo -e "${GREEN}📁 결과 저장: ${CYAN}$FILEPATH${NC}"
 fi

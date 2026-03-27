@@ -10,6 +10,7 @@ ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 ENV_FILE="$ROOT_DIR/.env"
 
 # 색상
+BOLD='\033[1m'
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
@@ -26,30 +27,31 @@ fi
 
 # 입력 확인 (Usage를 먼저 — API 키 없어도 도움말은 보여줘야 함)
 if [[ $# -lt 2 ]]; then
-  echo "Usage: $0 <design-doc.md> <code-dir>"
+  echo -e "${BOLD}Usage:${NC}"
+  echo -e "  ${YELLOW}\$ $0 <design-doc.md> <code-dir>${NC}"
   echo ""
-  echo "설계 문서와 구현 코드를 비교하여 갭을 탐지합니다."
+  echo -e "  설계 문서와 구현 코드를 비교하여 갭을 탐지합니다."
   echo ""
-  echo "Examples:"
-  echo "  $0 docs/designs/auth.md src/"
-  echo "  $0 docs/designs/api.md apps/backend/"
+  echo -e "${BOLD}Examples:${NC}"
+  echo -e "  ${YELLOW}\$ $0 docs/designs/auth.md src/${NC}"
+  echo -e "  ${YELLOW}\$ $0 docs/designs/api.md apps/backend/${NC}"
   exit 1
 fi
 
 # 필수 도구 확인
 for cmd in jq curl; do
   if ! command -v "$cmd" &> /dev/null; then
-    echo -e "${RED}ERROR: '$cmd'이 설치되어 있지 않습니다.${NC}"
-    echo "  brew install $cmd  (macOS)"
-    echo "  apt install $cmd   (Ubuntu)"
+    echo -e "${RED}ERROR: '${BOLD}$cmd${NC}${RED}'이 설치되어 있지 않습니다.${NC}"
+    echo -e "  ${YELLOW}\$ brew install $cmd${NC}  (macOS)"
+    echo -e "  ${YELLOW}\$ apt install $cmd${NC}   (Ubuntu)"
     exit 1
   fi
 done
 
 # API 키 확인
 if [[ -z "${GEMINI_API_KEY:-}" ]]; then
-  echo -e "${RED}ERROR: GEMINI_API_KEY가 .env에 설정되지 않았습니다.${NC}"
-  echo "  .env 파일에 GEMINI_API_KEY=your-key 를 추가하세요."
+  echo -e "${RED}ERROR: ${BOLD}GEMINI_API_KEY${NC}${RED}가 .env에 설정되지 않았습니다.${NC}"
+  echo -e "  ${CYAN}.env${NC} 파일에 ${BOLD}GEMINI_API_KEY${NC}=your-key 를 추가하세요."
   exit 1
 fi
 
@@ -57,12 +59,12 @@ DESIGN_DOC="$1"
 CODE_DIR="$2"
 
 if [[ ! -f "$DESIGN_DOC" ]]; then
-  echo -e "${RED}ERROR: 설계 문서를 찾을 수 없습니다: $DESIGN_DOC${NC}"
+  echo -e "${RED}ERROR: 설계 문서를 찾을 수 없습니다: ${CYAN}$DESIGN_DOC${NC}"
   exit 1
 fi
 
 if [[ ! -d "$CODE_DIR" ]]; then
-  echo -e "${RED}ERROR: 코드 디렉토리를 찾을 수 없습니다: $CODE_DIR${NC}"
+  echo -e "${RED}ERROR: 코드 디렉토리를 찾을 수 없습니다: ${CYAN}$CODE_DIR${NC}"
   exit 1
 fi
 
@@ -70,8 +72,8 @@ echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━�
 echo -e "${CYAN}  AXIS Gap Check — 역방향 검증 (설계 ↔ 구현)${NC}"
 echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo -e "${YELLOW}설계 문서:${NC} $DESIGN_DOC"
-echo -e "${YELLOW}코드 경로:${NC} $CODE_DIR"
+echo -e "  ${BOLD}📄 설계 문서:${NC} ${CYAN}$DESIGN_DOC${NC}"
+echo -e "  ${BOLD}📂 코드 경로:${NC} ${CYAN}$CODE_DIR${NC}"
 echo ""
 
 DESIGN_CONTENT=$(cat "$DESIGN_DOC")
@@ -99,7 +101,7 @@ for f in $CODE_FILES; do
   lines=$(wc -l < "$f" 2>/dev/null || echo "0")
   TOTAL_LINES=$((TOTAL_LINES + lines))
 done
-echo -e "${BLUE}분석 대상: ${FILE_COUNT}개 파일 (총 ${TOTAL_LINES}줄)${NC}"
+echo -e "  ${BLUE}🔍 분석 대상: ${BOLD}${FILE_COUNT}개${NC}${BLUE} 파일 (총 ${BOLD}${TOTAL_LINES}줄${NC}${BLUE})${NC}"
 echo ""
 
 CODE_SUMMARY=""
@@ -193,9 +195,9 @@ fi
 
 echo -e "${CYAN}━━━ 📊 갭 분석 결과 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo -e "  매칭률:  ${RATE_COLOR}${MATCH_RATE}%${NC}"
-echo -e "  판정:    ${VERDICT}"
-echo -e "  요약:    ${SUMMARY}"
+echo -e "  ${BOLD}매칭률:${NC}  ${RATE_COLOR}${BOLD}${MATCH_RATE}%${NC}"
+echo -e "  ${BOLD}판정:${NC}    ${VERDICT}"
+echo -e "  ${BOLD}요약:${NC}    ${SUMMARY}"
 echo ""
 
 # 구현된 항목

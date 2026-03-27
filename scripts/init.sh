@@ -23,20 +23,31 @@ PROJECT_NAME="${1:-}"
 TECH_STACK="${2:-}"
 LANGUAGE="${3:-한국어}"
 
+# 색상
+BOLD='\033[1m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+CYAN='\033[0;36m'
+RED='\033[0;31m'
+NC='\033[0m'
+
 if [ -z "$PROJECT_NAME" ]; then
-  echo "사용법: bash scripts/init.sh [--adopt] <프로젝트명> [기술스택] [언어]"
+  echo -e "${BOLD}사용법:${NC}"
+  echo -e "  ${YELLOW}\$ bash scripts/init.sh [--adopt] <프로젝트명> [기술스택] [언어]${NC}"
   echo ""
-  echo "예시:"
-  echo "  bash scripts/init.sh my-app \"Next.js + TypeScript\" \"한국어\""
-  echo "  bash scripts/init.sh --adopt my-app   # 기존 프로젝트에 비파괴적 도입"
+  echo -e "${BOLD}예시:${NC}"
+  echo -e "  ${YELLOW}\$ bash scripts/init.sh my-app \"Next.js + TypeScript\" \"한국어\"${NC}"
+  echo -e "  ${YELLOW}\$ bash scripts/init.sh --adopt my-app${NC}   # 기존 프로젝트에 비파괴적 도입"
   exit 1
 fi
 
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 if [ "$ADOPT_MODE" = true ]; then
-  echo "🔧 AXIS Kit 기존 프로젝트 도입: $PROJECT_NAME"
+  echo -e "${CYAN}  🔧 AXIS Kit 기존 프로젝트 도입: ${BOLD}$PROJECT_NAME${NC}"
 else
-  echo "🔧 AXIS Kit 초기화: $PROJECT_NAME"
+  echo -e "${CYAN}  🔧 AXIS Kit 초기화: ${BOLD}$PROJECT_NAME${NC}"
 fi
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
 
 # --- 디렉토리 생성 ---
@@ -52,9 +63,9 @@ dirs=(
 for dir in "${dirs[@]}"; do
   if [ ! -d "$dir" ]; then
     mkdir -p "$dir"
-    echo "  📁 $dir/ 생성"
+    echo -e "  ${GREEN}✓${NC} 📁 ${CYAN}$dir/${NC} 생성"
   else
-    echo "  📁 $dir/ (이미 존재)"
+    echo -e "  ${YELLOW}→${NC} 📁 ${CYAN}$dir/${NC} (이미 존재)"
   fi
 done
 
@@ -64,7 +75,7 @@ echo ""
 if [ -f "CLAUDE.md" ] && [ "$ADOPT_MODE" = true ]; then
   # 기존 프로젝트: AXIS 섹션만 추가
   if grep -q "AXIS Engineering" CLAUDE.md 2>/dev/null; then
-    echo "  📄 CLAUDE.md — AXIS 섹션이 이미 존재합니다."
+    echo -e "  ${YELLOW}→${NC} 📄 ${CYAN}CLAUDE.md${NC} — AXIS 섹션이 이미 존재합니다."
   else
     cat >> CLAUDE.md << 'AXIS_SECTION'
 
@@ -84,16 +95,20 @@ if [ -f "CLAUDE.md" ] && [ "$ADOPT_MODE" = true ]; then
 | `/propose 패턴` | 규칙 제안 |
 | `/metrics` | 도입 수준 측정 |
 
+### Workflow Hint
+- 작업이 끝나면 `/next`를 실행하여 다음 단계를 확인한다.
+- 설계 판단이 필요하면 `/xv`로 교차검증한다.
+
 ### 합의 프로토콜
 - 90%+ → 자동 채택
 - 70~89% → 사람 판단
 - 70% 미만 → 재정의 필요
 AXIS_SECTION
-    echo "  📄 CLAUDE.md — AXIS 섹션 추가 완료 (기존 내용 유지)"
+    echo -e "  ${GREEN}✓${NC} 📄 ${CYAN}CLAUDE.md${NC} — AXIS 섹션 추가 완료 (기존 내용 유지)"
   fi
 elif [ -f "CLAUDE.md" ]; then
-  echo "  ⚠️  CLAUDE.md가 이미 존재합니다. 건너뜁니다."
-  echo "     기존 프로젝트에 도입하려면: bash scripts/init.sh --adopt $PROJECT_NAME"
+  echo -e "  ${YELLOW}⚠️  CLAUDE.md가 이미 존재합니다. 건너뜁니다.${NC}"
+  echo -e "     기존 프로젝트에 도입하려면: ${YELLOW}\$ bash scripts/init.sh --adopt $PROJECT_NAME${NC}"
 else
   TECH_SECTION=""
   if [ -n "$TECH_STACK" ]; then
@@ -176,7 +191,7 @@ refactor: 리팩토링 | chore: 설정/기타
 - **절대 git 커밋 금지**: \`.env\`, \`.secret/\`, \`*.pem\`, \`*accessKeys*\`
 TMPL
 
-  echo "  📄 CLAUDE.md 생성"
+  echo -e "  ${GREEN}✓${NC} 📄 ${CYAN}CLAUDE.md${NC} 생성"
 fi
 
 echo ""
@@ -193,7 +208,7 @@ ADDED=0
 
 if [ ! -f ".gitignore" ]; then
   touch .gitignore
-  echo "  📄 .gitignore 생성"
+  echo -e "  ${GREEN}✓${NC} 📄 ${CYAN}.gitignore${NC} 생성"
 fi
 
 # AXIS 섹션 헤더 추가 여부 확인
@@ -210,18 +225,32 @@ for entry in "${GITIGNORE_ENTRIES[@]}"; do
 done
 
 if [ "$ADDED" -gt 0 ]; then
-  echo "  📄 .gitignore 업데이트 (${ADDED}개 항목 추가)"
+  echo -e "  ${GREEN}✓${NC} 📄 ${CYAN}.gitignore${NC} 업데이트 (${BOLD}${ADDED}개${NC} 항목 추가)"
 else
-  echo "  📄 .gitignore (변경 없음)"
+  echo -e "  ${YELLOW}→${NC} 📄 ${CYAN}.gitignore${NC} (변경 없음)"
 fi
 
 # --- 완료 ---
 echo ""
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "✅ AXIS Kit 초기화 완료: ${PROJECT_NAME}"
-echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${GREEN}  ✅ AXIS Kit 초기화 완료: ${BOLD}${PROJECT_NAME}${NC}"
+echo -e "${CYAN}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo ""
-echo "다음 단계:"
-echo "  1. CLAUDE.md를 열어 프로젝트 설명과 기술 스택을 채우세요"
-echo "  2. /plan 으로 첫 기능을 기획해 보세요"
-echo ""
+if [ "$ADOPT_MODE" = true ]; then
+  echo -e "${BOLD}👉 다음 단계:${NC}"
+  echo ""
+  echo -e "  1. 🧭 현재 상태 진단 + 다음 할 일 확인"
+  echo -e "     ${YELLOW}\$ /next${NC}"
+  echo ""
+  echo -e "${BOLD}🔄 익숙해지면 추가 커맨드 설치:${NC}"
+  echo -e "     ${YELLOW}\$ curl -fsSL https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/install.sh | bash${NC}"
+  echo ""
+else
+  echo -e "${BOLD}👉 다음 단계:${NC}"
+  echo ""
+  echo -e "  1. 📝 ${CYAN}CLAUDE.md${NC}를 열어 프로젝트 설명과 기술 스택을 채우세요"
+  echo ""
+  echo -e "  2. 🧭 다음 할 일 확인"
+  echo -e "     ${YELLOW}\$ /next${NC}"
+  echo ""
+fi
