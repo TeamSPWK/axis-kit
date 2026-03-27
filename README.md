@@ -50,39 +50,39 @@ S — Structured  : CPS + MECE + 린터로 구조가 품질을 만든다
 
 ## 빠른 시작
 
-### 한 줄 설치
+### 기존 프로젝트에 도입 (권장)
 
 ![설치 데모](assets/install-demo.gif)
 
 ```bash
-# 신규 설치
+# 핵심 커맨드 3개만 설치 (/next, /plan, /review)
+curl -fsSL https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/install.sh | bash -s -- --minimal
+
+# CLAUDE.md에 AXIS 섹션 추가 (기존 내용 유지)
+bash scripts/init.sh --adopt my-project
+
+# 바로 시작
+/next   # 다음 할 일 확인
+```
+
+> 2~3개 커맨드부터 시작하고, 익숙해지면 전체 설치로 업그레이드하세요.
+
+### 전체 설치
+
+```bash
 curl -fsSL https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/install.sh | bash
 
 # 업데이트 (커맨드+스크립트만 갱신, 사용자 커스터마이징 보존)
 curl -fsSL https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/install.sh | bash -s -- --update
 ```
 
-### 또는 직접 복사
+### 신규 프로젝트 초기화
 
-```bash
-cp -r axis-kit/.claude/commands/ your-project/.claude/commands/
-cp -r axis-kit/scripts/ your-project/scripts/
-cp -r axis-kit/docs/templates/ your-project/docs/templates/
-```
-
-### 초기화
-
-**신규 프로젝트:**
 ```bash
 bash scripts/init.sh my-project "Next.js + TypeScript"
 ```
 
-**기존 프로젝트 (비파괴적 도입):**
-```bash
-bash scripts/init.sh --adopt my-project
-```
-
-### API 키 설정 (교차검증용)
+### API 키 설정 (교차검증용, 선택)
 
 ```bash
 cat > .env << 'EOF'
@@ -91,6 +91,8 @@ OPENAI_API_KEY="your-key"
 GEMINI_API_KEY="your-key"
 EOF
 ```
+
+> `/next`, `/plan`, `/review` 등 대부분의 커맨드는 API 키 없이 동작합니다. `/xv`(교차검증)만 API 키가 필요합니다.
 
 ### 사용
 
@@ -272,6 +274,16 @@ axis-kit/
 ├── tests/                   # 스크립트 테스트
 └── examples/                # 사용 예시 + 튜토리얼
 ```
+
+## 도입 가이드
+
+상세 전략: **[docs/adoption-guide.md](docs/adoption-guide.md)**
+
+| 방식 | 명령어 | 포함 내용 |
+|------|--------|----------|
+| **최소 설치** | `install.sh --minimal` | `/next`, `/plan`, `/review` + `init.sh` |
+| **전체 설치** | `install.sh` | 9개 커맨드 + 스크립트 + 템플릿 + 가이드 |
+| **업데이트** | `install.sh --update` | 커맨드/스크립트만 갱신 (커스터마이징 보존) |
 
 ## 요구사항
 
