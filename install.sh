@@ -73,6 +73,21 @@ if $UNINSTALL_MODE; then
   done
   echo ""
 
+  # AXIS 에이전트 제거
+  AGENTS_UNINSTALL=(architect senior-dev qa-engineer security-engineer devops-engineer)
+  echo -e "${BOLD}🤖 에이전트 제거 중...${NC}"
+  for agent in "${AGENTS_UNINSTALL[@]}"; do
+    local_path="${TARGET_DIR}/.claude/agents/${agent}.md"
+    if [[ -f "$local_path" ]]; then
+      rm "$local_path"
+      echo -e "  ${RED}✗${NC} ${CYAN}.claude/agents/${agent}.md${NC}"
+      COUNT_REMOVED=$((COUNT_REMOVED + 1))
+    fi
+  done
+  # .claude/agents/ 디렉토리가 비었으면 제거
+  rmdir "${TARGET_DIR}/.claude/agents" 2>/dev/null || true
+  echo ""
+
   # AXIS 스크립트 제거
   SCRIPTS_UNINSTALL=(.axis-version lib/common.sh x-verify.sh gap-check.sh init.sh)
   echo -e "${BOLD}🚀 스크립트 제거 중...${NC}"
@@ -140,6 +155,7 @@ echo ""
 # 디렉토리 생성
 DIRS=(
   ".claude/commands"
+  ".claude/agents"
   "scripts/lib"
   "docs/templates"
 )
@@ -173,22 +189,26 @@ COMMANDS_ALL=(next init plan xv design gap review propose metrics)
 COMMANDS_MINIMAL=(next plan review)
 SCRIPTS_ALL=(.axis-version lib/common.sh x-verify.sh gap-check.sh init.sh)
 SCRIPTS_MINIMAL=(.axis-version lib/common.sh init.sh)
+AGENTS_ALL=(architect senior-dev qa-engineer security-engineer devops-engineer)
 TEMPLATES_ALL=(cps-plan cps-design claude-md decision-record rule-proposal)
 GUIDES_ALL=(context-chain.md eval-checklist.md adoption-guide.md)
 
 if $MINIMAL_MODE; then
   COMMANDS=("${COMMANDS_MINIMAL[@]}")
   SCRIPTS=("${SCRIPTS_MINIMAL[@]}")
+  AGENTS=()
   TEMPLATES=()
   GUIDES=()
 elif $UPDATE_MODE; then
   COMMANDS=("${COMMANDS_ALL[@]}")
   SCRIPTS=("${SCRIPTS_ALL[@]}")
+  AGENTS=("${AGENTS_ALL[@]}")
   TEMPLATES=()
   GUIDES=()
 else
   COMMANDS=("${COMMANDS_ALL[@]}")
   SCRIPTS=("${SCRIPTS_ALL[@]}")
+  AGENTS=("${AGENTS_ALL[@]}")
   TEMPLATES=("${TEMPLATES_ALL[@]}")
   GUIDES=("${GUIDES_ALL[@]}")
 fi
@@ -220,6 +240,7 @@ else
 fi
 
 download_section "🔧 커맨드" ".claude/commands" ".md" "${COMMANDS[@]}"
+download_section "🤖 에이전트" ".claude/agents" ".md" ${AGENTS[@]+"${AGENTS[@]}"}
 download_section "🚀 스크립트" "scripts" "" "${SCRIPTS[@]}"
 chmod +x "${TARGET_DIR}/scripts/"*.sh 2>/dev/null
 if $UPDATE_MODE; then
