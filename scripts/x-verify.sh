@@ -119,7 +119,8 @@ extract_text() {
 
 # 범용 API 호출 (재시도 + 파일 저장)
 call_api() {
-  local name="$1" outfile="$TMPDIR/${name}.txt"
+  local name="$1"
+  local outfile="$TMPDIR/${name}.txt"
   shift
   local attempt
   for attempt in 1 2; do
