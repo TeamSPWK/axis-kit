@@ -30,6 +30,7 @@ Generator-Evaluator 분리 원칙에 따라 구현과 검증을 독립 에이전
 - `--careful` : 복잡도와 무관하게 2단계 승인
 - `--force` : Soft-Block 5개 이상에서도 계속 진행 (비권장)
 - `--optimize` : 비용 최적화 모드 — Planner는 Opus, Generator는 Sonnet, Evaluator는 Opus로 모델 라우팅
+- `--jury` : LLM Jury 모드 — Evaluator 대신 3인 Jury (Correctness/Design/User)로 다중 관점 평가
 - (기본) : 복잡도 자동 판단
 
 # Execution
@@ -175,6 +176,13 @@ Plan과 Design을 함께 보여주고 한 번에 승인받는다:
 
 Agent 도구로 서브에이전트를 생성하여 구현을 위임한다:
 
+**Context Engine 적용:**
+Generator에게 전달할 맥락을 nova-context-engine 전략으로 구성한다:
+1. Design 문서 + Sprint Contract (Selection)
+2. 기존 코드의 타입/인터페이스 (Compression)
+3. 의존성 순서로 배치 (Ordering)
+4. Generator에 필요한 맥락만 (Isolation)
+
 ```
 너는 Nova Harness의 Generator다.
 다음 스프린트를 구현하라.
@@ -268,6 +276,13 @@ Playwright 미설치 시 경고 후 건너뜀:
 
 Agent 도구로 **독립 서브에이전트**를 생성한다:
 
+**Context Engine 적용:**
+Evaluator에게 전달할 맥락을 nova-context-engine 전략으로 구성한다:
+1. Sprint Contract + Done 조건 (Selection — 검증 기준 우선)
+2. 구현 결과의 diff + 핵심 파일 (Compression)
+3. 검증 기준 → 코드 → 테스트 순서 (Ordering)
+4. Evaluator에 필요한 맥락만 — Generator의 self-review 제외 (Isolation)
+
 ```
 너는 Nova Harness의 Adversarial Evaluator다.
 너의 임무는 Generator가 만든 결과물의 문제를 찾는 것이다.
@@ -311,6 +326,23 @@ Agent 도구로 **독립 서브에이전트**를 생성한다:
 
 1. 단순성 원칙 위반, 보안 이슈, 성능 문제 점검
 2. Design Drift (설계↔구현 괴리) 특히 주의
+
+### Mutation-Guided Testing (--careful 또는 HIGH 복잡도)
+
+복잡도가 HIGH이거나 `--careful` 모드일 때 자동 활성화:
+
+1. Generator가 구현한 핵심 로직에 대해 뮤턴트를 생성
+2. 기존 테스트로 뮤턴트를 사냥
+3. 살아남은 뮤턴트에 대한 보강 테스트 작성
+4. 결과를 Evaluator 리포트에 포함
+
+```
+━━━ Mutation Test Summary ━━━━━━━━━━━━━━━━━
+  뮤턴트 사망률: {N}% ({killed}/{total})
+  보강 테스트: {N}개 추가
+  커버리지 갭: {살아남은 뮤턴트 목록}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
 
 ### 심각도별 처리
 
@@ -557,6 +589,8 @@ Agent 도구로 **완전히 독립된 서브에이전트**를 생성한다:
 - Soft-Block의 블로커 레지스트리(`docs/auto-blocks.md`)는 프로덕션 배포 전 반드시 해결한다.
 - 웹 프로젝트에서 Playwright 미설치 시 브라우저 관통 테스트가 SKIP된다. 완성도를 위해 설치를 권장한다.
 - 모델 라우팅: `--optimize` 사용 시 Agent 도구의 `model` 파라미터로 단계별 최적 모델을 지정한다. Plan/Evaluate는 깊은 분석이 필요하므로 Opus, 구현은 속도 중심으로 Sonnet을 사용한다.
+- LLM Jury: `--jury` 또는 `--careful` 모드에서 활성화. 3개 독립 서브에이전트가 각각 정확성/설계/사용자 관점에서 평가하고 합의 프로토콜로 판정. 비용이 3배이므로 핵심 기능에 선택적 사용.
+- Evaluator Feedback Loop: `docs/eval-feedback.md`에 Evaluator의 판정 결과와 실제 결과를 누적 기록. 시간이 지남에 따라 Evaluator의 정밀도가 프로젝트에 맞게 향상된다.
 
 # Input
 $ARGUMENTS
