@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+# Nova 버전 범프 스크립트
+# 사용법: bash scripts/bump-version.sh <patch|minor|major>
+# 또는:  bash scripts/bump-version.sh 2.2.0  (직접 지정)
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+VERSION_FILE="$ROOT/scripts/.nova-version"
+
+if [[ ! -f "$VERSION_FILE" ]]; then
+  echo "❌ $VERSION_FILE 파일을 찾을 수 없습니다."
+  exit 1
+fi
+
+CURRENT=$(tr -d '[:space:]' < "$VERSION_FILE")
+IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+
+case "${1:-}" in
+  patch) PATCH=$((PATCH + 1)) ;;
+  minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+  major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+  [0-9]*.[0-9]*.[0-9]*) IFS='.' read -r MAJOR MINOR PATCH <<< "$1" ;;
+  *)
+    echo "사용법: bash scripts/bump-version.sh <patch|minor|major|X.Y.Z>"
+    echo "현재 버전: $CURRENT"
+    exit 1
+    ;;
+esac
+
+NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+
+if [[ "$NEW_VERSION" == "$CURRENT" ]]; then
+  echo "⚠️  버전이 동일합니다: $CURRENT"
+  exit 0
+fi
+
+echo "🔄 $CURRENT → $NEW_VERSION"
+
+# 1. Single source of truth
+echo "$NEW_VERSION" > "$VERSION_FILE"
+
+# 2. README.md 배지
+README="$ROOT/README.md"
+if [[ -f "$README" ]]; then
+  sed -i '' "s/version-[0-9]*\.[0-9]*\.[0-9]*/version-$NEW_VERSION/" "$README"
+  echo "  ✅ README.md"
+fi
+
+# 3. plugin.json
+PLUGIN="$ROOT/.claude-plugin/plugin.json"
+if [[ -f "$PLUGIN" ]]; then
+  sed -i '' "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"$NEW_VERSION\"/" "$PLUGIN"
+  echo "  ✅ plugin.json"
+fi
+
+# 4. marketplace.json
+MARKETPLACE="$ROOT/.claude-plugin/marketplace.json"
+if [[ -f "$MARKETPLACE" ]]; then
+  sed -i '' "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"$NEW_VERSION\"/" "$MARKETPLACE"
+  echo "  ✅ marketplace.json"
+fi
+
+echo "✅ 버전 범프 완료: $NEW_VERSION"
