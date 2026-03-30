@@ -32,14 +32,14 @@
 
 ---
 
-## Pillar 3: X-Verification (교차 검증)
+## Pillar 3: X-Verification (다관점 수집)
 
 | # | 항목 | 체크 |
 |---|------|------|
-| X1 | 중요한 설계 판단에 멀티 AI 교차검증(/xv)을 사용한다 | [ ] |
-| X2 | 합의 프로토콜(90/70/70미만)에 따라 결과를 처리한다 | [ ] |
+| X1 | 중요한 설계 판단에 멀티 AI 다관점 수집(/xv)을 사용한다 | [ ] |
+| X2 | 합의 프로토콜(Strong Consensus / Partial Consensus / Divergent)에 따라 결과를 처리한다 | [ ] |
 | X3 | 구현 후 역방향 검증(/gap)으로 설계-구현 갭을 확인한다 | [ ] |
-| X4 | 교차검증 결과가 docs/verifications/에 기록된다 | [ ] |
+| X4 | 다관점 수집 결과가 docs/verifications/에 기록된다 | [ ] |
 
 **점수: __ / 4**
 
@@ -77,5 +77,5 @@
 점수가 낮은 Pillar부터 개선한다:
 1. **Structured가 낮으면** → CLAUDE.md 정비, 린터 설정
 2. **Idempotent가 낮으면** → 문서화 강화, 컨텍스트 체인 구축
-3. **X-Verification이 낮으면** → 교차검증 습관화, 갭 체크 루틴화
+3. **X-Verification이 낮으면** → 다관점 수집 습관화, 갭 체크 루틴화
 4. **Adaptive가 낮으면** → 규칙 제안 프로세스 도입

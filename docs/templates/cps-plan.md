@@ -65,7 +65,7 @@
 
 ---
 
-## X-Verification (교차 검증)
+## X-Verification (다관점 수집)
 
 > 멀티 AI 자문이 필요한 경우 기록
 
@@ -75,4 +75,4 @@
 | GPT | | O/X |
 | Gemini | | O/X |
 
-합의율: __% → 판정: {자동 채택 / 사람 판단 / 재정의 필요}
+합의 수준: {Strong Consensus | Partial Consensus | Divergent}

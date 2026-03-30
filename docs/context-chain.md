@@ -23,7 +23,7 @@ Layer 3: Structural (구조적)    ← 설계 문서, git history, 린터 규칙
 | 기능 계획 | `docs/plans/` | 기능 수명 | CPS Plan 문서 |
 | 기술 설계 | `docs/designs/` | 기능 수명 | CPS Design 문서 |
 | 의사결정 | `docs/decisions/` | 영구 | 왜 PostgreSQL을 선택했는가 |
-| 교차검증 결과 | `docs/verifications/` | 영구 | 멀티 AI 합의 기록 |
+| 다관점 수집 결과 | `docs/verifications/` | 영구 | 멀티 AI 합의 기록 |
 | 코드 변경 이유 | git commit message | 영구 | feat: 인증 모듈 추가 |
 | 코드 구조/패턴 | 코드 자체 | 영구 | 함수명, 디렉토리 구조 |
 
@@ -64,7 +64,7 @@ docs/
 ├── plans/              # CPS Plan 문서 (Phase: Plan)
 ├── designs/            # CPS Design 문서 (Phase: Plan→Do)
 ├── decisions/          # 의사결정 기록 (Phase: 전체)
-├── verifications/      # 교차검증 결과 (Phase: Check)
+├── verifications/      # 다관점 수집 결과 (Phase: Check)
 ├── templates/          # 문서 템플릿
 │   ├── cps-plan.md
 │   ├── cps-design.md

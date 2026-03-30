@@ -16,7 +16,7 @@ Plan 문서를 기반으로 기술적 설계 상세를 작성한다.
 2. 해당 Plan 문서가 `docs/plans/`에 있는지 확인한다.
    - 있으면 Plan을 읽고 기반으로 설계
    - 없으면 "먼저 /plan을 실행하세요" 안내
-3. `docs/templates/cps-design.md` 템플릿을 기반으로 작성한다.
+3. `docs/templates/cps-design.md`가 있으면 참고한다. **없으면 아래 인라인 구조를 사용한다** (템플릿 없음을 언급하지 않는다).
 4. 다음 구조를 반드시 채운다:
 
 ## Context (설계 배경)
@@ -82,7 +82,7 @@ E2E 테스트나 `/gap` 검증에서 설계 자체의 문제가 발견되면:
 - Design은 "어떻게" — 구체적 기술 상세
 - Sprint Contract는 Generator-Evaluator 패턴의 핵심: 구현자와 검증자가 **사전에** 합의
 - Plan의 모든 요구사항이 Design에 반영되었는지 확인
-- 아키텍처 판단이 어려우면 `/xv`로 교차검증
+- 아키텍처 판단이 어려우면 `/xv`로 다관점 수집
 
 # Input
 $ARGUMENTS

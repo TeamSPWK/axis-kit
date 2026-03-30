@@ -1,7 +1,7 @@
 # Nova
 
 [![CI](https://github.com/TeamSPWK/nova/actions/workflows/ci.yml/badge.svg)](https://github.com/TeamSPWK/nova/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-2.0.0-blue)](https://github.com/TeamSPWK/nova/releases)
+[![Version](https://img.shields.io/badge/version-2.1.0-blue)](https://github.com/TeamSPWK/nova/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **처음부터 제대로. 매번 더 빠르게.**
@@ -24,7 +24,7 @@ claude plugin install nova@nova-marketplace
 
 | | 수동 개발 | Nova |
 |---|---|---|
-| **설계 판단** | AI 하나한테 물어보고 진행 | `/nova:xv`로 3개 AI 교차검증, 합의율 자동 산출 |
+| **설계 판단** | AI 하나한테 물어보고 진행 | `/nova:xv`로 3개 AI 다관점 수집, 합의 수준 자동 분석 |
 | **기획 → 구현** | 머릿속 → 바로 코딩 | 복잡도 자동 판단 → Plan → Design → 구현 (CPS 구조) |
 | **코드 검증** | 같은 AI가 구현하고 평가 | **독립 Evaluator 에이전트**가 적대적 검증 (자기 평가 편향 차단) |
 | **설계-코드 일치** | 수동 대조 또는 안 함 | `/nova:gap`으로 자동 갭 탐지 + Sprint Contract 기반 검증 |
@@ -47,7 +47,7 @@ Nova는 8가지 자산으로 개발 과정의 핵심 병목을 제거한다.
 | **Harness Architecture** | "AI가 자기 코드를 자기가 평가" | Generator-Evaluator 분리로 자기 평가 편향 구조적 차단 |
 | **3단계 평가 레이어** | "코드를 읽고 괜찮아 보이면 PASS" | 정적분석 → 의미론적 분석 → 실행 검증 순차 수행 |
 | **CPS 문서 체계** | "뭘 만들지 합의 안 됨" | 기획-설계-구현이 하나의 구조로 연결 |
-| **교차검증 (`/nova:xv`)** | "AI 한 마리 말만 믿음" | 3개 AI 합의로 잘못된 판단 사전 차단 |
+| **다관점 수집 (`/nova:xv`)** | "AI 한 마리 말만 믿음" | 3개 AI 합의로 잘못된 판단 사전 차단 |
 | **역방향 검증 (`/nova:gap`)** | "설계와 코드가 따로 놂" | 적대적 Evaluator가 갭 탐지, Sprint Contract 기반 검증 |
 | **컨텍스트 체인** | "세션 끊기면 맥락 증발" | CLAUDE.md + Handoff Artifact + git으로 영속 복원 |
 | **Hooks + Skills** | "중요한 규칙이 무시됨" | Hooks로 필수 규칙 100% 보장, Skills로 온디맨드 전문 지식 |
@@ -88,7 +88,7 @@ claude plugin install nova@nova-marketplace
 /nova:next   # 다음 할 일 확인 — 여기서부터 시작
 ```
 
-### 3. API 키 설정 (교차검증용, 선택)
+### 3. API 키 설정 (다관점 수집용, 선택)
 
 ```bash
 cat > .env << 'EOF'
@@ -98,7 +98,7 @@ GEMINI_API_KEY="your-key"
 EOF
 ```
 
-> `/nova:xv`(교차검증)만 API 키가 필요합니다. 나머지 커맨드는 모두 API 키 없이 동작합니다.
+> `/nova:xv`(다관점 수집)만 API 키가 필요합니다. 나머지 커맨드는 모두 API 키 없이 동작합니다.
 
 ### 업데이트 & 삭제
 
@@ -120,7 +120,7 @@ claude plugin marketplace remove nova-marketplace
 | `/nova:next` | 다음 할 일 자동 추천 | 뭘 해야 할지 모를 때 |
 | `/nova:init 프로젝트명` | 프로젝트에 Nova 초기 설정 | 신규 프로젝트 시작 시 |
 | `/nova:plan 기능명` | CPS Plan 문서 작성 | 새 기능 기획 시 |
-| `/nova:xv "질문"` | 멀티 AI 교차검증 (Claude+GPT+Gemini) | 설계 판단, 아키텍처 선택 |
+| `/nova:xv "질문"` | 멀티 AI 다관점 수집 (Claude+GPT+Gemini) | 설계 판단, 아키텍처 선택 |
 | `/nova:design 기능명` | CPS Design 문서 작성 | Plan 이후 기술 설계 시 |
 | `/nova:gap 설계.md 코드/` | 설계↔구현 역방향 검증 | 구현 완료 후 누락 확인 |
 | `/nova:review 코드` | 단순성 원칙 코드 리뷰 | 코드 품질 점검 |
@@ -170,7 +170,7 @@ claude plugin marketplace remove nova-marketplace
   ▼                                         ▼
 /nova:plan ─── 기능 기획 (CPS)           /nova:auto ─── 계획 승인 한 번이면 끝
   │                                         │
-  ├── /nova:xv ─── 교차검증                 ├── Plan 자동 생성 (Planner)
+  ├── /nova:xv ─── 다관점 수집               ├── Plan 자동 생성 (Planner)
   │                                         ├── Design 자동 생성 (Planner)
   ▼                                         ├── 승인 요청 ← 유일한 개입
 /nova:design ─ 기술 설계 (CPS)              ├── 구현 (Generator 서브에이전트)
@@ -209,7 +209,7 @@ nova/
 │   ├── next.md                 #   /nova:next — 다음 할 일 추천
 │   ├── init.md                 #   /nova:init — 프로젝트 초기 설정
 │   ├── plan.md                 #   /nova:plan — CPS Plan 작성
-│   ├── xv.md                   #   /nova:xv — 멀티 AI 교차검증
+│   ├── xv.md                   #   /nova:xv — 멀티 AI 다관점 수집
 │   ├── design.md               #   /nova:design — CPS Design 작성
 │   ├── gap.md                  #   /nova:gap — 역방향 검증
 │   ├── review.md               #   /nova:review — 코드 리뷰
@@ -237,7 +237,7 @@ nova/
 │   ├── rules-changelog.md      # 규칙 변경 이력
 │   ├── proposals/              # 규칙 제안서
 │   ├── decisions/              # 의사결정 기록 (ADR)
-│   ├── verifications/          # 교차검증 결과
+│   ├── verifications/          # 다관점 수집 결과
 │   └── templates/              # 문서 템플릿
 ├── tests/
 │   └── test-scripts.sh         # 테스트
@@ -270,7 +270,7 @@ claude plugin uninstall nova@nova-marketplace
 ```bash
 /nova:next                              # 다음 할 일 추천
 /nova:plan 기능명                        # CPS Plan 작성
-/nova:xv "질문"                          # 멀티 AI 교차검증
+/nova:xv "질문"                          # 멀티 AI 다관점 수집
 /nova:design 기능명                      # CPS Design 작성
 /nova:gap docs/designs/x.md src/        # 설계↔구현 갭 검증
 /nova:review src/                       # 코드 리뷰
@@ -295,7 +295,7 @@ claude plugin uninstall nova@nova-marketplace
 ## 요구사항
 
 - [Claude Code](https://claude.ai/code) CLI
-- API 키: OpenAI + Google AI Studio (교차검증 `/nova:xv` 사용 시, 선택)
+- API 키: OpenAI + Google AI Studio (다관점 수집 `/nova:xv` 사용 시, 선택)
 
 ## 자주 묻는 질문
 
@@ -308,13 +308,13 @@ claude plugin uninstall nova@nova-marketplace
 <details>
 <summary><b>Cursor, Windsurf 등 다른 AI 도구와 함께 쓸 수 있나요?</b></summary>
 
-네. Nova는 Claude Code 플러그인으로 설치되므로 다른 도구와 충돌하지 않습니다. 교차검증(`/nova:xv`)은 오히려 다른 도구와 병행하면 효과적입니다.
+네. Nova는 Claude Code 플러그인으로 설치되므로 다른 도구와 충돌하지 않습니다. 다관점 수집(`/nova:xv`)은 오히려 다른 도구와 병행하면 효과적입니다.
 </details>
 
 <details>
 <summary><b>API 키 없이도 쓸 수 있나요?</b></summary>
 
-네. `/nova:xv`(교차검증)만 API 키가 필요합니다. 나머지 커맨드는 모두 API 키 없이 동작합니다.
+네. `/nova:xv`(다관점 수집)만 API 키가 필요합니다. 나머지 커맨드는 모두 API 키 없이 동작합니다.
 </details>
 
 <details>

@@ -64,7 +64,7 @@ WARN은 진행 가능하지만, FAIL은 해결 후 재실행을 안내한다.
 ## Phase 1: Plan 생성 (Planner)
 
 1. 사용자 입력에서 기능명과 요구사항을 추출한다.
-2. `docs/templates/cps-plan.md` 템플릿 기반으로 Plan을 자동 생성한다.
+2. `docs/templates/cps-plan.md`가 있으면 참고하고, 없으면 `/plan` 커맨드의 인라인 구조로 Plan을 자동 생성한다.
 3. **스프린트 분할**: 예상 파일 4개 이상이면 독립 검증 가능한 스프린트로 분할한다.
    - 각 스프린트는 의존성 순서대로 배치
    - 각 스프린트의 완료 기준을 명시
@@ -72,7 +72,7 @@ WARN은 진행 가능하지만, FAIL은 해결 후 재실행을 안내한다.
 
 ## Phase 2: Design 생성 (Planner)
 
-1. Phase 1의 Plan을 입력으로 `docs/templates/cps-design.md` 기반 Design을 생성한다.
+1. Phase 1의 Plan을 입력으로 `docs/templates/cps-design.md`가 있으면 참고하고, 없으면 `/design` 커맨드의 인라인 구조로 Design을 생성한다.
 2. Plan의 모든 요구사항이 Design에 반영되었는지 자체 검증한다.
 3. **스프린트별 검증 계약**을 작성한다:
    - 각 스프린트의 "Done 조건"을 테스트 가능한 형태로 명시
@@ -568,9 +568,9 @@ Agent 도구로 **완전히 독립된 서브에이전트**를 생성한다:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-# Design Decisions (XV 교차검증 근거)
+# Design Decisions (XV 다관점 수집 근거)
 
-이 커맨드의 핵심 설계는 교차검증으로 확정됨:
+이 커맨드의 핵심 설계는 다관점 수집으로 확정됨:
 
 1. **Generator-Evaluator 분리** (v1.6): 자기 평가 편향은 모델 성능과 무관한 구조적 문제. 별도 세션으로 해결.
 2. **순차 실행** (Plan→Design): 병렬보다 정합성 우선. 재작업 비용 > 병렬화 이득.

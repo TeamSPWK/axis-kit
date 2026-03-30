@@ -82,7 +82,7 @@
 |--------|------|-------------------|
 | `/nova:next` | 다음 할 일 추천 | 워크플로우 가이드 |
 | `/nova:plan 기능명` | CPS Plan 문서 작성 | 복잡도 "보통" 이상 시 자동 실행 |
-| `/nova:xv "질문"` | 멀티 AI 교차검증 | 설계 판단 불확실할 때 |
+| `/nova:xv "질문"` | 멀티 AI 다관점 수집 | 설계 판단 불확실할 때 |
 | `/nova:design 기능명` | CPS Design 문서 작성 | 복잡도 "복잡" 시 자동 실행 |
 | `/nova:gap 설계.md 코드/` | 역방향 검증 | 검증 단계에서 자동 실행 |
 | `/nova:review 코드` | 코드 리뷰 | 검증 단계에서 자동 실행 |
@@ -108,10 +108,13 @@
           → Independent Verifier → 완료
 ```
 
-### 합의 프로토콜 (교차검증 시)
-- 90%+ → 자동 채택
-- 70~89% → 사람 판단
-- 70% 미만 → 재정의 필요
+### 합의 프로토콜 (다관점 수집 시)
+
+> ⚠️ 합의 수준은 AI의 정성적 판단이며, 정량 메트릭이 아니다.
+
+- **Strong Consensus** → 사람 확인 후 진행
+- **Partial Consensus** → 차이점 요약 후 사람 판단
+- **Divergent** → 사람 필수 개입, 재정의 검토
 
 ## Tech Stack
 
@@ -128,7 +131,7 @@
 │   ├── plans/        # CPS Plan 문서
 │   ├── designs/      # CPS Design 문서
 │   ├── decisions/    # 의사결정 기록 (ADR)
-│   ├── verifications/ # 교차검증 결과
+│   ├── verifications/ # 다관점 수집 결과
 │   └── templates/    # 문서 템플릿
 ├── scripts/          # Nova 스크립트
 └── .env              # API 키 (git 추적 금지)
@@ -189,7 +192,7 @@ CLAUDE.md는 Claude가 매 세션 시작 시 자동으로 읽는 파일이다.
 | Language | O | AI 응답 언어 통일 |
 | Nova Engineering (자동 적용 규칙) | O | **핵심 — 커맨드 없이도 방법론 자동 적용** |
 | Tech Stack | O | 기술 맥락 제공 |
-| Conventions | O | 일관성 (멱등성 핵심) |
+| Conventions | O | 일관성 (프로세스 일관성 핵심) |
 | Human-AI Boundary | O | AI 독단 방지 |
 | Credentials | O | 보안 사고 방지 |
 | Project Structure | 선택 | 복잡한 프로젝트에서 유용 |
