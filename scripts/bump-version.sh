@@ -63,11 +63,4 @@ if [[ -f "$PLUGIN" ]]; then
   echo "  ✅ plugin.json"
 fi
 
-# 4. marketplace.json
-MARKETPLACE="$ROOT/.claude-plugin/marketplace.json"
-if [[ -f "$MARKETPLACE" ]]; then
-  sedi "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"$NEW_VERSION\"/" "$MARKETPLACE"
-  echo "  ✅ marketplace.json"
-fi
-
 echo "✅ 버전 범프 완료: $NEW_VERSION"

@@ -127,11 +127,11 @@ assert ".nova-version 시맨틱" "grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$' '$VERSION_
 
 NOVA_VER=$(tr -d '[:space:]' < "$VERSION_FILE")
 PLUGIN_VER=$(jq -r '.version' "$ROOT_DIR/.claude-plugin/plugin.json" 2>/dev/null)
-MARKET_VER=$(jq -r '.plugins[0].version' "$ROOT_DIR/.claude-plugin/marketplace.json" 2>/dev/null)
 README_VER=$(grep -o 'version-[0-9]*\.[0-9]*\.[0-9]*' "$ROOT_DIR/README.md" 2>/dev/null | sed 's/version-//' || echo "")
 
 assert ".nova-version == plugin.json ($NOVA_VER)" "[ '$NOVA_VER' = '$PLUGIN_VER' ]"
-assert ".nova-version == marketplace.json ($NOVA_VER)" "[ '$NOVA_VER' = '$MARKET_VER' ]"
+assert "marketplace.json에 version 없음 (plugin.json이 유일한 source)" \
+  "! jq -e '.plugins[0].version' '$ROOT_DIR/.claude-plugin/marketplace.json' > /dev/null 2>&1"
 assert ".nova-version == README 배지 ($NOVA_VER)" "[ '$NOVA_VER' = '$README_VER' ]"
 echo ""
 
@@ -156,11 +156,10 @@ cp "$ROOT_DIR/README.md" "$BUMP_DIR/README.md"
 (cd "$BUMP_DIR" && bash scripts/bump-version.sh patch > /dev/null 2>&1)
 BUMPED=$(tr -d '[:space:]' < "$BUMP_DIR/scripts/.nova-version")
 BUMPED_PLUGIN=$(jq -r '.version' "$BUMP_DIR/.claude-plugin/plugin.json")
-BUMPED_MARKET=$(jq -r '.plugins[0].version' "$BUMP_DIR/.claude-plugin/marketplace.json")
 
 assert "patch: 버전 증가" "[ '$BUMPED' != '$NOVA_VER' ]"
-assert "patch: 4곳 동기화" \
-  "[ '$BUMPED' = '$BUMPED_PLUGIN' ] && [ '$BUMPED' = '$BUMPED_MARKET' ]"
+assert "patch: 3곳 동기화 (.nova-version, plugin.json, README)" \
+  "[ '$BUMPED' = '$BUMPED_PLUGIN' ]"
 
 # 직접 지정 테스트
 (cd "$BUMP_DIR" && bash scripts/bump-version.sh 9.9.9 > /dev/null 2>&1)
