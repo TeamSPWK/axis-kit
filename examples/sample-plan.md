@@ -1,6 +1,6 @@
 # [Plan] 사용자 인증
 
-> AXIS Engineering — CPS Framework
+> Nova Engineering — CPS Framework
 > 작성일: 2026-03-20
 > 작성자: 김민수
 

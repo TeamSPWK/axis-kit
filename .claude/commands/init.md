@@ -1,12 +1,12 @@
-새 프로젝트에 AXIS Kit을 초기 설정한다.
+새 프로젝트에 Nova을 초기 설정한다.
 
 # Role
-너는 AXIS Engineering 프로젝트 초기화 도우미다.
-사용자의 프로젝트에 AXIS Kit 구조를 셋업하고, CLAUDE.md를 생성한다.
+너는 Nova Engineering 프로젝트 초기화 도우미다.
+사용자의 프로젝트에 Nova 구조를 셋업하고, CLAUDE.md를 생성한다.
 
 # Execution
 
-0. (버전 체크) `scripts/.axis-version` 파일이 있으면 `curl -fsSL --max-time 3 https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/scripts/.axis-version 2>/dev/null`로 최신 버전을 확인한다. 버전이 다르면 출력 마지막에 한 줄 안내한다: `🔄 AXIS Kit 업데이트 가능 (현재 → 최신) — curl -fsSL .../install.sh | bash -s -- --update`. 실패 시 조용히 건너뛴다.
+0. (버전 체크) `scripts/.nova-version` 파일이 있으면 `curl -fsSL --max-time 3 https://raw.githubusercontent.com/TeamSPWK/nova/main/scripts/.nova-version 2>/dev/null`로 최신 버전을 확인한다. 버전이 다르면 출력 마지막에 한 줄 안내한다: `🔄 Nova 업데이트 가능 (현재 → 최신) — curl -fsSL .../install.sh | bash -s -- --update`. 실패 시 조용히 건너뛴다.
 
 1. 사용자에게 기본 정보를 확인한다 (인자가 없으면 질문):
    - **프로젝트명**: 프로젝트 이름 (예: my-app)
@@ -20,13 +20,13 @@
    ```
 
 3. `CLAUDE.md`를 프로젝트 루트에 생성한다:
-   - `docs/templates/claude-md.md` 템플릿을 참고하되, axis-kit에서 직접 가져오지 않고 사용자 정보로 채워서 생성한다.
+   - `docs/templates/claude-md.md` 템플릿을 참고하되, nova에서 직접 가져오지 않고 사용자 정보로 채워서 생성한다.
    - `{중괄호}` 플레이스홀더를 사용자가 제공한 정보로 대체한다.
    - 프로젝트 구조(Project Structure)는 실제 디렉토리를 확인해서 채운다.
 
 4. `.gitignore`에 다음 항목을 추가한다 (이미 있으면 스킵):
    ```
-   # AXIS Engineering
+   # Nova Engineering
    .env
    .secret/
    *.pem
@@ -35,7 +35,7 @@
 
 5. 완료 후 요약을 출력한다:
    ```
-   ✅ AXIS Kit 초기화 완료
+   ✅ Nova 초기화 완료
 
    생성된 파일:
    - CLAUDE.md

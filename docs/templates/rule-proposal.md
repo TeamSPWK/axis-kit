@@ -1,6 +1,6 @@
 # [Rule Proposal] {규칙명}
 
-> AXIS Engineering — Adaptive Rule Proposal
+> Nova Engineering — Adaptive Rule Proposal
 > 날짜: {YYYY-MM-DD}
 > 상태: 제안됨 | 승인됨 | 기각됨 | 실험 중
 > 제안자: {AI / 사람}

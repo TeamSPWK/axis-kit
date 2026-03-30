@@ -1,6 +1,6 @@
 # [Design] {기능명}
 
-> AXIS Engineering — CPS Framework
+> Nova Engineering — CPS Framework
 > 작성일: {YYYY-MM-DD}
 > Plan: {plans/slug.md}
 > Verification: {verifications/slug.md — Gap 검증 후 경로 추가}

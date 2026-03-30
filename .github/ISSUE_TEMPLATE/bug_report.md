@@ -23,5 +23,5 @@ assignees: ''
 ## 환경
 - OS:
 - Claude Code 버전:
-- AXIS Kit 버전: <!-- `cat scripts/.axis-version` -->
+- Nova 버전: <!-- `cat scripts/.nova-version` -->
 - Shell: <!-- bash / zsh -->

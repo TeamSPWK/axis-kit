@@ -1,6 +1,6 @@
 # [Rule Proposal] 공통 쉘 프리앰블 분리
 
-> AXIS Engineering — Adaptive Rule Proposal
+> Nova Engineering — Adaptive Rule Proposal
 > 날짜: 2026-03-27
 > 상태: 제안됨
 > 제안자: AI

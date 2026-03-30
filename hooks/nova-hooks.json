@@ -1,0 +1,35 @@
+{
+  "_comment": [
+    "Nova Hooks — CLAUDE.md가 advisory(~80%)라면, Hooks는 deterministic(100%) 보장.",
+    "사용법: 이 파일의 hooks 객체를 .claude/settings.local.json에 머지하세요.",
+    "",
+    "PostToolUse > Edit|Write: 파일 수정 시마다 시크릿 패턴을 자동 스캔.",
+    "  - password, secret, api_key, private_key 등 하드코딩된 민감 정보 탐지",
+    "  - .env.example은 false-positive 방지를 위해 제외",
+    "  - 탐지 시 exit 1로 경고 (작업 중단은 아님, 사용자 확인 유도)",
+    "",
+    "Stop: 세션 종료 시마다 리마인더 출력.",
+    "  - 코드 변경이 있었다면 독립 검증을 실행하라는 알림",
+    "  - Generator-Evaluator 분리 원칙의 마지막 안전망"
+  ],
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hook": {
+          "type": "command",
+          "command": "echo '[Nova Hook] File modified: checking for secrets...' && if grep -rn 'password\\|secret\\|api_key\\|private_key' \"$CLAUDE_FILE_PATH\" 2>/dev/null | grep -v '.env.example' | head -5; then echo 'WARNING: Possible secret detected!' && exit 1; fi"
+        }
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hook": {
+          "type": "command",
+          "command": "echo '\\n━━━ Nova Session Summary ━━━\\nReminder: Run independent verification if you made code changes.\\n━━━━━━━━━━━━━━━━━━━━━━━━━━━'"
+        }
+      }
+    ]
+  }
+}

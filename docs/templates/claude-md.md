@@ -1,10 +1,11 @@
 # CLAUDE.md 템플릿
 
-> 프로젝트에 axis-kit을 도입할 때, 이 템플릿을 기반으로 CLAUDE.md를 작성한다.
+> **200줄 이하 권장** — Claude Code는 CLAUDE.md가 200줄을 넘으면 규칙 준수율이 떨어진다.
+> 상세 규칙은 `.claude/skills/`로 분리하고, CLAUDE.md에는 핵심만 유지한다.
 > 프로젝트 특성에 맞게 수정해서 사용할 것.
 >
 > **핵심**: 이 CLAUDE.md가 설치된 프로젝트에서는 커맨드(`/auto`, `/gap` 등)를 명시적으로 사용하지 않아도
-> Claude가 모든 대화에서 AXIS 방법론을 자동으로 따른다.
+> Claude가 모든 대화에서 Nova 방법론을 자동으로 따른다.
 
 ---
 
@@ -17,9 +18,9 @@
 
 - Claude는 사용자에게 항상 **{언어}**로 응답한다.
 
-## AXIS Engineering
+## Nova Engineering
 
-이 프로젝트는 AXIS Engineering 방법론을 따른다.
+이 프로젝트는 Nova Engineering 방법론을 따른다.
 아래 규칙은 사용자가 커맨드를 명시적으로 호출하지 않아도 **모든 대화에 자동 적용**된다.
 
 ### 자동 적용 규칙
@@ -129,7 +130,7 @@
 │   ├── decisions/    # 의사결정 기록 (ADR)
 │   ├── verifications/ # 교차검증 결과
 │   └── templates/    # 문서 템플릿
-├── scripts/          # AXIS 스크립트
+├── scripts/          # Nova 스크립트
 └── .env              # API 키 (git 추적 금지)
 ```
 
@@ -170,23 +171,23 @@ refactor: 리팩토링 | chore: 설정/기타
 3. Tech Stack, Conventions, Project Structure를 실제에 맞게 채움
 4. 필요 없는 섹션은 삭제 (경량 원칙)
 
-## AXIS 자동 적용의 원리
+## Nova 자동 적용의 원리
 
 CLAUDE.md는 Claude가 매 세션 시작 시 자동으로 읽는 파일이다.
-"AXIS Engineering" 섹션의 **자동 적용 규칙**이 Claude의 행동을 결정한다.
+"Nova Engineering" 섹션의 **자동 적용 규칙**이 Claude의 행동을 결정한다.
 
 - 사용자가 `/auto`를 쓰면 → 커맨드 파일의 상세 절차를 따름
 - 사용자가 "기능 만들어줘"라고 하면 → CLAUDE.md의 자동 적용 규칙을 따름
-- **두 경로 모두 같은 AXIS 원칙이 적용된다**
+- **두 경로 모두 같은 Nova 원칙이 적용된다**
 
-커맨드는 상세 절차가 필요할 때의 "숏컷"이지, AXIS를 작동시키는 유일한 방법이 아니다.
+커맨드는 상세 절차가 필요할 때의 "숏컷"이지, Nova를 작동시키는 유일한 방법이 아니다.
 
 ## 필수 섹션 vs 선택 섹션
 
 | 섹션 | 필수 | 이유 |
 |------|------|------|
 | Language | O | AI 응답 언어 통일 |
-| AXIS Engineering (자동 적용 규칙) | O | **핵심 — 커맨드 없이도 방법론 자동 적용** |
+| Nova Engineering (자동 적용 규칙) | O | **핵심 — 커맨드 없이도 방법론 자동 적용** |
 | Tech Stack | O | 기술 맥락 제공 |
 | Conventions | O | 일관성 (멱등성 핵심) |
 | Human-AI Boundary | O | AI 독단 방지 |

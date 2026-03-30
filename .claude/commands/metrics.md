@@ -1,12 +1,12 @@
-현재 프로젝트의 AXIS Engineering 도입 수준을 자동 측정한다.
+현재 프로젝트의 Nova Engineering 도입 수준을 자동 측정한다.
 
 # Role
-너는 AXIS Engineering 도입 수준 평가자다.
-프로젝트 파일 구조, 문서, 설정을 점검하여 AXIS 4대 Pillar별 점수를 산출한다.
+너는 Nova Engineering 도입 수준 평가자다.
+프로젝트 파일 구조, 문서, 설정을 점검하여 Nova 4대 Pillar별 점수를 산출한다.
 
 # Execution
 
-0. (버전 체크) `scripts/.axis-version` 파일이 있으면 `curl -fsSL --max-time 3 https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/scripts/.axis-version 2>/dev/null`로 최신 버전을 확인한다. 버전이 다르면 출력 마지막에 한 줄 안내한다: `🔄 AXIS Kit 업데이트 가능 (현재 → 최신) — curl -fsSL .../install.sh | bash -s -- --update`. 실패 시 조용히 건너뛴다.
+0. (버전 체크) `scripts/.nova-version` 파일이 있으면 `curl -fsSL --max-time 3 https://raw.githubusercontent.com/TeamSPWK/nova/main/scripts/.nova-version 2>/dev/null`로 최신 버전을 확인한다. 버전이 다르면 출력 마지막에 한 줄 안내한다: `🔄 Nova 업데이트 가능 (현재 → 최신) — curl -fsSL .../install.sh | bash -s -- --update`. 실패 시 조용히 건너뛴다.
 
 아래 17개 항목을 **하나씩 실제로 확인**한다. 추측하지 말고 파일/디렉토리 존재 여부를 직접 검사한다.
 
@@ -16,7 +16,7 @@
 
 ### S1 — CLAUDE.md 존재 및 필수 섹션 포함 (1pt)
 - 프로젝트 루트에 `CLAUDE.md`가 존재하는지 확인한다.
-- 다음 섹션이 포함되어야 한다: Language, AXIS(또는 Engineering), Tech Stack, Conventions(또는 Git Convention), Human-AI(Boundary)
+- 다음 섹션이 포함되어야 한다: Language, Nova(또는 Engineering), Tech Stack, Conventions(또는 Git Convention), Human-AI(Boundary)
 - 5개 중 4개 이상 있으면 1pt.
 
 ### S2 — Plan 문서 존재 (1pt)
@@ -32,7 +32,7 @@
 
 ### S5 — 최근 커밋 컨벤션 준수 (1pt)
 - `git log --oneline -10`으로 최근 10개 커밋을 확인한다.
-- 70% 이상(7개 이상)이 `feat:`, `fix:`, `update:`, `docs:`, `refactor:`, `chore:`, `security:`, `axis:` 접두사를 따르면 1pt.
+- 70% 이상(7개 이상)이 `feat:`, `fix:`, `update:`, `docs:`, `refactor:`, `chore:`, `security:`, `nova:` 접두사를 따르면 1pt.
 
 ---
 
@@ -109,7 +109,7 @@
 ### 등급 기준
 | 등급 | 점수 | 설명 |
 |------|------|------|
-| Level 5 | 20점 | AXIS 완전 적용 (Harness 포함) |
+| Level 5 | 20점 | Nova 완전 적용 (Harness 포함) |
 | Level 4 | 16~19점 | 높은 수준 |
 | Level 3 | 11~15점 | 중간 |
 | Level 2 | 6~10점 | 초기 |
@@ -119,7 +119,7 @@
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  AXIS Metrics — 도입 수준 자동 측정
+  Nova Metrics — 도입 수준 자동 측정
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   Structured:      ■■■■□  4/5

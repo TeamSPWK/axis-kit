@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# AXIS Kit 프로젝트 초기화 스크립트
+# Nova 프로젝트 초기화 스크립트
 # Usage: bash scripts/init.sh <프로젝트명> [기술스택] [언어]
 #
 # 예시:
@@ -38,9 +38,9 @@ if [ -z "$PROJECT_NAME" ]; then
 fi
 
 if [ "$ADOPT_MODE" = true ]; then
-  banner "🔧 AXIS Kit 기존 프로젝트 도입: ${BOLD}$PROJECT_NAME"
+  banner "🔧 Nova 기존 프로젝트 도입: ${BOLD}$PROJECT_NAME"
 else
-  banner "🔧 AXIS Kit 초기화: ${BOLD}$PROJECT_NAME"
+  banner "🔧 Nova 초기화: ${BOLD}$PROJECT_NAME"
 fi
 echo ""
 
@@ -67,15 +67,15 @@ echo ""
 
 # --- CLAUDE.md 생성/업데이트 ---
 if [ -f "CLAUDE.md" ] && [ "$ADOPT_MODE" = true ]; then
-  # 기존 프로젝트: AXIS 섹션만 추가
-  if grep -q "AXIS Engineering" CLAUDE.md 2>/dev/null; then
-    echo -e "  ${YELLOW}→${NC} 📄 ${CYAN}CLAUDE.md${NC} — AXIS 섹션이 이미 존재합니다."
+  # 기존 프로젝트: Nova 섹션만 추가
+  if grep -q "Nova Engineering" CLAUDE.md 2>/dev/null; then
+    echo -e "  ${YELLOW}→${NC} 📄 ${CYAN}CLAUDE.md${NC} — Nova 섹션이 이미 존재합니다."
   else
-    cat >> CLAUDE.md << 'AXIS_SECTION'
+    cat >> CLAUDE.md << 'NOVA_SECTION'
 
-## AXIS Engineering
+## Nova Engineering
 
-이 프로젝트는 AXIS Engineering 방법론을 따른다.
+이 프로젝트는 Nova Engineering 방법론을 따른다.
 아래 규칙은 사용자가 커맨드를 명시적으로 호출하지 않아도 **모든 대화에 자동 적용**된다.
 
 ### 자동 적용 규칙
@@ -133,8 +133,8 @@ if [ -f "CLAUDE.md" ] && [ "$ADOPT_MODE" = true ]; then
 - 90%+ → 자동 채택
 - 70~89% → 사람 판단
 - 70% 미만 → 재정의 필요
-AXIS_SECTION
-    echo -e "  ${GREEN}✓${NC} 📄 ${CYAN}CLAUDE.md${NC} — AXIS 섹션 추가 완료 (기존 내용 유지)"
+NOVA_SECTION
+    echo -e "  ${GREEN}✓${NC} 📄 ${CYAN}CLAUDE.md${NC} — Nova 섹션 추가 완료 (기존 내용 유지)"
   fi
 elif [ -f "CLAUDE.md" ]; then
   echo -e "  ${YELLOW}⚠️  CLAUDE.md가 이미 존재합니다. 건너뜁니다.${NC}"
@@ -156,9 +156,9 @@ else
 
 - Claude는 사용자에게 항상 **${LANGUAGE}**로 응답한다.
 
-## AXIS Engineering
+## Nova Engineering
 
-이 프로젝트는 AXIS Engineering 방법론을 따른다.
+이 프로젝트는 Nova Engineering 방법론을 따른다.
 아래 규칙은 사용자가 커맨드를 명시적으로 호출하지 않아도 **모든 대화에 자동 적용**된다.
 
 ### 자동 적용 규칙
@@ -234,7 +234,7 @@ ${PROJECT_NAME}/
 │   ├── decisions/    # 의사결정 기록 (ADR)
 │   ├── verifications/ # 교차검증 결과
 │   └── templates/    # 문서 템플릿
-├── scripts/          # AXIS 스크립트
+├── scripts/          # Nova 스크립트
 └── .env              # API 키 (git 추적 금지)
 \`\`\`
 
@@ -281,10 +281,10 @@ if [ ! -f ".gitignore" ]; then
   echo -e "  ${GREEN}✓${NC} 📄 ${CYAN}.gitignore${NC} 생성"
 fi
 
-# AXIS 섹션 헤더 추가 여부 확인
-if ! grep -q "# AXIS Engineering" .gitignore 2>/dev/null; then
+# Nova 섹션 헤더 추가 여부 확인
+if ! grep -q "# Nova Engineering" .gitignore 2>/dev/null; then
   echo "" >> .gitignore
-  echo "# AXIS Engineering" >> .gitignore
+  echo "# Nova Engineering" >> .gitignore
 fi
 
 for entry in "${GITIGNORE_ENTRIES[@]}"; do
@@ -303,7 +303,7 @@ fi
 # --- 완료 ---
 echo ""
 divider
-echo -e "${GREEN}  ✅ AXIS Kit 초기화 완료: ${BOLD}${PROJECT_NAME}${NC}"
+echo -e "${GREEN}  ✅ Nova 초기화 완료: ${BOLD}${PROJECT_NAME}${NC}"
 divider
 echo ""
 if [ "$ADOPT_MODE" = true ]; then
@@ -313,7 +313,7 @@ if [ "$ADOPT_MODE" = true ]; then
   echo -e "     ${YELLOW}\$ /next${NC}"
   echo ""
   echo -e "${BOLD}🔄 익숙해지면 추가 커맨드 설치:${NC}"
-  echo -e "     ${YELLOW}\$ curl -fsSL https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/install.sh | bash${NC}"
+  echo -e "     ${YELLOW}\$ curl -fsSL https://raw.githubusercontent.com/TeamSPWK/nova/main/install.sh | bash${NC}"
   echo ""
 else
   echo -e "${BOLD}👉 다음 단계:${NC}"

@@ -1,6 +1,6 @@
 # Context Chain — 컨텍스트 유지 체계
 
-> AXIS Pillar: Idempotent — "6개월 뒤 돌아와도 읽고 유지보수 가능"
+> Nova Pillar: Idempotent — "6개월 뒤 돌아와도 읽고 유지보수 가능"
 
 세션이 끊겨도, 팀원이 바뀌어도, AI 모델이 바뀌어도 — 맥락은 살아있어야 한다.
 
@@ -70,7 +70,7 @@ docs/
 │   ├── cps-design.md
 │   ├── decision-record.md
 │   └── claude-md.md
-├── axis-engineering.md # 방법론 상세
+├── nova-engineering.md # 방법론 상세
 └── context-chain.md    # 이 문서
 ```
 

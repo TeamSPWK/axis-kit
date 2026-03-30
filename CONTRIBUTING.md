@@ -1,6 +1,6 @@
-# Contributing to AXIS Kit
+# Contributing to Nova
 
-AXIS Kit에 기여해주셔서 감사합니다.
+Nova에 기여해주셔서 감사합니다.
 
 ## 기여 방법
 

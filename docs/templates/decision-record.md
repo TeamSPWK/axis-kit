@@ -1,6 +1,6 @@
 # [Decision] {제목}
 
-> AXIS Engineering — Decision Record (경량 ADR)
+> Nova Engineering — Decision Record (경량 ADR)
 > 날짜: {YYYY-MM-DD}
 > 상태: 제안됨 | 승인됨 | 폐기됨 | 대체됨
 

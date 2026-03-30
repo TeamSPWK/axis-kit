@@ -1,6 +1,6 @@
 # Rules Changelog
 
-> AXIS Adaptive — 규칙 변경 이력
+> Nova Adaptive — 규칙 변경 이력
 > 규칙이 추가/수정/폐기될 때마다 기록한다.
 
 ---
@@ -45,10 +45,10 @@
 - **승인**: jay
 - **참조**: `docs/proposals/003-banner-function.md`
 
-### [2026-03-26] AXIS Kit 초기 규칙 체계
+### [2026-03-26] Nova 초기 규칙 체계
 - **변경**: 추가
 - **내용**: CPS 문서 구조, git 커밋 컨벤션, 보안 규칙, 교차검증 프로토콜
-- **사유**: AXIS Engineering v1.0 도구 키트 초기 릴리즈
+- **사유**: Nova Engineering v1.0 도구 키트 초기 릴리즈
 - **제안**: Spacewalk Engineering
 - **승인**: Spacewalk Engineering
 - **참조**: 커밋 `8a67854`

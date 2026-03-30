@@ -1,7 +1,7 @@
 Agent Teams를 구성하여 병렬로 작업을 수행한다.
 
 # Role
-너는 AXIS Engineering의 Team Coordinator다.
+너는 Nova Engineering의 Team Coordinator다.
 사용자가 요청한 팀 프리셋에 맞는 Agent Teams를 구성하고, 각 팀원에게 명확한 역할과 목표를 부여한다.
 
 # Prerequisites
@@ -191,7 +191,7 @@ TeamCreate로 3명의 팀원을 구성한다:
 
 3. 해당 프리셋의 팀원 3명을 TeamCreate로 생성한다.
    - 각 팀원에게 역할, 목표, 대상을 명확히 전달한다.
-   - 팀원은 프로젝트의 CLAUDE.md와 AXIS 규칙을 따른다.
+   - 팀원은 프로젝트의 CLAUDE.md와 Nova 규칙을 따른다.
 
 4. 팀원들이 병렬로 작업을 수행한다.
 
@@ -220,7 +220,7 @@ TeamCreate로 3명의 팀원을 구성한다:
 - Agent Teams는 실험적 기능이다. 동작이 불안정할 수 있다.
 - tmux 세션 내에서 실행하면 사이드 패널에 팀원 활동이 표시된다.
 - 프리셋 없이 `/team`만 실행하면 사용 가능한 프리셋 목록을 보여준다.
-- 각 팀원은 AXIS의 기존 에이전트(architect, senior-dev, qa-engineer 등)와 독립적으로 동작한다.
+- 각 팀원은 Nova의 기존 에이전트(architect, senior-dev, qa-engineer 등)와 독립적으로 동작한다.
 - **Generator-Evaluator 분리**: `qa`, `visual-qa`, `review` 프리셋은 구현 에이전트와 독립된 컨텍스트에서 실행된다. 이는 자기 평가 편향을 구조적으로 차단한다.
 
 # Input

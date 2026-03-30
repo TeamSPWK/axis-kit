@@ -1,6 +1,6 @@
 # [Plan] {기능명}
 
-> AXIS Engineering — CPS Framework
+> Nova Engineering — CPS Framework
 > 작성일: {YYYY-MM-DD}
 > 작성자: {이름}
 > Design: {designs/slug.md — Design 작성 후 경로 추가}

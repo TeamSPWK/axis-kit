@@ -1,6 +1,6 @@
 # [Design] 사용자 인증
 
-> AXIS Engineering — CPS Framework
+> Nova Engineering — CPS Framework
 > 작성일: 2026-03-21
 > Plan 문서: examples/sample-plan.md
 

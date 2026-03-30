@@ -1,6 +1,6 @@
 # [Decision] 데이터베이스 선택: PostgreSQL vs MongoDB
 
-> AXIS Engineering — Decision Record (경량 ADR)
+> Nova Engineering — Decision Record (경량 ADR)
 > 날짜: 2026-03-18
 > 상태: 승인됨
 

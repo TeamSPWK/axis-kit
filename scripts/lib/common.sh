@@ -1,5 +1,5 @@
 #!/bin/bash
-# AXIS Kit — 공통 쉘 유틸리티
+# Nova — 공통 쉘 유틸리티
 # Usage: source "$(dirname "$0")/lib/common.sh"
 
 # 색상
@@ -56,11 +56,11 @@ divider() {
 # 업데이트 체크 (하루 1회, 백그라운드, 실패 무시)
 check_update() {
   local version_file
-  # common.sh 기준으로 scripts/.axis-version 찾기
-  version_file="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/.axis-version"
+  # common.sh 기준으로 scripts/.nova-version 찾기
+  version_file="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)/.nova-version"
   [[ -f "$version_file" ]] || return 0
 
-  local cache_file="/tmp/.axis-update-check"
+  local cache_file="/tmp/.nova-update-check"
   local now
   now=$(date +%s)
 
@@ -82,15 +82,15 @@ check_update() {
     local local_ver
     local_ver=$(cat "$version_file" 2>/dev/null | tr -d '[:space:]')
     local remote_ver
-    remote_ver=$(curl -fsSL --max-time 3 "https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/scripts/.axis-version" 2>/dev/null | tr -d '[:space:]')
+    remote_ver=$(curl -fsSL --max-time 3 "https://raw.githubusercontent.com/TeamSPWK/nova/main/scripts/.nova-version" 2>/dev/null | tr -d '[:space:]')
 
     echo "$now" > "$cache_file"
 
     if [[ -n "$remote_ver" && "$local_ver" != "$remote_ver" ]]; then
       local msg
-      msg=$(echo -e "  ${YELLOW}🔄 AXIS Kit 업데이트 가능 (${local_ver} → ${remote_ver})${NC}")
+      msg=$(echo -e "  ${YELLOW}🔄 Nova 업데이트 가능 (${local_ver} → ${remote_ver})${NC}")
       msg+=$'\n'
-      msg+=$(echo -e "     ${CYAN}curl -fsSL https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/install.sh | bash -s -- --update${NC}")
+      msg+=$(echo -e "     ${CYAN}curl -fsSL https://raw.githubusercontent.com/TeamSPWK/nova/main/install.sh | bash -s -- --update${NC}")
       echo "$msg" > "${cache_file}.msg"
       echo ""
       echo "$msg"

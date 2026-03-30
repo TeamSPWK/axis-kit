@@ -1,4 +1,4 @@
-# 튜토리얼: Todo API로 배우는 AXIS 워크플로우
+# 튜토리얼: Todo API로 배우는 Nova 워크플로우
 
 > 하나의 기능을 `/plan` → `/xv` → `/design` → 구현 → `/gap` → `/review`까지 따라가는 실전 예시
 

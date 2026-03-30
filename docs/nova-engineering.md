@@ -1,7 +1,12 @@
-# AXIS Engineering v1.0
+# Nova Engineering v1.0
 
 > AI 시대의 소프트웨어 개발 방법론
-> **A**daptive · **X**-Verification · **I**dempotent · **S**tructured
+> **N**ew Standards · **O**rchestrated · **V**erified · **A**daptive
+>
+> N — New Standards  : AI 개발의 새로운 기준을 세운다
+> O — Orchestrated   : 멀티 에이전트를 체계적으로 조율한다
+> V — Verified       : 독립 검증으로 품질을 보장한다
+> A — Adaptive       : 규칙이 프로젝트와 함께 진화한다
 
 ---
 
@@ -17,14 +22,14 @@
 
 AI 도구는 코드 생성 속도를 극적으로 높였다. 그러나 **빠르게 만드는 것**과 **빠르게 완성하는 것**은 다르다. 진짜 병목은 코드 작성이 아니라 그 전후에 있다.
 
-| 병목 | 증상 | AXIS 해결책 |
+| 병목 | 증상 | Nova 해결책 |
 |------|------|-------------|
 | **방향 오류** | 잘못된 전제로 빠르게 구현 → 전면 재작업 | **Structured** — CPS로 문제를 먼저 정의, MECE로 빠짐없이 분해 |
 | **AI 환각 누적** | 한 모델의 오류가 다음 작업으로 전파 → 디버깅 지옥 | **X-Verification** — 교차 검증으로 환각을 조기 차단 |
 | **암묵지 소실** | 세션/팀원 교체 시 맥락 유실 → 동일 실수 반복 | **Adaptive + Context Chain** — 규칙으로 암묵지를 명시화, 메모리로 맥락 유지 |
 | **설계-구현 괴리** | 설계와 코드가 따로 놀아 → 품질 저하, 유지보수 불가 | **X-Verification** — 역방향 검증으로 괴리를 자동 탐지 |
 
-AXIS의 모든 구조는 이 네 가지 병목을 제거하기 위해 존재한다.
+Nova의 모든 구조는 이 네 가지 병목을 제거하기 위해 존재한다.
 
 ---
 
@@ -159,7 +164,7 @@ Layer 3: Structural (구조적)
 
 ## 6. PDCA 통합 (실행 프레임워크)
 
-AXIS는 PDCA 사이클 위에서 동작한다.
+Nova는 PDCA 사이클 위에서 동작한다.
 
 ```
 Plan    → CPS로 문제 정의, MECE로 요구사항 분해, 설계 문서 작성
@@ -251,7 +256,7 @@ Act     → Adaptive 사이클로 규칙 갱신, 개선 반영
   ├── 멱등성, CPS, MECE, 린터, Eval
   └── 정적 규칙 체계
 
-AXIS Engineering (Evolution)
+Nova Engineering (Evolution)
   ├── 하네스의 모든 것을 계승
   ├── + Adaptive (규칙이 살아있다)
   ├── + X-Verification (혼자 믿지 않는다)
@@ -259,13 +264,13 @@ AXIS Engineering (Evolution)
   └── + Human-AI Boundary (역할을 나눈다)
 ```
 
-AXIS는 하네스 엔지니어링의 대체가 아닌 **확장**이다.
+Nova는 하네스 엔지니어링의 대체가 아닌 **확장**이다.
 
 ---
 
 ## 11. 참고 자료
 
-- [Anthropic: Harness Design for Long-Running Apps](https://www.anthropic.com/engineering/harness-design-long-running-apps) — Generator-Evaluator 패턴, 검증 계약, 컨텍스트 관리 등 AXIS의 X-Verification 설계에 영향
+- [Anthropic: Harness Design for Long-Running Apps](https://www.anthropic.com/engineering/harness-design-long-running-apps) — Generator-Evaluator 패턴, 검증 계약, 컨텍스트 관리 등 Nova의 X-Verification 설계에 영향
 
 ---
 

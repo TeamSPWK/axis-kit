@@ -1,5 +1,5 @@
 #!/bin/bash
-# AXIS Engineering — Gap Check (역방향 검증: 설계 → 구현 갭 탐지)
+# Nova Engineering — Gap Check (역방향 검증: 설계 → 구현 갭 탐지)
 # Usage: ./scripts/gap-check.sh <design-doc.md> <code-dir>
 # Example: ./scripts/gap-check.sh docs/designs/feature-x.md src/
 
@@ -61,7 +61,7 @@ if [[ ! -d "$CODE_DIR" ]]; then
   exit 1
 fi
 
-banner "AXIS Gap Check — 역방향 검증 (설계 ↔ 구현)"
+banner "Nova Gap Check — 역방향 검증 (설계 ↔ 구현)"
 echo ""
 echo -e "  ${BOLD}📄 설계 문서:${NC} ${CYAN}$DESIGN_DOC${NC}"
 echo -e "  ${BOLD}📂 코드 경로:${NC} ${CYAN}$CODE_DIR${NC}"

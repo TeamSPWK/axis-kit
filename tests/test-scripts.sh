@@ -1,5 +1,5 @@
 #!/bin/bash
-# AXIS Kit — 테스트 스위트
+# Nova — 테스트 스위트
 # Usage: bash tests/test-scripts.sh
 #
 # 구성: 구조 ~20% / 기능 ~40% / 에러 ~15% / 멱등성 ~10% / 출력 ~5% / E2E ~10%
@@ -28,7 +28,7 @@ assert() {
 }
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  AXIS Kit — 테스트 스위트"
+echo "  Nova — 테스트 스위트"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
 
@@ -44,7 +44,7 @@ for s in "${SCRIPTS[@]}"; do
   assert "$s" "[ -f '$ROOT_DIR/$s' ] && [ -x '$ROOT_DIR/$s' ]"
 done
 assert "lib/common.sh" "[ -f '$ROOT_DIR/scripts/lib/common.sh' ]"
-assert ".axis-version (시맨틱)" "grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$' '$ROOT_DIR/scripts/.axis-version'"
+assert ".nova-version (시맨틱)" "grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$' '$ROOT_DIR/scripts/.nova-version'"
 
 # 커맨드: 개수만 확인 (개별 파일 검증은 install E2E에서)
 CMD_COUNT=$(ls "$ROOT_DIR/.claude/commands/"*.md 2>/dev/null | wc -l | tr -d ' ')
@@ -59,7 +59,7 @@ TMPL_COUNT=$(ls "$ROOT_DIR/docs/templates/"*.md 2>/dev/null | wc -l | tr -d ' ')
 assert "템플릿 5개" "[ '$TMPL_COUNT' -eq 5 ]"
 
 # 핵심 문서만 확인 (6개를 3개로 축소 — 나머지는 install E2E에서 검증)
-assert "axis-engineering.md" "[ -f '$ROOT_DIR/docs/axis-engineering.md' ]"
+assert "nova-engineering.md" "[ -f '$ROOT_DIR/docs/nova-engineering.md' ]"
 assert "usage-guide.md" "[ -f '$ROOT_DIR/docs/usage-guide.md' ]"
 assert "adoption-guide.md" "[ -f '$ROOT_DIR/docs/adoption-guide.md' ]"
 echo ""
@@ -90,8 +90,8 @@ INIT_DIR=$(mktemp -d)
 assert "디렉토리 4개 생성" \
   "[ -d '$INIT_DIR/docs/plans' ] && [ -d '$INIT_DIR/docs/designs' ] && [ -d '$INIT_DIR/docs/decisions' ] && [ -d '$INIT_DIR/docs/verifications' ]"
 assert "CLAUDE.md 생성" "[ -f '$INIT_DIR/CLAUDE.md' ]"
-assert "CLAUDE.md: 프로젝트명+AXIS+Tech Stack" \
-  "grep -q 'test-proj' '$INIT_DIR/CLAUDE.md' && grep -q 'AXIS Engineering' '$INIT_DIR/CLAUDE.md' && grep -q 'React' '$INIT_DIR/CLAUDE.md'"
+assert "CLAUDE.md: 프로젝트명+Nova+Tech Stack" \
+  "grep -q 'test-proj' '$INIT_DIR/CLAUDE.md' && grep -q 'Nova Engineering' '$INIT_DIR/CLAUDE.md' && grep -q 'React' '$INIT_DIR/CLAUDE.md'"
 assert "CLAUDE.md: 필수 섹션 (Language+Commands+Human-AI+Credentials)" \
   "grep -q 'Language' '$INIT_DIR/CLAUDE.md' && grep -q 'Commands' '$INIT_DIR/CLAUDE.md' && grep -q 'Human-AI' '$INIT_DIR/CLAUDE.md' && grep -q 'Credentials' '$INIT_DIR/CLAUDE.md'"
 assert ".gitignore에 .env" "grep -q '\.env' '$INIT_DIR/.gitignore'"
@@ -99,8 +99,8 @@ echo ""
 
 echo -e "${YELLOW}[기능: init.sh adopt]${NC}"
 (cd "$INIT_DIR" && bash "$ROOT_DIR/scripts/init.sh" --adopt test-proj > /dev/null 2>&1)
-assert "adopt: 기존 내용 유지 + AXIS 섹션" \
-  "grep -q 'test-proj' '$INIT_DIR/CLAUDE.md' && grep -q 'AXIS Engineering' '$INIT_DIR/CLAUDE.md'"
+assert "adopt: 기존 내용 유지 + Nova 섹션" \
+  "grep -q 'test-proj' '$INIT_DIR/CLAUDE.md' && grep -q 'Nova Engineering' '$INIT_DIR/CLAUDE.md'"
 echo ""
 
 # ═══════════════════════════════════════════
@@ -183,9 +183,9 @@ assert "init 재실행: CLAUDE.md 보존" "[ '$SIZE_1' -eq '$SIZE_2' ]"
 
 # adopt 재실행: 중복 섹션 방지
 (cd "$IDEM_DIR" && bash "$ROOT_DIR/scripts/init.sh" --adopt idem > /dev/null 2>&1)
-CNT_1=$(grep -c 'AXIS Engineering' "$IDEM_DIR/CLAUDE.md" 2>/dev/null || echo 0)
+CNT_1=$(grep -c 'Nova Engineering' "$IDEM_DIR/CLAUDE.md" 2>/dev/null || echo 0)
 (cd "$IDEM_DIR" && bash "$ROOT_DIR/scripts/init.sh" --adopt idem > /dev/null 2>&1)
-CNT_2=$(grep -c 'AXIS Engineering' "$IDEM_DIR/CLAUDE.md" 2>/dev/null || echo 0)
+CNT_2=$(grep -c 'Nova Engineering' "$IDEM_DIR/CLAUDE.md" 2>/dev/null || echo 0)
 assert "adopt 재실행: 중복 없음" "[ '$CNT_1' -eq '$CNT_2' ]"
 
 # install 재실행: 파일 수 동일
@@ -224,8 +224,8 @@ bash "$ROOT_DIR/install.sh" --minimal "$E2E_ADOPT" > /dev/null 2>&1 || true
 (cd "$E2E_ADOPT" && bash scripts/init.sh --adopt existing > /dev/null 2>&1)
 
 assert "minimal→adopt 완료" "[ -f '$E2E_ADOPT/.claude/commands/next.md' ]"
-assert "기존 내용 보존 + AXIS 추가" \
-  "grep -q 'My existing content' '$E2E_ADOPT/CLAUDE.md' && grep -q 'AXIS Engineering' '$E2E_ADOPT/CLAUDE.md'"
+assert "기존 내용 보존 + Nova 추가" \
+  "grep -q 'My existing content' '$E2E_ADOPT/CLAUDE.md' && grep -q 'Nova Engineering' '$E2E_ADOPT/CLAUDE.md'"
 rm -rf "$E2E_ADOPT"
 echo ""
 

@@ -1,4 +1,4 @@
-name: AXIS Kit CI
+name: Nova CI
 
 on:
   push:
