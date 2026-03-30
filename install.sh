@@ -250,6 +250,90 @@ if $UPDATE_MODE; then
   echo -e "${BOLD}📚 가이드 문서 건너뜀${NC} ${YELLOW}(${MODE_LABEL})${NC}"
   for guide in "${GUIDES_ALL[@]}"; do skip "docs/${guide}"; done
   echo ""
+
+  # CLAUDE.md AXIS 섹션 자동 갱신
+  CLAUDE_MD="${TARGET_DIR}/CLAUDE.md"
+  if [[ -f "$CLAUDE_MD" ]]; then
+    if grep -q "AXIS Engineering" "$CLAUDE_MD" 2>/dev/null; then
+      # 기존 AXIS 섹션이 자동 적용 규칙을 포함하는지 확인
+      if ! grep -q "자동 적용 규칙" "$CLAUDE_MD" 2>/dev/null; then
+        echo -e "${BOLD}📝 CLAUDE.md AXIS 섹션 업그레이드 중...${NC}"
+        # 기존 AXIS 섹션을 제거하고 새 버전으로 교체
+        # AXIS 섹션 시작 위치를 찾아 이후 내용을 임시 저장
+        AXIS_START=$(grep -n "## AXIS Engineering" "$CLAUDE_MD" | head -1 | cut -d: -f1)
+        if [[ -n "$AXIS_START" ]]; then
+          # AXIS 섹션 이전 내용 보존
+          head -n $((AXIS_START - 1)) "$CLAUDE_MD" > "${CLAUDE_MD}.tmp"
+
+          # AXIS 이후 다음 ## 섹션 찾기 (AXIS 내부의 ### 제외)
+          AFTER_AXIS=$(tail -n +"$((AXIS_START + 1))" "$CLAUDE_MD" | grep -n "^## [^#]" | head -1 | cut -d: -f1)
+
+          # 새 AXIS 섹션 추가
+          cat >> "${CLAUDE_MD}.tmp" << 'AXIS_V16'
+## AXIS Engineering
+
+이 프로젝트는 AXIS Engineering 방법론을 따른다.
+아래 규칙은 사용자가 커맨드를 명시적으로 호출하지 않아도 **모든 대화에 자동 적용**된다.
+
+### 자동 적용 규칙
+
+#### 1. 작업 전 복잡도 판단
+- **간단** (버그, 1~2 파일): 바로 구현 → 독립 에이전트 검증
+- **보통** (새 기능, 3~7 파일): Plan → 승인 → 구현 → 독립 검증
+- **복잡** (8+ 파일, 다중 모듈): Plan → Design → 스프린트 분할 → 구현 → 독립 검증
+
+#### 2. Generator-Evaluator 분리 (핵심)
+- 구현(Generator)과 검증(Evaluator)은 **반드시 다른 서브에이전트**로 실행
+- 검증 에이전트는 적대적 자세: "통과시키지 마라, 문제를 찾아라"
+- 간단한 작업에서도 구현 후 최소한 독립 서브에이전트로 코드 리뷰 수행
+
+#### 3. 검증 기준
+- **기능**: 요청한 것이 실제로 동작하는가?
+- **데이터 관통**: 입력 → 저장 → 로드 → 표시까지 완전한가?
+- **설계 정합성**: 기존 코드/아키텍처와 일관되는가?
+- **크래프트**: 에러 핸들링, 엣지 케이스, 타입 안전성
+
+#### 4. 블로커 분류
+- **Auto-Resolve**: 되돌리기 가능 → 자동 해결
+- **Soft-Block**: 진행 가능하나 기록 필요 → 기록 후 계속
+- **Hard-Block**: 돌이킬 수 없음 → 즉시 중단, 사용자 판단 요청
+
+### Commands (상세 절차가 필요할 때)
+| 커맨드 | 설명 |
+|--------|------|
+| `/next` | 다음 할 일 추천 |
+| `/plan 기능명` | CPS Plan 작성 |
+| `/xv "질문"` | 멀티 AI 교차검증 |
+| `/design 기능명` | CPS Design 작성 |
+| `/gap 설계.md 코드/` | 역방향 검증 |
+| `/review 코드` | 코드 리뷰 |
+| `/auto 기능명` | 전체 하네스 자율 실행 |
+| `/team 프리셋` | Agent Teams 병렬 구성 |
+
+### 합의 프로토콜
+- 90%+ → 자동 채택
+- 70~89% → 사람 판단
+- 70% 미만 → 재정의 필요
+AXIS_V16
+
+          # AXIS 이후의 나머지 섹션 복원
+          if [[ -n "$AFTER_AXIS" ]]; then
+            echo "" >> "${CLAUDE_MD}.tmp"
+            tail -n +"$((AXIS_START + AFTER_AXIS))" "$CLAUDE_MD" >> "${CLAUDE_MD}.tmp"
+          fi
+
+          mv "${CLAUDE_MD}.tmp" "$CLAUDE_MD"
+          echo -e "  ${GREEN}✓${NC} ${CYAN}CLAUDE.md${NC} AXIS 섹션 → v1.6 (자동 적용 규칙 추가)"
+          COUNT_UPDATED=$((COUNT_UPDATED + 1))
+        fi
+      else
+        echo -e "${BOLD}📝 CLAUDE.md${NC} ${YELLOW}(이미 v1.6+ AXIS 섹션 포함)${NC}"
+      fi
+    else
+      echo -e "${YELLOW}  ℹ️  CLAUDE.md에 AXIS 섹션 없음. 추가하려면: bash scripts/init.sh --adopt 프로젝트명${NC}"
+    fi
+  fi
+  echo ""
 else
   download_section "📄 템플릿" "docs/templates" ".md" ${TEMPLATES[@]+"${TEMPLATES[@]}"}
   download_section "📚 가이드 문서" "docs" "" ${GUIDES[@]+"${GUIDES[@]}"}
