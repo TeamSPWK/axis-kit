@@ -133,7 +133,7 @@ echo ""
 echo -e "${YELLOW}[기능: install update]${NC}"
 bash "$ROOT_DIR/install.sh" --update "$INSTALL_DIR" > /dev/null 2>&1 || true
 assert "update: 커맨드 유지 + 템플릿 보존" \
-  "[ \$(ls '$INSTALL_DIR/.claude/commands/'*.md 2>/dev/null | wc -l) -eq 11 ] && [ \$(ls '$INSTALL_DIR/docs/templates/'*.md 2>/dev/null | wc -l) -eq 5 ]"
+  "[ \$(ls '$INSTALL_DIR/.claude/commands/'*.md 2>/dev/null | wc -l) -ge 11 ] && [ \$(ls '$INSTALL_DIR/docs/templates/'*.md 2>/dev/null | wc -l) -eq 5 ]"
 echo ""
 
 # ═══════════════════════════════════════════

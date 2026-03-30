@@ -20,8 +20,9 @@ Agent Teams를 구성하여 병렬로 작업을 수행한다.
 
 # Presets
 
-## qa — 품질 검증 팀
+## qa — 품질 검증 팀 (Adversarial Evaluator)
 > 트리거: `/team qa [대상 코드/디렉토리]`
+> **이 팀은 Generator와 독립된 컨텍스트에서 실행된다.** 구현 에이전트의 self-review를 신뢰하지 않는다.
 
 TeamCreate로 팀원을 구성한다 (웹 프로젝트: 4명, 그 외: 3명):
 
@@ -89,8 +90,9 @@ TeamCreate로 3명의 팀원을 구성한다:
   정적 코드 분석만 필요하면: /team qa
   ```
 
-## review — 코드 리뷰 팀
+## review — 코드 리뷰 팀 (Skeptical Reviewer)
 > 트리거: `/team review [대상 코드/디렉토리]`
+> **이 팀은 구현 에이전트와 독립된 컨텍스트에서 실행된다.** "이 코드에는 반드시 문제가 있다"는 전제로 리뷰한다.
 
 TeamCreate로 3명의 팀원을 구성한다:
 
@@ -219,6 +221,7 @@ TeamCreate로 3명의 팀원을 구성한다:
 - tmux 세션 내에서 실행하면 사이드 패널에 팀원 활동이 표시된다.
 - 프리셋 없이 `/team`만 실행하면 사용 가능한 프리셋 목록을 보여준다.
 - 각 팀원은 AXIS의 기존 에이전트(architect, senior-dev, qa-engineer 등)와 독립적으로 동작한다.
+- **Generator-Evaluator 분리**: `qa`, `visual-qa`, `review` 프리셋은 구현 에이전트와 독립된 컨텍스트에서 실행된다. 이는 자기 평가 편향을 구조적으로 차단한다.
 
 # Input
 $ARGUMENTS

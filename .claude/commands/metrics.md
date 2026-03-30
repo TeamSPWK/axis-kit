@@ -71,7 +71,22 @@
 
 ---
 
-## 4단계: Adaptive (4점)
+## 4단계: Harness (3점)
+
+### H1 — CLAUDE.md에 자동 적용 규칙 존재 (1pt)
+- `CLAUDE.md`에 "자동 적용 규칙" 또는 "Generator-Evaluator" 관련 섹션이 있는지 확인한다.
+- 복잡도 판단, 독립 검증, 블로커 분류 중 2개 이상 존재하면 1pt.
+
+### H2 — Sprint Contract 또는 검증 계약 존재 (1pt)
+- `docs/designs/` 내 Design 문서에 "Sprint Contract" 또는 "검증 계약" 섹션이 있는지 확인한다.
+- 1개 이상의 Design에 존재하면 1pt.
+
+### H3 — Independent Verification 결과 존재 (1pt)
+- `docs/verifications/` 내 검증 결과가 1개 이상 있고, 내용에 "Evaluator" 또는 "PASS/FAIL" 판정이 포함되어 있으면 1pt.
+
+---
+
+## 5단계: Adaptive (4점)
 
 ### A1 — /propose 커맨드 사용 가능 (1pt)
 - `.claude/commands/propose.md`가 존재하는지 확인한다.
@@ -94,10 +109,10 @@
 ### 등급 기준
 | 등급 | 점수 | 설명 |
 |------|------|------|
-| Level 5 | 17점 | AXIS 완전 적용 |
-| Level 4 | 14~16점 | 높은 수준 |
-| Level 3 | 10~13점 | 중간 |
-| Level 2 | 6~9점 | 초기 |
+| Level 5 | 20점 | AXIS 완전 적용 (Harness 포함) |
+| Level 4 | 16~19점 | 높은 수준 |
+| Level 3 | 11~15점 | 중간 |
+| Level 2 | 6~10점 | 초기 |
 | Level 1 | 0~5점 | 시작 단계 |
 
 ### 출력 형식
@@ -110,9 +125,10 @@
   Structured:      ■■■■□  4/5
   Idempotent:      ■■■□□  3/4
   X-Verification:  ■■□□□  2/4
+  Harness:         ■■□□□  2/3
   Adaptive:        ■□□□□  1/4
 
-  총점: 10/17 → Level 3 (중간)
+  총점: 12/20 → Level 3 (중간)
 
 ━━━ 세부 항목 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
