@@ -1,3 +1,7 @@
+---
+description: "CPS(Context-Problem-Solution) 프레임워크로 Plan 문서를 작성한다."
+---
+
 CPS(Context-Problem-Solution) 프레임워크로 Plan 문서를 작성한다.
 
 # Role

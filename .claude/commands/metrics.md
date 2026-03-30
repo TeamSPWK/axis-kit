@@ -1,3 +1,7 @@
+---
+description: "현재 프로젝트의 Nova Engineering 도입 수준을 자동 측정한다."
+---
+
 현재 프로젝트의 Nova Engineering 도입 수준을 자동 측정한다.
 
 # Role

@@ -1,3 +1,7 @@
+---
+description: "멀티 AI 교차검증을 실행한다. Claude + GPT + Gemini 3개 AI에게 동시에 질의하고 합의율을 자동 산출한다."
+---
+
 멀티 AI 교차검증을 실행한다. Claude + GPT + Gemini 3개 AI에게 동시에 질의하고 합의율을 자동 산출한다.
 
 # Role

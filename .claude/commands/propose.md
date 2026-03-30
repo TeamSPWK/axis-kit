@@ -1,3 +1,7 @@
+---
+description: "프로젝트에서 반복되는 패턴을 규칙으로 제안한다. Nova Adaptive 사이클의 시작점."
+---
+
 프로젝트에서 반복되는 패턴을 규칙으로 제안한다. Nova Adaptive 사이클의 시작점.
 
 # Role

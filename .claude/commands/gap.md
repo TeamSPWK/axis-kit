@@ -1,3 +1,7 @@
+---
+description: "설계 문서와 구현 코드의 갭을 적대적 관점에서 탐지한다. (Adversarial Evaluator)"
+---
+
 설계 문서와 구현 코드의 갭을 적대적 관점에서 탐지한다. (Adversarial Evaluator)
 
 # Role

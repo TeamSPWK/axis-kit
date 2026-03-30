@@ -1,3 +1,7 @@
+---
+description: "Agent Teams를 구성하여 병렬로 작업을 수행한다."
+---
+
 Agent Teams를 구성하여 병렬로 작업을 수행한다.
 
 # Role

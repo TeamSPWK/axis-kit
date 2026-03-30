@@ -1,3 +1,7 @@
+---
+description: "Plan → Design → 구현 → 검증을 한 번의 승인으로 자율 실행한다."
+---
+
 Plan → Design → 구현 → 검증을 한 번의 승인으로 자율 실행한다.
 Generator-Evaluator 분리 원칙에 따라 구현과 검증을 독립 에이전트로 수행한다.
 
