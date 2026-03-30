@@ -37,27 +37,36 @@ fi
 
 echo "🔄 $CURRENT → $NEW_VERSION"
 
+# macOS/Linux 호환 sed in-place
+sedi() {
+  if [[ "$(uname)" == "Darwin" ]]; then
+    sed -i '' "$@"
+  else
+    sed -i "$@"
+  fi
+}
+
 # 1. Single source of truth
 echo "$NEW_VERSION" > "$VERSION_FILE"
 
 # 2. README.md 배지
 README="$ROOT/README.md"
 if [[ -f "$README" ]]; then
-  sed -i '' "s/version-[0-9]*\.[0-9]*\.[0-9]*/version-$NEW_VERSION/" "$README"
+  sedi "s/version-[0-9]*\.[0-9]*\.[0-9]*/version-$NEW_VERSION/" "$README"
   echo "  ✅ README.md"
 fi
 
 # 3. plugin.json
 PLUGIN="$ROOT/.claude-plugin/plugin.json"
 if [[ -f "$PLUGIN" ]]; then
-  sed -i '' "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"$NEW_VERSION\"/" "$PLUGIN"
+  sedi "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"$NEW_VERSION\"/" "$PLUGIN"
   echo "  ✅ plugin.json"
 fi
 
 # 4. marketplace.json
 MARKETPLACE="$ROOT/.claude-plugin/marketplace.json"
 if [[ -f "$MARKETPLACE" ]]; then
-  sed -i '' "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"$NEW_VERSION\"/" "$MARKETPLACE"
+  sedi "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"$NEW_VERSION\"/" "$MARKETPLACE"
   echo "  ✅ marketplace.json"
 fi
 
