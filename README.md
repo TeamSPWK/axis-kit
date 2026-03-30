@@ -108,7 +108,8 @@ bash scripts/init.sh my-project "Next.js + TypeScript"
 ### 3. 시작
 
 ```bash
-/next   # 다음 할 일 확인 — 여기서부터 시작
+/nova:next   # Plugin 설치 시 (nova: 접두사)
+/next        # 스크립트 설치 시
 ```
 
 ### 4. API 키 설정 (교차검증용, 선택)
