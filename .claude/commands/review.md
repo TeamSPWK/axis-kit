@@ -131,6 +131,23 @@ Before/After 코드 + 변경 요약
 - **CONDITIONAL**: Critical 0개, Warning 3개 이상
 - **FAIL**: Critical 1개 이상
 
+# FAIL 시 재검증 가이드 (v2.4)
+
+Critical 이슈가 발견되면 수정 후 재검증을 권고한다:
+
+```
+━━━ Review Result ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  판정: FAIL
+  Critical: {N}개
+
+  ⚠️ Critical 이슈 수정 후 `/review`를 재실행하여 검증하세요.
+  재검증 대상: {Critical 이슈가 있는 파일 목록}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+- FAIL 판정 시 반드시 재검증 안내를 포함한다
+- `/auto` 내부에서 호출된 경우, Orchestrator가 자동으로 재검증 루프를 실행한다
+
 # Notes
 - **Generator-Evaluator 분리 원칙**: 이 커맨드가 `/auto`에서 호출될 때는 반드시 독립 서브에이전트로 실행된다.
 - 감정, 위트 없이 객관적으로
