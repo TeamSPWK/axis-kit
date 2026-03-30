@@ -86,7 +86,7 @@
 
 ---
 
-## 5단계: Adaptive (4점)
+## Adaptive (4점)
 
 ### A1 — /propose 커맨드 사용 가능 (1pt)
 - `.claude/commands/propose.md`가 존재하는지 확인한다.

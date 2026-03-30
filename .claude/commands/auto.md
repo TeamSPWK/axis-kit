@@ -204,7 +204,7 @@ Agent 도구로 서브에이전트를 생성하여 구현을 위임한다:
 - 행동:
   1. 즉시 실패하는 validation 코드를 삽입 (`throw new Error('[AXIS-BLOCK] ...')`)
   2. `.env.example`에 필요한 키를 추가
-  3. 블로커 레지스트리(`docs/auto-blocks.md`)에 기록
+  3. 블로커 레지스트리(`docs/auto-blocks.md`)에 기록 (파일이 없으면 생성)
   4. 계속 진행
 
 **Soft-Block 임계값**:

@@ -172,12 +172,12 @@ curl -fsSL https://raw.githubusercontent.com/TeamSPWK/axis-kit/main/install.sh |
   ▼                                    ▼
 /plan ─── 기능 기획 (CPS)           /auto ─── 계획 승인 한 번이면 끝
   │                                    │
-  ├── /xv ─── 교차검증                 ├── Plan 자동 생성
-  │                                    ├── Design 자동 생성
+  ├── /xv ─── 교차검증                 ├── Plan 자동 생성 (Planner)
+  │                                    ├── Design 자동 생성 (Planner)
   ▼                                    ├── 승인 요청 ← 유일한 개입
-/design ─ 기술 설계 (CPS)              ├── 구현 자율 실행
-  │                                    ├── /gap 자동 검증
-  ▼                                    ├── /review 자동 리뷰
+/design ─ 기술 설계 (CPS)              ├── 구현 (Generator 서브에이전트)
+  │                                    ├── 검증 (Evaluator 독립 에이전트)
+  ▼                                    ├── Independent Verifier
   구현                                  ▼
   │                                    완료 보고
   ├── /gap ──── 설계 vs 구현 갭 검증

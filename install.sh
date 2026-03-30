@@ -266,7 +266,7 @@ if $UPDATE_MODE; then
           head -n $((AXIS_START - 1)) "$CLAUDE_MD" > "${CLAUDE_MD}.tmp"
 
           # AXIS 이후 다음 ## 섹션 찾기 (AXIS 내부의 ### 제외)
-          AFTER_AXIS=$(tail -n +"$((AXIS_START + 1))" "$CLAUDE_MD" | grep -n "^## [^#]" | head -1 | cut -d: -f1)
+          AFTER_AXIS=$(tail -n +"$((AXIS_START + 1))" "$CLAUDE_MD" | grep -n "^## [^#]" | head -1 | cut -d: -f1 || true)
 
           # 새 AXIS 섹션 추가
           cat >> "${CLAUDE_MD}.tmp" << 'AXIS_V16'
@@ -298,6 +298,20 @@ if $UPDATE_MODE; then
 - **Soft-Block**: 진행 가능하나 기록 필요 → 기록 후 계속
 - **Hard-Block**: 돌이킬 수 없음 → 즉시 중단, 사용자 판단 요청
 
+#### 5. 복잡한 작업의 스프린트 분할
+- 8개 이상 파일 수정 시 독립 검증 가능한 스프린트로 분할
+- 각 스프린트마다 구현 → 검증 사이클 반복
+
+#### 6. 실행 검증 우선
+- "코드가 존재한다" ≠ "동작한다"
+- 가능한 경우 실제 테스트 실행 (테스트, 브라우저 등)
+
+### Workflow
+사용자 요청
+  간단 → 구현 → 독립 검증 → 완료
+  보통 → Plan → 승인 → 구현 → 독립 검증 → 완료
+  복잡 → Plan → Design → 스프린트별 (구현→검증) → Independent Verifier → 완료
+
 ### Commands (상세 절차가 필요할 때)
 | 커맨드 | 설명 |
 |--------|------|
@@ -309,6 +323,8 @@ if $UPDATE_MODE; then
 | `/review 코드` | 코드 리뷰 |
 | `/auto 기능명` | 전체 하네스 자율 실행 |
 | `/team 프리셋` | Agent Teams 병렬 구성 |
+| `/propose 패턴` | 규칙 제안 |
+| `/metrics` | 도입 수준 측정 |
 
 ### 합의 프로토콜
 - 90%+ → 자동 채택
