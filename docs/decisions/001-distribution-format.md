@@ -2,7 +2,7 @@
 
 > Nova Engineering — Decision Record
 > 날짜: 2026-03-26
-> 상태: 승인됨
+> 상태: 대체됨 (v2.0에서 Claude Code 플러그인 마켓플레이스 방식으로 전환)
 
 ---
 

@@ -133,6 +133,9 @@ assert ".nova-version == plugin.json ($NOVA_VER)" "[ '$NOVA_VER' = '$PLUGIN_VER'
 assert "marketplace.json에 version 없음 (plugin.json이 유일한 source)" \
   "! jq -e '.plugins[0].version' '$ROOT_DIR/.claude-plugin/marketplace.json' > /dev/null 2>&1"
 assert ".nova-version == README 배지 ($NOVA_VER)" "[ '$NOVA_VER' = '$README_VER' ]"
+
+README_KO_VER=$(grep -o 'version-[0-9]*\.[0-9]*\.[0-9]*' "$ROOT_DIR/README.ko.md" 2>/dev/null | sed 's/version-//' || echo "")
+assert ".nova-version == README.ko 배지 ($NOVA_VER)" "[ '$NOVA_VER' = '$README_KO_VER' ]"
 echo ""
 
 # ═══════════════════════════════════════════

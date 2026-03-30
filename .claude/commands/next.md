@@ -14,8 +14,7 @@ description: "현재 프로젝트 상태를 진단하고 다음에 실행할 Nov
    - `scripts/.nova-version` 파일에서 로컬 버전을 읽는다.
    - `curl -fsSL --max-time 3 https://raw.githubusercontent.com/TeamSPWK/nova/main/scripts/.nova-version 2>/dev/null` 으로 최신 버전을 확인한다.
    - 버전이 다르면 진단 결과 하단에 업데이트 안내를 표시한다:
-     `🔄 Nova 업데이트 가능 (현재버전 → 최신버전)`
-     `   curl -fsSL https://raw.githubusercontent.com/TeamSPWK/nova/main/install.sh | bash -s -- --update`
+     `🔄 Nova 업데이트 가능 (현재 → 최신) — /nova-update 를 실행하세요.`
    - 확인 실패 시 조용히 건너뛴다. (네트워크 오류를 에러로 표시하지 않는다)
 
 2. 다음 항목을 모두 확인한다:

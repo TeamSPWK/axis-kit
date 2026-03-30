@@ -10,7 +10,7 @@ CPS(Context-Problem-Solution) 프레임워크로 Plan 문서를 작성한다.
 
 # Execution
 
-0. (버전 체크) `scripts/.nova-version` 파일이 있으면 `curl -fsSL --max-time 3 https://raw.githubusercontent.com/TeamSPWK/nova/main/scripts/.nova-version 2>/dev/null`로 최신 버전을 확인한다. 버전이 다르면 출력 마지막에 한 줄 안내한다: `🔄 Nova 업데이트 가능 (현재 → 최신) — curl -fsSL .../install.sh | bash -s -- --update`. 실패 시 조용히 건너뛴다.
+0. (버전 체크) `scripts/.nova-version` 파일이 있으면 `curl -fsSL --max-time 3 https://raw.githubusercontent.com/TeamSPWK/nova/main/scripts/.nova-version 2>/dev/null`로 최신 버전을 확인한다. 버전이 다르면 출력 마지막에 한 줄 안내한다: `🔄 Nova 업데이트 가능 (현재 → 최신) — /nova-update 를 실행하세요.`. 실패 시 조용히 건너뛴다.
 
 1. 사용자 입력에서 기능명/주제를 추출한다.
 2. `docs/templates/cps-plan.md`가 있으면 참고한다. **없으면 아래 인라인 구조를 사용한다** (템플릿 없음을 언급하지 않는다).

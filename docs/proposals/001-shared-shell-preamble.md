@@ -2,7 +2,7 @@
 
 > Nova Engineering — Adaptive Rule Proposal
 > 날짜: 2026-03-27
-> 상태: 제안됨
+> 상태: 대체됨 (v2.0 플러그인 전환으로 대상 스크립트 삭제됨)
 > 제안자: AI
 
 ---
