@@ -1,7 +1,7 @@
 # Nova
 
 [![CI](https://github.com/TeamSPWK/nova/actions/workflows/ci.yml/badge.svg)](https://github.com/TeamSPWK/nova/actions/workflows/ci.yml)
-[![Version](https://img.shields.io/badge/version-1.7.0-blue)](https://github.com/TeamSPWK/nova/releases)
+[![Version](https://img.shields.io/badge/version-1.8.0-blue)](https://github.com/TeamSPWK/nova/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 **처음부터 제대로. 매번 더 빠르게.**
@@ -74,6 +74,15 @@ A — Adaptive       : 규칙이 프로젝트와 함께 진화한다
 ### 1. 설치 (30초)
 
 ![설치 데모](assets/install-demo.gif)
+
+**방법 A: Plugin으로 설치 (권장)**
+
+```bash
+# Claude Code Plugin으로 설치 — 모든 커맨드/에이전트/스킬/훅 자동 활성화
+claude plugin install TeamSPWK/nova
+```
+
+**방법 B: 스크립트로 설치**
 
 ```bash
 # 최소 설치 — 핵심 3개 커맨드 (/next, /plan, /review)

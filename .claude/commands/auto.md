@@ -190,6 +190,14 @@ Agent 도구로 서브에이전트를 생성하여 구현을 위임한다:
 - 완료 후 self-review를 수행하되, 이것이 최종 검증이 아님을 인지한다
 ```
 
+**모델 라우팅 (--optimize 모드):**
+- Agent 도구 호출 시 `model` 파라미터를 명시한다:
+  - Phase 1-2 (Planner): `model: "opus"` — 깊은 분석, 설계 품질이 핵심
+  - Phase 4 (Generator): `model: "sonnet"` — 구현 속도 우선, 명확한 스펙이 이미 있음
+  - Phase 5 (Evaluator): `model: "opus"` — 적대적 평가에는 깊은 추론 필요
+  - Phase 7 (Verifier): `model: "opus"` — 최종 종합 판단
+- 기본 모드에서는 `model` 파라미터를 생략하여 부모 세션의 모델을 상속한다.
+
 ### 블로커 처리 (3단계)
 
 구현 중 블로커를 만나면 다음 기준으로 분류한다:
@@ -288,6 +296,9 @@ Agent 도구로 **독립 서브에이전트**를 생성한다:
 [Sprint Contract (Done 조건)]
 [구현된 코드 경로]
 ```
+
+**모델 라우팅 (--optimize 모드):**
+- Evaluator는 반드시 `model: "opus"`로 실행한다. 적대적 평가는 추론 깊이가 품질을 결정한다.
 
 ### Gap 검증
 
@@ -418,6 +429,9 @@ Agent 도구로 **완전히 독립된 서브에이전트**를 생성한다:
 [Evaluator 검증 결과 경로]
 ```
 
+**모델 라우팅 (--optimize 모드):**
+- Independent Verifier는 `model: "opus"`로 실행한다. 종합 판단에는 최고 수준의 추론이 필요하다.
+
 ### Verifier 판정
 
 ```
@@ -444,6 +458,38 @@ Agent 도구로 **완전히 독립된 서브에이전트**를 생성한다:
 - **PASS** (평균 4.0+): 최종 보고서 출력
 - **CONDITIONAL PASS** (평균 3.0~3.9): 발견 사항을 보고하고 사용자가 수용/수정 결정
 - **FAIL** (평균 3.0 미만): 핵심 이슈 목록 + 수정 권장사항 제시
+
+## Artifacts Registry (v1.8)
+
+> 각 Phase의 산출물을 `docs/auto-artifacts.md`에 구조화하여 기록한다.
+> Google Antigravity의 Artifacts 시스템에서 영감. 검증 가능한 중간 산출물이 투명성을 보장한다.
+
+모든 `/auto` 실행은 다음 산출물 레지스트리를 생성/갱신한다:
+
+```markdown
+# Auto Artifacts — {기능명}
+
+## 생성 시각: {timestamp}
+## 상태: {in_progress / completed / failed}
+
+| Phase | 산출물 | 경로 | 상태 |
+|-------|--------|------|------|
+| Plan | CPS Plan 문서 | docs/plans/{slug}.md | ✅ |
+| Design | CPS Design 문서 | docs/designs/{slug}.md | ✅ |
+| Design | Sprint Contract | (Design 문서 내) | ✅ |
+| Impl | Handoff Artifact | docs/auto-handoff.md | ✅ |
+| Impl | 소스 코드 | {파일 목록} | ✅ |
+| Eval | 검증 결과 | docs/verifications/{slug}.md | ✅ |
+| Eval | Bug Report (있으면) | (검증 결과 내) | — |
+| Verify | Independent Verification | docs/verifications/{slug}-final.md | ✅ |
+| Blocks | Soft-Block 레지스트리 | docs/auto-blocks.md | ⚠️ 2건 |
+```
+
+### 산출물 규칙
+1. 모든 Phase 완료 시 Artifacts Registry를 갱신한다
+2. FAIL 시 실패 사유와 함께 ❌ 상태로 기록한다
+3. `/auto` 재실행 시 기존 Artifacts를 참조하여 이전 진행 상황을 인지한다
+4. 최종 보고(Phase 8)에 Artifacts Registry 링크를 포함한다
 
 ## Phase 8: 최종 보고
 
@@ -476,6 +522,7 @@ Agent 도구로 **완전히 독립된 서브에이전트**를 생성한다:
   • Design: docs/designs/{slug}.md
   • Verification: docs/verifications/{slug}.md
   • Handoff: docs/auto-handoff.md
+  • Artifacts: docs/auto-artifacts.md
 
   ## 다음 단계
   1. Soft-Block 해결 (.env 설정)

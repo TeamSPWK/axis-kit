@@ -18,6 +18,27 @@ Agent Teams를 구성하여 병렬로 작업을 수행한다.
 }
 ```
 
+# Worktree Isolation (v1.8)
+
+> "3개의 집중된 에이전트가 1개의 범용 에이전트보다 3배 작업한 것보다 일관되게 우수하다." — Addy Osmani
+
+각 팀원은 독립된 Git Worktree에서 작업하여 코드 충돌을 방지한다.
+
+### 작동 방식
+1. 팀 생성 시 각 팀원에게 `isolation: "worktree"` 옵션을 부여
+2. 각 팀원은 독립된 브랜치(`team/{preset}/{role}`)에서 작업
+3. 작업 완료 후 결과를 main에 머지하거나, 변경 없으면 자동 정리
+
+### 적용 프리셋
+- `refactor`, `debug`, `design`: Worktree 격리 적용 (코드 수정 가능성 높음)
+- `qa`, `visual-qa`, `review`: Worktree 격리 미적용 (읽기 전용 분석)
+
+### Worktree 미지원 환경
+Git Worktree를 지원하지 않는 환경에서는 기존 방식(동일 디렉토리)으로 폴백:
+```
+⚠️ Git Worktree를 사용할 수 없습니다. 동일 디렉토리에서 순차 실행합니다.
+```
+
 # Presets
 
 ## qa — 품질 검증 팀 (Adversarial Evaluator)
@@ -189,9 +210,11 @@ TeamCreate로 3명의 팀원을 구성한다:
    - 사용자가 "팀 구성"을 선택하거나, 5파일+ / 독립 모듈 병렬 작업이면 팀을 구성한다.
    - **예외**: `qa`, `visual-qa`, `review` 프리셋은 규모와 무관하게 항상 팀을 구성한다 (검증은 ROI가 확실).
 
-3. 해당 프리셋의 팀원 3명을 TeamCreate로 생성한다.
+3. 해당 프리셋의 팀원을 TeamCreate로 생성한다.
    - 각 팀원에게 역할, 목표, 대상을 명확히 전달한다.
    - 팀원은 프로젝트의 CLAUDE.md와 Nova 규칙을 따른다.
+   - `refactor`, `debug`, `design` 프리셋은 `isolation: "worktree"`로 생성하여 독립 브랜치에서 작업한다.
+   - `qa`, `visual-qa`, `review` 프리셋은 읽기 전용이므로 Worktree 없이 생성한다.
 
 4. 팀원들이 병렬로 작업을 수행한다.
 
@@ -215,6 +238,11 @@ TeamCreate로 3명의 팀원을 구성한다:
   • ...
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+# Options
+- `--worktree` : 프리셋과 무관하게 모든 팀원을 Worktree 격리로 실행
+- `--no-worktree` : 프리셋과 무관하게 Worktree 격리 없이 실행
+- (기본) : 프리셋별 기본 설정에 따름
 
 # Notes
 - Agent Teams는 실험적 기능이다. 동작이 불안정할 수 있다.
