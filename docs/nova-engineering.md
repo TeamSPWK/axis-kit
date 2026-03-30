@@ -215,7 +215,7 @@ Act     → Adaptive 사이클로 규칙 갱신, 개선 반영
 - [x] 멀티 AI 교차 검증 파이프라인 구축 (X-Verification)
 - [x] 역방향 검증(갭 탐지) 자동화
 - [x] 합의 프로토콜 임계치 설정
-- 산출물: `x-verify.sh`, `gap-check.sh`, `/xv`, `/gap` 커맨드
+- 산출물: `/nova:xv`, `/nova:gap` 커맨드
 
 ### Phase 3: Context Chain (5~6주) ✅
 - [x] 3계층 메모리 아키텍처 구축 — 파일 기반 컨텍스트 체계
@@ -224,10 +224,10 @@ Act     → Adaptive 사이클로 규칙 갱신, 개선 반영
 - 산출물: `context-chain.md`, CLAUDE.md 템플릿, Decision Record 템플릿
 
 ### Phase 4: Adaptive (7~8주) ✅
-- [x] 패턴 감지 → 규칙 제안 시스템 구축 (`/propose` 커맨드)
+- [x] 패턴 감지 → 규칙 제안 시스템 구축 (`/nova:propose` 커맨드)
 - [x] 규칙 변경 관리 + 이력 추적 (`rules-changelog.md`)
 - [x] 규칙 제안 템플릿 (감지 → 제안 → 승인 → 적용 → 검증)
-- 산출물: `/propose` 커맨드, Rule Proposal 템플릿, Rules Changelog
+- 산출물: `/nova:propose` 커맨드, Rule Proposal 템플릿, Rules Changelog
 
 ### Phase 5: Optimization (9주~) ✅
 - [x] Eval 지표 기반 품질 추적 — 자가 평가 체크리스트

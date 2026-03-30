@@ -1,13 +1,13 @@
 # 튜토리얼: Todo API로 배우는 Nova 워크플로우
 
-> 하나의 기능을 `/plan` → `/xv` → `/design` → 구현 → `/gap` → `/review`까지 따라가는 실전 예시
+> 하나의 기능을 `/nova:plan` → `/nova:xv` → `/nova:design` → 구현 → `/nova:gap` → `/nova:review`까지 따라가는 실전 예시
 
 ---
 
 ## Step 1: Plan — 왜, 무엇을 만드는가
 
 ```
-/plan Todo API
+/nova:plan Todo API
 ```
 
 CPS 구조로 정리합니다:
@@ -37,7 +37,7 @@ CPS 구조로 정리합니다:
 DB 선택에서 고민이 있다면:
 
 ```bash
-/xv "Todo API의 데이터 저장소: 인메모리 vs SQLite vs PostgreSQL, MVP 단계에 최적은?"
+/nova:xv "Todo API의 데이터 저장소: 인메모리 vs SQLite vs PostgreSQL, MVP 단계에 최적은?"
 ```
 
 3개 AI가 동시에 답변하고, 합의율이 자동 산출됩니다:
@@ -53,7 +53,7 @@ DB 선택에서 고민이 있다면:
 ## Step 3: Design — 어떻게 만드는가
 
 ```
-/design Todo API
+/nova:design Todo API
 ```
 
 기술 설계를 구체화합니다:
@@ -113,7 +113,7 @@ export default router;
 ## Step 5: Gap Check — 설계대로 만들었는가
 
 ```bash
-/gap docs/designs/todo-api.md src/
+/nova:gap docs/designs/todo-api.md src/
 ```
 
 만약 DELETE 엔드포인트를 깜빡하고 구현하지 않았다면:
@@ -140,7 +140,7 @@ export default router;
 ## Step 6: Review — 코드 품질 점검
 
 ```
-/review src/api/todos.ts
+/nova:review src/api/todos.ts
 ```
 
 단순성 원칙으로 코드를 리뷰합니다:
@@ -155,21 +155,21 @@ export default router;
 ```
 "Todo API 만들어줘"
     │
-    ├─ /plan → 왜 필요한지, 뭐가 문제인지 정리
+    ├─ /nova:plan → 왜 필요한지, 뭐가 문제인지 정리
     │
-    ├─ /xv → DB 선택 등 기술 판단 교차검증 (선택)
+    ├─ /nova:xv → DB 선택 등 기술 판단 교차검증 (선택)
     │
-    ├─ /design → 구체적 API 설계
+    ├─ /nova:design → 구체적 API 설계
     │
     ├─ 구현 → 코드 작성
     │
-    ├─ /gap → 설계 vs 구현 비교 (DELETE 누락 발견!)
+    ├─ /nova:gap → 설계 vs 구현 비교 (DELETE 누락 발견!)
     │
     ├─ 수정 → DELETE 구현
     │
-    ├─ /gap → 재검증 (매칭률 90%+ → PASS)
+    ├─ /nova:gap → 재검증 (매칭률 90%+ → PASS)
     │
-    └─ /review → 코드 품질 최종 점검
+    └─ /nova:review → 코드 품질 최종 점검
 ```
 
 이 과정을 거치면:
