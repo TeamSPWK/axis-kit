@@ -303,33 +303,18 @@ assert "hooks.json: init-nova-state.sh 참조" \
   "grep -q 'init-nova-state.sh' '$HOOKS_JSON'"
 
 # 핵심 규칙 키워드가 session-start.sh에 존재하는지 검증
-# CLAUDE.md에 있는 규칙이 session-start.sh에도 반드시 있어야 함
+# session-start.sh는 경량 요약만 포함. 핵심 키워드 존재 확인.
 assert "동기화: 복잡도 판단 (§1)" \
   "bash '$HOOK_FILE' | grep -q '복잡도'"
 
-assert "동기화: 위험도 판단 (§1)" \
-  "bash '$HOOK_FILE' | grep -q '위험도'"
+assert "동기화: 검증 분리 (§2)" \
+  "bash '$HOOK_FILE' | grep -q '검증.*서브에이전트'"
 
-assert "동기화: 검증 분리 필수 (§2)" \
-  "bash '$HOOK_FILE' | grep -q '검증 분리는 필수'"
-
-assert "동기화: 구현 위임 권장 (§2)" \
-  "bash '$HOOK_FILE' | grep -q '구현 위임은 권장'"
-
-assert "동기화: tmux pane 가시성 (§2)" \
-  "bash '$HOOK_FILE' | grep -q 'tmux pane'"
-
-assert "동기화: 검증 경량화 원칙 (§5)" \
-  "bash '$HOOK_FILE' | grep -q '경량화'"
-
-assert "동기화: NOVA-STATE.md 세션 상태 (§6)" \
+assert "동기화: NOVA-STATE.md 세션 상태 (§8)" \
   "bash '$HOOK_FILE' | grep -q 'NOVA-STATE.md'"
 
-assert "동기화: 복잡도 재판단 트리거" \
-  "bash '$HOOK_FILE' | grep -q '재판단'"
-
-assert "동기화: 고위험 영역 상향" \
-  "bash '$HOOK_FILE' | grep -q '고위험'"
+assert "동기화: 커맨드 테이블" \
+  "bash '$HOOK_FILE' | grep -q '/nova:review'"
 echo ""
 
 # ═══════════════════════════════════════════
