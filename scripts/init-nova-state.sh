@@ -6,7 +6,6 @@ set -euo pipefail
 
 INPUT=$(cat)
 CWD=$(echo "$INPUT" | jq -r '.cwd // "."' 2>/dev/null || true)
-SOURCE=$(echo "$INPUT" | jq -r '.source // "unknown"' 2>/dev/null || true)
 
 # cwd 폴백
 if [ -z "$CWD" ] || [ "$CWD" = "null" ] || [ "$CWD" = "." ]; then
@@ -23,23 +22,25 @@ if [ ! -d "$CWD" ]; then
   exit 0
 fi
 
-# 프로젝트 정보 수집
-PLAN_COUNT=$(ls "$CWD"/docs/plans/*.md 2>/dev/null | wc -l | tr -d ' ')
-DESIGN_COUNT=$(ls "$CWD"/docs/designs/*.md 2>/dev/null | wc -l | tr -d ' ')
-VERIFY_COUNT=$(ls "$CWD"/docs/verifications/*.md 2>/dev/null | wc -l | tr -d ' ')
+# 프로젝트 정보 수집 (set +e로 find 실패 허용 — docs/ 없는 프로젝트 대응)
+set +e
+PLAN_COUNT=$(find "$CWD/docs/plans" -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+DESIGN_COUNT=$(find "$CWD/docs/designs" -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+VERIFY_COUNT=$(find "$CWD/docs/verifications" -maxdepth 1 -name "*.md" 2>/dev/null | wc -l | tr -d ' ')
+set -e
 
 PLAN_REF="none"
 DESIGN_REF="none"
 VERIFY_REF="none"
 
-if [ "$PLAN_COUNT" -gt 0 ]; then
-  PLAN_REF=$(ls "$CWD"/docs/plans/*.md 2>/dev/null | head -1 | sed "s|$CWD/||")
+if [ "${PLAN_COUNT:-0}" -gt 0 ]; then
+  PLAN_REF=$(find "$CWD/docs/plans" -maxdepth 1 -name "*.md" 2>/dev/null | head -1 | sed "s|$CWD/||")
 fi
-if [ "$DESIGN_COUNT" -gt 0 ]; then
-  DESIGN_REF=$(ls "$CWD"/docs/designs/*.md 2>/dev/null | head -1 | sed "s|$CWD/||")
+if [ "${DESIGN_COUNT:-0}" -gt 0 ]; then
+  DESIGN_REF=$(find "$CWD/docs/designs" -maxdepth 1 -name "*.md" 2>/dev/null | head -1 | sed "s|$CWD/||")
 fi
-if [ "$VERIFY_COUNT" -gt 0 ]; then
-  VERIFY_REF=$(ls -t "$CWD"/docs/verifications/*.md 2>/dev/null | head -1 | sed "s|$CWD/||")
+if [ "${VERIFY_COUNT:-0}" -gt 0 ]; then
+  VERIFY_REF=$(find "$CWD/docs/verifications" -maxdepth 1 -name "*.md" 2>/dev/null | sort | tail -1 | sed "s|$CWD/||")
 fi
 
 # NOVA-STATE.md 원자적 생성 (noclobber로 TOCTOU 경쟁 조건 해소)
