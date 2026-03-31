@@ -200,13 +200,13 @@ assert "nova-state 템플릿 50줄 이내" \
   "[ \$(wc -l < '$ROOT_DIR/docs/templates/nova-state.md') -le 50 ]"
 
 assert "context-chain 스킬: 세션 시작 프로토콜" \
-  "grep -q '세션 시작 프로토콜' '$ROOT_DIR/.claude/skills/nova-context-chain/SKILL.md'"
+  "grep -q '세션 시작 프로토콜' '$ROOT_DIR/.claude/skills/context-chain/SKILL.md'"
 
 assert "context-chain 스킬: 자동 갱신 트리거" \
-  "grep -q '자동 갱신 트리거' '$ROOT_DIR/.claude/skills/nova-context-chain/SKILL.md'"
+  "grep -q '자동 갱신 트리거' '$ROOT_DIR/.claude/skills/context-chain/SKILL.md'"
 
 assert "context-chain 스킬: NOVA-STATE.md 참조" \
-  "grep -q 'NOVA-STATE.md' '$ROOT_DIR/.claude/skills/nova-context-chain/SKILL.md'"
+  "grep -q 'NOVA-STATE.md' '$ROOT_DIR/.claude/skills/context-chain/SKILL.md'"
 
 assert "CLAUDE.md: 세션 상태 유지 규칙" \
   "grep -q '세션 상태 유지' '$ROOT_DIR/CLAUDE.md'"

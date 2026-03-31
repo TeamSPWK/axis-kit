@@ -1,5 +1,5 @@
 ---
-name: nova-evaluator
+name: evaluator
 description: Nova Adversarial Evaluator — Nova Quality Gate의 핵심 검증 엔진. 독립 서브에이전트로 코드를 적대적 관점에서 검증
 ---
 

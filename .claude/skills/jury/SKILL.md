@@ -1,5 +1,5 @@
 ---
-name: nova-jury
+name: jury
 description: Nova LLM Jury — 다중 관점 평가로 단일 Evaluator의 편향을 보정
 ---
 

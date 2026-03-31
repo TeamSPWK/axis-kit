@@ -1,5 +1,5 @@
 ---
-name: nova-context-chain
+name: context-chain
 description: Nova Context Chain — 세션 간 맥락 연속성 보장. NOVA-STATE.md 기반 상태 관리.
 ---
 
