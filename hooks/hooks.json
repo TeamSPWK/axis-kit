@@ -1,4 +1,5 @@
 {
+  "description": "Nova Engineering — 자동 적용 규칙 주입 + NOVA-STATE.md 자동 생성",
   "hooks": {
     "SessionStart": [
       {
@@ -6,7 +7,11 @@
         "hooks": [
           {
             "type": "command",
-            "command": "\"$CLAUDE_PLUGIN_ROOT/scripts/init-nova-state.sh\""
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/session-start.sh\""
+          },
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/init-nova-state.sh\""
           }
         ]
       }

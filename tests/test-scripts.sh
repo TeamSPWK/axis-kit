@@ -294,6 +294,14 @@ HOOK_FILE="$ROOT_DIR/hooks/session-start.sh"
 assert "session-start.sh 존재" "[ -f '$HOOK_FILE' ]"
 assert "session-start.sh JSON 유효" "bash '$HOOK_FILE' | python3 -m json.tool > /dev/null 2>&1"
 
+# hooks.json이 session-start.sh를 참조하는지 (v3.1.1 회귀 방지)
+HOOKS_JSON="$ROOT_DIR/hooks/hooks.json"
+assert "hooks.json 존재" "[ -f '$HOOKS_JSON' ]"
+assert "hooks.json: session-start.sh 참조" \
+  "grep -q 'session-start.sh' '$HOOKS_JSON'"
+assert "hooks.json: init-nova-state.sh 참조" \
+  "grep -q 'init-nova-state.sh' '$HOOKS_JSON'"
+
 # 핵심 규칙 키워드가 session-start.sh에 존재하는지 검증
 # CLAUDE.md에 있는 규칙이 session-start.sh에도 반드시 있어야 함
 assert "동기화: 복잡도 판단 (§1)" \
