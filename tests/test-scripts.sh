@@ -45,10 +45,10 @@ echo -e "${YELLOW}[구조: 커맨드]${NC}"
 
 EXPECTED_COMMANDS=(
   auto design gap init metrics next nova-update
-  plan propose review team xv
+  plan propose review xv
 )
 CMD_COUNT=$(ls "$ROOT_DIR/.claude/commands/"*.md 2>/dev/null | wc -l | tr -d ' ')
-assert "커맨드 파일 존재" "[ '$CMD_COUNT' -ge 12 ]"
+assert "커맨드 파일 존재" "[ '$CMD_COUNT' -ge 11 ]"
 
 for cmd in "${EXPECTED_COMMANDS[@]}"; do
   assert "커맨드: $cmd.md" "[ -f '$ROOT_DIR/.claude/commands/$cmd.md' ]"

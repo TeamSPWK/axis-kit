@@ -1,12 +1,12 @@
 ---
-description: "새 프로젝트에 Nova를 초기 설정하고, 도메인 특화 에이전트 팀을 자동 구성한다."
+description: "새 프로젝트에 Nova Quality Gate를 초기 설정하고, 도메인 특화 에이전트를 자동 구성한다."
 ---
 
-새 프로젝트에 Nova를 초기 설정하고, 도메인 특화 에이전트 팀을 자동 구성한다.
+새 프로젝트에 Nova Quality Gate를 초기 설정하고, 도메인 특화 에이전트를 자동 구성한다.
 
 # Role
-너는 Nova Engineering 프로젝트 초기화 도우미다.
-사용자의 프로젝트에 Nova 구조를 셋업하고, CLAUDE.md를 생성하며, 프로젝트에 최적화된 에이전트 팀을 설계한다.
+너는 Nova Quality Gate 프로젝트 초기화 도우미다.
+사용자의 프로젝트에 Nova 구조를 셋업하고, CLAUDE.md를 생성하며, 프로젝트에 최적화된 커스텀 에이전트를 설계한다.
 
 # Execution
 
@@ -53,70 +53,36 @@ description: "새 프로젝트에 Nova를 초기 설정하고, 도메인 특화 
    *accessKeys*
    ```
 
-## Phase 3: 도메인 특화 팀 설계
+## Phase 3: 도메인 특화 커스텀 에이전트 설계
 
-6. Phase 1에서 수집한 정보를 기반으로 프로젝트에 최적화된 **커스텀 팀 프리셋**을 설계한다.
-
-   **6가지 아키텍처 패턴 중 적합한 것을 선택:**
-
-   | 패턴 | 설명 | 적합한 경우 |
-   |------|------|------------|
-   | **Pipeline** | 순차적 종속 작업 (A → B → C) | ETL, 빌드 파이프라인, 데이터 처리 |
-   | **Fan-out/Fan-in** | 병렬 독립 작업 후 합산 | 멀티 모듈 분석, 대규모 리뷰 |
-   | **Expert Pool** | 컨텍스트 기반 전문가 선택 호출 | 도메인별 전문성이 필요한 경우 |
-   | **Producer-Reviewer** | 생성 후 품질 검토 | 코드 생성 + 검증 (Generator-Evaluator) |
-   | **Supervisor** | 중앙 에이전트가 동적 분배 | 동적 작업량, 적응형 워크플로우 |
-   | **Hierarchical** | 하향식 재귀적 위임 | 대규모 시스템 분해, 마이크로서비스 |
+6. Phase 1에서 수집한 정보를 기반으로 프로젝트에 최적화된 **커스텀 에이전트**를 설계한다.
+   에이전트는 `.claude/agents/` 디렉토리에 마크다운 파일로 생성된다.
 
    **설계 원칙:**
-   - 팀원은 3~5명이 최적 (2명 이하면 팀 오버헤드, 6명 이상이면 조율 비용)
-   - 각 팀원은 명확한 전문 영역과 책임 경계를 가진다
-   - Producer-Reviewer 패턴은 Nova의 Generator-Evaluator 원칙과 자연스럽게 매핑된다
+   - 프로젝트의 주요 도메인/계층별로 1개 에이전트 (예: backend-dev, frontend-dev, worker-dev)
+   - 각 에이전트는 명확한 전문 영역과 책임 경계를 가진다
+   - 반드시 **qa-reviewer** 에이전트를 포함한다 — Nova Quality Gate의 검증 역할
+   - 에이전트는 3~5개가 최적
+   - 오케스트레이션(팀 조직, 병렬 실행)은 외부 오케스트레이터(Paperclip 등)에 위임한다
 
-7. 설계한 팀을 `docs/teams/` 디렉토리에 저장한다:
-
-   ```bash
-   mkdir -p docs/teams
-   ```
-
-   각 팀 프리셋을 `docs/teams/{preset-name}.md` 파일로 생성:
-
+   각 에이전트 파일에는 다음을 포함한다:
    ```markdown
-   # Team: {팀 이름}
-
-   ## 아키텍처 패턴
-   {선택한 패턴} — {선택 이유}
-
-   ## 팀원 구성
-
-   ### {역할명 1} — {한 줄 설명}
-   - 책임: ...
-   - 도구: ...
-   - 산출물: ...
-
-   ### {역할명 2} — {한 줄 설명}
-   ...
-
-   ## 사용법
-   `/nova:team {preset-name} [대상]`
-
-   ## 워크플로우
-   {패턴에 따른 실행 흐름 설명}
-   ```
-
-8. CLAUDE.md의 Nova 섹션에 커스텀 팀 정보를 추가한다:
-
-   ```markdown
-   ### Custom Teams (프로젝트 특화)
-
-   | 팀 | 패턴 | 팀원 | 용도 |
-   |----|------|------|------|
-   | {팀명} | {패턴} | {역할1}, {역할2}, ... | {용도} |
+   ---
+   name: {에이전트명}
+   description: {한줄 설명}
+   model: sonnet  # 또는 haiku (qa-reviewer는 비용 효율을 위해 haiku 권장)
+   ---
+   # Role
+   {역할 설명}
+   # Scope
+   {담당 디렉토리/파일 범위}
+   # Rules
+   {도메인 특화 규칙}
    ```
 
 ## Phase 4: Quick Tour (첫 설치 시 가치 체감)
 
-9. 초기화 완료 후 **Quick Tour**를 실행하여 Nova의 가치를 바로 체감하게 한다:
+7. 초기화 완료 후 **Quick Tour**를 실행하여 Nova의 가치를 바로 체감하게 한다:
 
    ```
    ━━━ Nova 초기화 완료 ━━━━━━━━━━━━━━━━━━━━━━━
@@ -125,17 +91,11 @@ description: "새 프로젝트에 Nova를 초기 설정하고, 도메인 특화 
    - CLAUDE.md (경량 버전 — 프로젝트 성장에 따라 확장됩니다)
    - docs/plans/
    - docs/designs/
-   - docs/teams/{preset}.md
    - .gitignore (업데이트)
-
-   🏗️ 추천 팀 구성:
-   - {팀명} ({패턴}): {역할1}, {역할2}, {역할3}
-     용도: {설명}
-     실행: /nova:team {preset-name} [대상]
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
 
-10. Quick Tour를 제안한다:
+8. Quick Tour를 제안한다:
 
     ```
     🚀 Quick Tour — Nova가 뭘 하는지 30초 안에 보여드립니다.
@@ -161,15 +121,13 @@ description: "새 프로젝트에 Nova를 초기 설정하고, 도메인 특화 
 - 프론트엔드(React) + 백엔드(API Routes) + DB(Supabase) 3계층 구조
 - 인증, 결제, 대시보드 3개 도메인
 
-추천 팀:
+추천 에이전트:
 ```
-📦 fullstack-review (Fan-out/Fan-in)
-  팀원: Frontend Reviewer, API Reviewer, DB Schema Reviewer
-  용도: 풀스택 변경의 계층별 병렬 리뷰
-
-📦 feature-pipeline (Pipeline)
-  팀원: Planner → Implementer → Evaluator
-  용도: 기능 개발 파이프라인 (Plan → 구현 → 독립 검증)
+📁 .claude/agents/
+  ├── frontend-dev.md   — React/Next.js UI 개발 (apps/web/)
+  ├── api-dev.md        — API Routes + Supabase 연동 (apps/api/)
+  ├── qa-reviewer.md    — 풀스택 품질 검증 (전체)
+  └── infra-dev.md      — 배포/인프라 관리
 ```
 
 ## 예시 2: 데이터 파이프라인
@@ -178,23 +136,21 @@ description: "새 프로젝트에 Nova를 초기 설정하고, 도메인 특화 
 /nova:init data-pipeline "Python + Airflow + BigQuery"
 ```
 
-추천 팀:
+추천 에이전트:
 ```
-📦 pipeline-qa (Pipeline)
-  팀원: Schema Validator → Transform Tester → Output Verifier
-  용도: ETL 파이프라인 단계별 순차 검증
-
-📦 data-review (Expert Pool)
-  팀원: SQL Expert, Python Expert, Infra Expert
-  용도: 도메인별 전문 리뷰
+📁 .claude/agents/
+  ├── pipeline-dev.md   — Airflow DAG + Transform 로직
+  ├── sql-dev.md        — BigQuery 스키마 + 쿼리 최적화
+  ├── qa-reviewer.md    — 데이터 품질 + 파이프라인 검증
+  └── infra-dev.md      — GCP 인프라 + Docker 관리
 ```
 
 # Notes
 - 이미 CLAUDE.md가 있으면 덮어쓰기 전에 사용자에게 확인한다.
 - 이미 docs/ 구조가 있으면 기존 파일을 건드리지 않는다.
-- 커스텀 팀은 제안이다 — 사용자가 수정/삭제할 수 있다.
-- 기본 6개 프리셋(qa, visual-qa, review, design, refactor, debug)은 항상 사용 가능하다.
-- 커스텀 팀은 기본 프리셋과 이름이 겹치지 않아야 한다.
+- 커스텀 에이전트는 제안이다 — 사용자가 수정/삭제할 수 있다.
+- Nova 기본 에이전트(architect, senior-dev, qa-engineer, security-engineer, devops-engineer)와 이름이 겹치지 않아야 한다.
+- 오케스트레이션(팀 조직, 스케줄링)은 Paperclip 등 외부 도구에 위임한다.
 
 # Input
 $ARGUMENTS

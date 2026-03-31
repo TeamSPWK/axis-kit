@@ -4,12 +4,12 @@
 [![Version](https://img.shields.io/badge/version-2.4.2-blue)](https://github.com/TeamSPWK/nova/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**처음부터 제대로. 매번 더 빠르게.**
+**출시 전에 검증한다. 매번.**
 
 [English](README.md)
 
 > AI가 코드를 빠르게 만들어줘도, 잘못된 판단 하나가 3주 뒤 전체 리팩토링으로 돌아온다.
-> Nova는 **설계 판단을 구조화**하여 재작업을 제거하는 Claude Code 플러그인이다.
+> Nova는 AI가 만든 코드의 **품질 게이트** 역할을 하는 Claude Code 플러그인이다. 실행이 아닌 검증에 집중한다.
 
 ## 빠른 시작
 
@@ -24,7 +24,7 @@ claude plugin install nova@nova-marketplace
 
 ## 작동 방식
 
-Nova를 설치하면 CLAUDE.md의 자동 적용 규칙에 따라 **모든 대화에서 방법론이 자동 적용**된다. 커맨드를 몰라도 복잡도 판단 → 구현 → 독립 검증이 자동으로 실행된다.
+Nova를 설치하면 CLAUDE.md의 자동 적용 규칙에 따라 **모든 대화에서 Quality Gate 방법론이 자동 적용**된다. 커맨드를 몰라도 복잡도 판단 → 구현 → 독립 검증이 자동으로 실행된다.
 
 ### 핵심 원칙
 
@@ -50,31 +50,15 @@ Nova를 설치하면 CLAUDE.md의 자동 적용 규칙에 따라 **모든 대화
 | `/nova:next` | 프로젝트 상태 기반 다음 액션 추천 |
 | `/nova:plan 기능명` | CPS Plan 문서 작성 |
 | `/nova:design 기능명` | CPS Design 문서 작성 |
-| `/nova:auto 기능명` | Plan → Design → 구현 → 검증 자율 실행 |
+| `/nova:auto 기능명` | 단발 종합 검증: 정적 분석 + 구조적 리뷰 + 설계 정합성 |
 | `/nova:xv "질문"` | 멀티 AI 다관점 수집 (Claude + GPT + Gemini) |
 | `/nova:gap 설계.md src/` | 설계-구현 간 갭 탐지 |
 | `/nova:review src/` | 적대적 코드 리뷰 |
-| `/nova:team 프리셋` | 병렬 Agent Teams 구성 (QA, 리뷰, 디버그 등) |
 | `/nova:init 프로젝트명` | 새 프로젝트에 Nova 초기 설정 |
 | `/nova:propose 패턴` | 반복 패턴을 규칙으로 제안 |
 | `/nova:metrics` | Nova 도입 수준 측정 |
 
 > **커맨드 없이도 작동한다.** 설치만 하면 CLAUDE.md 자동 적용 규칙에 따라 일상 대화에서도 복잡도 판단 → 구현 → 독립 검증이 자동 실행된다.
-
-## Agent Teams
-
-`/nova:team`으로 목적별 에이전트 팀을 병렬 구성한다. tmux 사이드 패널에 팀원 활동이 표시된다.
-
-| 프리셋 | 팀 구성 | 사용 시점 |
-|--------|---------|----------|
-| `qa` | 테스터 + 엣지케이스 + 회귀분석 | PR 전 품질 검증 |
-| `visual-qa` | 스크린샷 + 인터랙션 + 접근성 | UI/UX 시각적 검증 |
-| `review` | 아키텍트 + 보안 + 성능 | 코드 리뷰 |
-| `design` | API설계 + 도메인모델 + DX | 신규 기능 설계 |
-| `refactor` | 클린코드 + 의존성 + 테스트 | 기술부채 해소 |
-| `debug` | 근본원인 + 로그분석 + 수정 | 프로덕션 이슈 |
-
-> Agent Teams는 실험적 기능이다. 활성화: `.claude/settings.json`에 `"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"` 추가
 
 ## 워크플로우
 
@@ -95,7 +79,7 @@ Nova를 설치하면 CLAUDE.md의 자동 적용 규칙에 따라 **모든 대화
 
 **수동 모드**: `/nova:plan` → `/nova:xv`(필요시) → `/nova:design` → 구현 → `/nova:gap` → `/nova:review`
 
-**자동 모드**: `/nova:auto 기능명` → 승인 한 번 → 자율 실행 → 완료
+**검증 모드**: `/nova:auto` → 단발 검증 → Quality Gate 판정
 
 ## 전문 에이전트
 
@@ -174,6 +158,10 @@ Nova는 설계 판단이 중요할 때 가치를 발휘한다. 다음 경우엔 
 - **전문성을 대체하지 않는다**: `/nova:xv`는 판단 재료를 풍부하게 할 뿐이다. 최종 결정은 항상 사람의 몫 — 특히 모든 LLM이 깊이가 부족한 영역(니치 프레임워크, 내부 시스템, 신규 아키텍처)에서는 더욱 그렇다.
 
 세 모델이 모두 동의할 때 스스로에게 물어보자: *"이건 셋 다 틀릴 수 있는 주제인가?"* 그렇다면 인간 전문가를 찾아라.
+
+### Paperclip 같은 오케스트레이터와 어떻게 함께 쓰나?
+
+Nova는 Quality Gate — 검증만 한다. 외부 오케스트레이터(Paperclip 등)가 에이전트 스케줄링, 예산, 팀 조율을 담당한다. Nova는 그 루프 안에서 검증 검문소 역할을 한다: 오케스트레이터가 만들고, Nova가 검증한다.
 
 ## 문서
 

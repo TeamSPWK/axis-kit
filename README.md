@@ -4,7 +4,7 @@
 [![Version](https://img.shields.io/badge/version-2.4.2-blue)](https://github.com/TeamSPWK/nova/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**Build Right the First Time. Faster Every Time.**
+**Verify Before You Ship. Every Time.**
 
 [한국어](README.ko.md)
 
@@ -12,7 +12,7 @@
 > A single wrong decision in week 1 compounds into a full rewrite by week 4.
 > Nova **structures design decisions** to eliminate rework.
 
-Nova is a [Claude Code](https://claude.ai/code) plugin that brings structured methodology to AI-assisted development: independent evaluation, multi-perspective analysis, and living rules that evolve with your project.
+Nova is a [Claude Code](https://claude.ai/code) plugin that acts as a **Quality Gate** for AI-assisted development. It doesn't orchestrate — it verifies. Independent evaluation, multi-AI cross-verification, and design-implementation gap detection.
 
 ## Quick Start
 
@@ -27,7 +27,7 @@ claude plugin install nova@nova-marketplace
 
 ## How It Works
 
-Nova installs into your Claude Code environment and **automatically applies** its methodology to every conversation — no commands needed. The CLAUDE.md auto-apply rules handle complexity assessment, Generator-Evaluator separation, and verification.
+Nova installs into your Claude Code environment and **automatically applies** its Quality Gate methodology to every conversation — no commands needed. The CLAUDE.md auto-apply rules handle complexity assessment, Generator-Evaluator separation, and verification.
 
 ### Core Principles
 
@@ -53,31 +53,15 @@ All commands use the `nova:` prefix.
 | `/nova:next` | Recommends next action based on project state |
 | `/nova:plan feature` | Creates a CPS Plan document |
 | `/nova:design feature` | Creates a CPS Design document |
-| `/nova:auto feature` | Autonomous Plan → Design → Build → Verify pipeline |
+| `/nova:auto feature` | One-shot verification: static analysis + structural review + design alignment |
 | `/nova:xv "question"` | Multi-AI perspective collection (Claude + GPT + Gemini) |
 | `/nova:gap design.md src/` | Detects gaps between design and implementation |
 | `/nova:review src/` | Adversarial code review |
-| `/nova:team preset` | Spawns parallel Agent Teams (QA, review, debug, etc.) |
 | `/nova:init project` | Initializes Nova in a new project |
 | `/nova:propose pattern` | Proposes a new rule from recurring patterns |
 | `/nova:metrics` | Measures Nova adoption level |
 
 > **Works without commands too.** Once installed, Nova's auto-apply rules in CLAUDE.md handle complexity assessment → implementation → independent verification in normal conversations.
-
-## Agent Teams
-
-`/nova:team` spawns purpose-built parallel agent teams. Team members appear in the tmux side panel.
-
-| Preset | Team | Use Case |
-|--------|------|----------|
-| `qa` | Tester + Edge-case + Regression | Pre-PR quality check |
-| `visual-qa` | Screenshot + Interaction + A11y | UI/UX verification |
-| `review` | Architecture + Security + Performance | Code review |
-| `design` | API + Domain Model + DX | Feature design |
-| `refactor` | Clean Code + Dependencies + Tests | Tech debt |
-| `debug` | Root Cause + Logs + Fix | Production issues |
-
-> Agent Teams is experimental. Enable: add `"CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS": "1"` to `.claude/settings.json` env.
 
 ## Workflow
 
@@ -98,7 +82,7 @@ Request
 
 **Manual mode**: `/nova:plan` → `/nova:xv` (if needed) → `/nova:design` → Build → `/nova:gap` → `/nova:review`
 
-**Auto mode**: `/nova:auto feature` → One approval → Autonomous execution → Done
+**Verify mode**: `/nova:auto feature` → One-shot verification → Quality Gate verdict
 
 ## Specialist Agents
 
@@ -177,6 +161,10 @@ Yes. Known limitations:
 - **Not a substitute for expertise**: `/nova:xv` enriches your decision-making material. The final call is always yours — especially in domains where all LLMs lack depth (niche frameworks, internal systems, novel architectures).
 
 When all three models agree, ask yourself: *"Is this something they could all be wrong about?"* If yes, seek a human expert.
+
+### How does Nova work with orchestrators like Paperclip?
+
+Nova is a Quality Gate — it verifies, not orchestrates. External orchestrators (Paperclip, etc.) handle agent scheduling, budgets, and team coordination. Nova fits inside their loop as a verification checkpoint: the orchestrator builds, Nova checks.
 
 ## Documentation
 
