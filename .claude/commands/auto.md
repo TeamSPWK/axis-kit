@@ -1,5 +1,5 @@
 ---
-description: "구현 결과를 한 번에 검증한다. 정적 분석 + 구조적 리뷰 + 설계 정합성을 순차 실행하고 종합 판정을 내린다."
+description: "구현→검증을 한 사이클로 실행한다 (Full Cycle). --verify-only로 검증만 수행 가능."
 ---
 
 # Role
