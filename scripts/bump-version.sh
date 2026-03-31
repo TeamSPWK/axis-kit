@@ -38,6 +38,13 @@ if [[ "$NEW_VERSION" == "$CURRENT" ]]; then
   exit 0
 fi
 
+# 다운그레이드 방지 (X.Y.Z 직접 지정 시)
+if printf '%s\n' "$CURRENT" "$NEW_VERSION" | sort -V | head -1 | grep -q "^$NEW_VERSION$" && [[ "$NEW_VERSION" != "$CURRENT" ]]; then
+  echo "⚠️  다운그레이드 감지: $CURRENT → $NEW_VERSION"
+  echo "    정말 다운그레이드하려면: echo '$NEW_VERSION' > scripts/.nova-version"
+  exit 1
+fi
+
 echo "🔄 $CURRENT → $NEW_VERSION"
 
 # macOS/Linux 호환 sed in-place
