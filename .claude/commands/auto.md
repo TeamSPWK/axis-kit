@@ -63,6 +63,7 @@ Generator 서브에이전트에 전달할 컨텍스트:
 
 > Generator는 `senior-dev` 에이전트 타입을 사용한다.
 > Generator에게 "구현만 하라, 검증은 별도 수행한다"고 명시한다.
+> tmux 세션 내라면 별도 pane으로 spawn하여 사용자가 진행 상황을 볼 수 있게 한다.
 
 ## Phase 3: Verify
 
