@@ -222,6 +222,68 @@ assert "/init: NOVA-STATE.md 생성" \
 echo ""
 
 # ═══════════════════════════════════════════
+# 8-2. Generator-Evaluator 위임 규칙
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[위임 규칙: Generator-Evaluator 분리]${NC}"
+
+assert "CLAUDE.md: 검증 분리 필수(must)" \
+  "grep -q '검증 분리는 필수' '$ROOT_DIR/CLAUDE.md'"
+
+assert "CLAUDE.md: 구현 위임 권장(should)" \
+  "grep -q '구현 위임은 권장' '$ROOT_DIR/CLAUDE.md'"
+
+assert "CLAUDE.md: 복잡도별 구현/검증 테이블" \
+  "grep -q 'Evaluator Lite' '$ROOT_DIR/CLAUDE.md'"
+
+assert "CLAUDE.md: 복잡도 재판단 규칙" \
+  "grep -q '복잡도를 재판단' '$ROOT_DIR/CLAUDE.md'"
+
+assert "CLAUDE.md: 고위험 영역 상향 규칙" \
+  "grep -q '한 단계 상향' '$ROOT_DIR/CLAUDE.md'"
+
+# /auto: Full Cycle + Verify Only 모드
+assert "/auto: Full Cycle 모드" \
+  "grep -q 'Full Cycle' '$ROOT_DIR/.claude/commands/auto.md'"
+
+assert "/auto: --verify-only 플래그" \
+  "grep -q '\-\-verify-only' '$ROOT_DIR/.claude/commands/auto.md'"
+
+assert "/auto: Generator 서브에이전트 Phase" \
+  "grep -q 'Phase 2: Generate' '$ROOT_DIR/.claude/commands/auto.md'"
+
+assert "/auto: Auto-Retry Phase" \
+  "grep -q 'Phase 5: Auto-Retry' '$ROOT_DIR/.claude/commands/auto.md'"
+
+assert "/auto: 재시도 최대 1회" \
+  "grep -q '최대 1회' '$ROOT_DIR/.claude/commands/auto.md'"
+
+assert "/auto: CONDITIONAL 사용자 판단" \
+  "grep -q '사용자에게 판단 위임' '$ROOT_DIR/.claude/commands/auto.md'"
+
+# Evaluator 재검증 프로토콜
+assert "evaluator: FAIL만 자동 재시도" \
+  "grep -q '1회 자동 재시도' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md'"
+
+assert "evaluator: CONDITIONAL 자동 재시도 안 함" \
+  "grep -q '자동 재시도 안 함' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md'"
+
+assert "evaluator: 수정 범위 제한" \
+  "grep -q '수정 범위 제한' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md'"
+
+# 복잡도 기준 통일 검증 (CLAUDE.md와 auto.md 동일 기준)
+CLAUDE_SMALL=$(grep -c '1~2 파일' "$ROOT_DIR/CLAUDE.md" || true)
+AUTO_SMALL=$(grep -c '1~2 파일' "$ROOT_DIR/.claude/commands/auto.md" || true)
+assert "복잡도 기준 통일: Small 1~2 파일" \
+  "[ '$CLAUDE_SMALL' -ge 1 ] && [ '$AUTO_SMALL' -ge 1 ]"
+
+CLAUDE_MED=$(grep -c '3~7 파일' "$ROOT_DIR/CLAUDE.md" || true)
+AUTO_MED=$(grep -c '3~7 파일' "$ROOT_DIR/.claude/commands/auto.md" || true)
+assert "복잡도 기준 통일: Medium 3~7 파일" \
+  "[ '$CLAUDE_MED' -ge 1 ] && [ '$AUTO_MED' -ge 1 ]"
+echo ""
+
+# ═══════════════════════════════════════════
 # 9. bump-version.sh 동작 검증
 # ═══════════════════════════════════════════
 
