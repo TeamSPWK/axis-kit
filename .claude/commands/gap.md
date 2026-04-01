@@ -196,7 +196,7 @@ FAIL 판정 시 다음 형식의 버그 리포트를 작성한다:
 
 # CRITICAL: NOVA-STATE.md 갱신 (이 단계를 건너뛰지 마라)
 
-**Gap 분석 결과를 출력한 직후, 반드시 NOVA-STATE.md를 업데이트한다.** 이 단계 없이 커맨드를 종료하면 안 된다.
+**Gap 분석 결과를 출력한 직후, 다음 도구 호출로 NOVA-STATE.md를 업데이트한다. 출력만 하고 종료하면 안 된다.**
 
 - 프로젝트 루트에 `NOVA-STATE.md`가 없으면 `docs/templates/nova-state.md` 기반으로 생성
 - Refs → Last Verification 갱신

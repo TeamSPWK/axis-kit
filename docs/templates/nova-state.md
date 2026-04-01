@@ -28,6 +28,12 @@
 | 전환 | 일시 | 비고 |
 |------|------|------|
 
+## 마지막 활동
+- 커맨드: {/nova:review 등}
+- 시각: {ISO 8601}
+- 결과: {PASS/CONDITIONAL/FAIL}
+- 대상: {파일/디렉토리}
+
 ## Refs
 - Plan: none
 - Design: none

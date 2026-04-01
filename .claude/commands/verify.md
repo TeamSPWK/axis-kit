@@ -181,6 +181,28 @@ Before/After 코드 + 변경 요약
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
+# CRITICAL: NOVA-STATE.md 갱신 (이 단계를 건너뛰지 마라)
+
+**검증 결과를 출력한 직후, 다음 도구 호출로 NOVA-STATE.md를 업데이트한다. 출력만 하고 종료하면 안 된다.**
+
+- 프로젝트 루트에 `NOVA-STATE.md`가 없으면 `docs/templates/nova-state.md` 기반으로 생성
+- Refs → Last Verification 갱신
+- 마지막 활동 섹션 갱신:
+  ```
+  ## 마지막 활동
+  - 커맨드: /nova:verify
+  - 시각: {ISO 8601}
+  - 결과: {PASS/CONDITIONAL/FAIL}
+  - 대상: {검증 대상 파일/디렉토리}
+  ```
+- **Critical 이슈 발견 시**: `NOVA-STATE.md`의 "Known Gaps" 테이블에 미커버 영역을 추가한다.
+  ```
+  ## Known Gaps (미커버 영역)
+  | 영역 | 미커버 내용 | 우선순위 |
+  |------|-----------|----------|
+  | {파일/모듈} | {미커버 경계값, 미테스트 경로, 알려진 제약} | HIGH/MEDIUM/LOW |
+  ```
+
 # Notes
 - **Generator-Evaluator 분리 원칙**: `/auto`에서 호출될 때는 반드시 독립 서브에이전트로 실행된다.
 - **개별 실행 유지**: `/review`와 `/gap`은 각각 독립적으로 사용 가능. 이 커맨드는 편의 통합.

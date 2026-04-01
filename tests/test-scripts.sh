@@ -219,6 +219,24 @@ assert "/auto: State Update 단계" \
 
 assert "/init: NOVA-STATE.md 생성" \
   "grep -q 'NOVA-STATE.md' '$ROOT_DIR/.claude/commands/init.md'"
+
+assert "/review: NOVA-STATE.md 갱신 섹션 존재" \
+  "grep -q 'CRITICAL.*NOVA-STATE.md' '$ROOT_DIR/.claude/commands/review.md'"
+
+assert "/gap: NOVA-STATE.md 갱신 섹션 존재" \
+  "grep -q 'CRITICAL.*NOVA-STATE.md' '$ROOT_DIR/.claude/commands/gap.md'"
+
+assert "/verify: NOVA-STATE.md 갱신 섹션 존재" \
+  "grep -q 'CRITICAL.*NOVA-STATE.md' '$ROOT_DIR/.claude/commands/verify.md'"
+
+assert "/review: 다음 도구 호출로 갱신 지시" \
+  "grep -q '다음 도구 호출로' '$ROOT_DIR/.claude/commands/review.md'"
+
+assert "/gap: 다음 도구 호출로 갱신 지시" \
+  "grep -q '다음 도구 호출로' '$ROOT_DIR/.claude/commands/gap.md'"
+
+assert "/verify: 다음 도구 호출로 갱신 지시" \
+  "grep -q '다음 도구 호출로' '$ROOT_DIR/.claude/commands/verify.md'"
 echo ""
 
 # ═══════════════════════════════════════════
@@ -331,6 +349,27 @@ assert "동기화: NOVA-STATE.md 세션 상태 (§8)" \
 
 assert "동기화: 커맨드 테이블" \
   "bash '$HOOK_FILE' | grep -q '/nova:review'"
+
+# init-nova-state.sh 실행 결과 검증
+INIT_DIR=$(mktemp -d)
+echo '{"cwd":"'"$INIT_DIR"'"}' | bash "$ROOT_DIR/scripts/init-nova-state.sh" 2>/dev/null || true
+
+assert "init-nova-state: NOVA-STATE.md 생성" \
+  "[ -f '$INIT_DIR/NOVA-STATE.md' ]"
+
+assert "init-nova-state: Known Gaps 섹션" \
+  "grep -q 'Known Gaps' '$INIT_DIR/NOVA-STATE.md'"
+
+assert "init-nova-state: Known Risks 섹션" \
+  "grep -q 'Known Risks' '$INIT_DIR/NOVA-STATE.md'"
+
+assert "init-nova-state: 스프린트 전환 이력 섹션" \
+  "grep -q '스프린트 전환 이력' '$INIT_DIR/NOVA-STATE.md'"
+
+assert "init-nova-state: 마지막 활동 섹션" \
+  "grep -q '마지막 활동' '$INIT_DIR/NOVA-STATE.md'"
+
+rm -rf "$INIT_DIR"
 echo ""
 
 # ═══════════════════════════════════════════
