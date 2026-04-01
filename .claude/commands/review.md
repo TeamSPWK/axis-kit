@@ -79,7 +79,10 @@ description: "코드를 적대적 관점에서 리뷰하고, 숨겨진 문제를
 ```
 - 관련 테스트가 있으면 실행하여 통과 확인
 - 변경된 코드의 동작을 실제로 검증
-- 실행 불가 시 그 사유를 리포트에 명시
+- 실행 불가 시 원인을 구체적으로 보고한다:
+  - node_modules 미설치 → "pnpm install (또는 npm install) 실행 후 재검증 권장"
+  - 가상환경 미활성화 → "python -m venv 또는 pip install 안내"
+  - 패키지 매니저는 lockfile(pnpm-lock.yaml, package-lock.json, yarn.lock, poetry.lock)로 자동 감지한다
 
 ## 보안 검증
 

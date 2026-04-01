@@ -44,11 +44,11 @@ echo ""
 echo -e "${YELLOW}[구조: 커맨드]${NC}"
 
 EXPECTED_COMMANDS=(
-  auto design gap init metrics next
+  auto design explore gap init metrics next
   plan propose review xv
 )
 CMD_COUNT=$(ls "$ROOT_DIR/.claude/commands/"*.md 2>/dev/null | wc -l | tr -d ' ')
-assert "커맨드 파일 존재" "[ '$CMD_COUNT' -ge 10 ]"
+assert "커맨드 파일 존재" "[ '$CMD_COUNT' -ge 11 ]"
 
 for cmd in "${EXPECTED_COMMANDS[@]}"; do
   assert "커맨드: $cmd.md" "[ -f '$ROOT_DIR/.claude/commands/$cmd.md' ]"
@@ -237,6 +237,25 @@ assert "/gap: 다음 도구 호출로 갱신 지시" \
 
 assert "/verify: 다음 도구 호출로 갱신 지시" \
   "grep -q '다음 도구 호출로' '$ROOT_DIR/.claude/commands/verify.md'"
+echo ""
+
+# ═══════════════════════════════════════════
+# 8-1. /nova:explore 커맨드 검증
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[커맨드: explore]${NC}"
+
+assert "explore: 기술 부채 수집 (TODO/FIXME)" \
+  "grep -q 'TODO.*FIXME\|FIXME.*TODO\|기술 부채' '$ROOT_DIR/.claude/commands/explore.md'"
+
+assert "explore: 진입점 식별 키워드" \
+  "grep -q '진입점' '$ROOT_DIR/.claude/commands/explore.md'"
+
+assert "explore: NOVA-STATE.md 브리핑 언급" \
+  "grep -q 'NOVA-STATE.md' '$ROOT_DIR/.claude/commands/explore.md'"
+
+assert "explore: lockfile 자동 감지 언급" \
+  "grep -q 'lockfile' '$ROOT_DIR/.claude/commands/explore.md'"
 echo ""
 
 # ═══════════════════════════════════════════

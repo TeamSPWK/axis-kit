@@ -41,6 +41,15 @@ description: Nova Context Chain — 세션 간 맥락 연속성 보장. NOVA-STA
 - 상세 내용은 `docs/verifications/`에 보존됨 — 상태 파일에서 지워도 유실 없음
 - **NOVA-STATE.md는 항상 50줄 이내 유지** — 초과하면 오래된 항목부터 정리
 
+## Known Gaps 해결 표기 규칙
+
+- 해결된 Known Gaps 항목은 **행을 삭제한다** (취소선 처리 금지)
+- 삭제 전에 해당 항목을 "Recently Done" 테이블에 이동하여 해결 기록을 남긴다:
+  ```
+  | {갭 내용 요약} | {해결 날짜} | RESOLVED | {관련 커밋/PR} |
+  ```
+- 이 규칙의 목적: Known Gaps가 줄어들지 않으면 실제 해결 여부를 판단할 수 없다
+
 ## 세션 종료 프로토콜
 
 1. `NOVA-STATE.md`가 최신 상태인지 확인한다
