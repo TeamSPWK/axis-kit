@@ -271,6 +271,22 @@ assert "evaluator: CONDITIONAL 자동 재시도 안 함" \
 assert "evaluator: 수정 범위 제한" \
   "grep -q '수정 범위 제한' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md'"
 
+# Field Test 스킬 검증
+assert "field-test: 워크트리 격리 명시" \
+  "grep -q 'worktree' '$ROOT_DIR/.claude/skills/field-test/SKILL.md'"
+
+assert "field-test: 오케스트레이터 코드 개입 금지" \
+  "grep -q '코드에 개입하지 않는다' '$ROOT_DIR/.claude/skills/field-test/SKILL.md'"
+
+assert "field-test: 자연어 지시 원칙" \
+  "grep -q '자연어로 말한다' '$ROOT_DIR/.claude/skills/field-test/SKILL.md'"
+
+assert "field-test: P-레벨 분류" \
+  "grep -q 'P0.*P1.*P2\|P0\|P-레벨' '$ROOT_DIR/.claude/skills/field-test/SKILL.md'"
+
+assert "field-test: 워크트리 정리 단계" \
+  "grep -q 'worktree remove' '$ROOT_DIR/.claude/skills/field-test/SKILL.md'"
+
 # 복잡도 기준 통일 검증 (CLAUDE.md와 auto.md 동일 기준)
 CLAUDE_SMALL=$(grep -c '1~2 파일' "$ROOT_DIR/CLAUDE.md" || true)
 AUTO_SMALL=$(grep -c '1~2 파일' "$ROOT_DIR/.claude/commands/auto.md" || true)
