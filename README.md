@@ -25,74 +25,220 @@ claude plugin install nova@nova-marketplace
 /nova:next   # Shows what to do next
 ```
 
-## How It Works
+## What Is Nova?
 
-Nova installs into your Claude Code environment and **automatically applies** its Quality Gate methodology to every conversation — no commands needed. The CLAUDE.md auto-apply rules handle complexity assessment, Generator-Evaluator separation, and verification.
+Nova is a **checkpoint inside the AI orchestrator loop**. It doesn't generate code — it verifies that generated code is correct.
 
-### Core Principles
+```
+┌─────────────────────────────────────────────────┐
+│  User Request                                    │
+│       ↓                                          │
+│  ┌──────────┐    ┌──────────┐    ┌──────────┐   │
+│  │ Generator │───→│  Nova    │───→│Done/Fix  │   │
+│  │ (Build)   │    │ (Verify) │    │          │   │
+│  └──────────┘    └──────────┘    └──────────┘   │
+│                       ↑                          │
+│              Independent subagent                │
+│              Adversarial stance                  │
+└─────────────────────────────────────────────────┘
+```
 
-| Principle | What It Means |
-|-----------|--------------|
-| **Structured** | CPS framework (Context → Problem → Solution) prevents building the wrong thing |
-| **Consistent** | Same process and quality baseline regardless of who works or which AI is used |
-| **X-Verification** | Multi-perspective collection from multiple AI models for design decisions |
-| **Adaptive** | Rules evolve with the project — good patterns are proposed, reviewed, and absorbed |
+The core principle is **Generator-Evaluator Separation**: the agent that writes code and the agent that verifies it are always different. This prevents the "reviewing your own homework" trap.
 
-### Generator-Evaluator Separation
+## How It Works: Natural Language Is Enough
 
-> "A model tends to praise its own output."
+Once installed, Nova's Quality Gate **automatically applies to every conversation** — no commands needed. Just describe your task in natural language.
 
-The agent that implements code and the agent that evaluates it are **always separate**. The evaluator takes an adversarial stance: *find problems, don't rubber-stamp*.
+### Example: "Build a login API"
+
+```
+User: "Build a login API"
+         ↓
+Nova auto-judges:
+  1. Complexity → "Auth domain, escalate → Medium"
+  2. Writes Plan → Waits for user approval
+  3. After approval → Implements
+  4. Independent Evaluator subagent runs adversarial review
+     → "jwt_secret_key hardcoded → Hard-Block"
+  5. Hard-Block found → Reports to user immediately
+```
+
+### Example: "Fix this bug" (Simple)
+
+```
+User: "Fix the NullPointerException"
+         ↓
+Nova auto-judges:
+  1. Complexity → "1 file, clear bug → Simple"
+  2. Fixes immediately
+  3. Independent Evaluator runs Lite verification
+  4. PASS → Done
+```
+
+### Example: "Refactor entire auth system" (Complex)
+
+```
+User: "Switch from JWT to session-based auth"
+         ↓
+Nova auto-judges:
+  1. Complexity → "8+ files, auth domain → Complex"
+  2. Plan → Design → User approval
+  3. Sprint split (Sprint 1: Session model, Sprint 2: Middleware, ...)
+  4. Per-sprint: Implement → Evaluate loop
+  5. Full verification → Done
+```
+
+## Auto-Apply Rules (9 Rules)
+
+These rules apply to every conversation the moment Nova is installed.
+
+### 1. Automatic Complexity Assessment
+
+| Complexity | Criteria | Auto Behavior |
+|-----------|----------|--------------|
+| **Simple** | 1-2 files, clear bug | Implement → Evaluator Lite |
+| **Medium** | 3-7 files, new feature | Plan → Approve → Implement → Evaluator Standard |
+| **Complex** | 8+ files, multi-module | Plan → Design → Sprint split → Evaluator Full |
+
+- Auth/DB/Payment domains escalate one level regardless of file count
+- Re-assess if file count exceeds initial estimate during work
+
+### 2. Generator-Evaluator Separation (Core)
+
+- Implementation (Generator) and verification (Evaluator) are **always separate agents**
+- Evaluator takes an adversarial stance: "Find problems, don't rubber-stamp"
+- Lite verification by default; full verification only with `--strict`
+
+### 3. Verification Criteria (5 Dimensions)
+
+| Criterion | What It Checks |
+|-----------|---------------|
+| **Functionality** | Does it actually work? (compared against requirements) |
+| **Data Flow** | Input → Store → Load → Display → Deliver to user — complete? |
+| **Design Alignment** | Consistent with existing code/architecture? |
+| **Craft** | Error handling, edge cases, type safety |
+| **Boundary Values** | Does it survive 0, negative, empty string, max values without crashing? |
+
+### 4. Execution Verification First
+
+- "Code exists" ≠ "Code works"
+- "Tests pass" ≠ "Verified" — boundary values must be checked separately
+- Environment changes follow 3 steps: Check current → Change → Verify applied
+
+### 5–9. Additional Rules
+
+| Rule | Description |
+|------|------------|
+| **§5 Lightweight Verification** | Default is Lite. Full verification only with `--strict` |
+| **§6 Sprint Split** | 8+ file changes split into independently verifiable sprints |
+| **§7 Blocker Classification** | Auto-Resolve / Soft-Block / Hard-Block. Forced classification after 2 repeated failures |
+| **§8 NOVA-STATE.md** | Immediate update on deploy/test/sprint/blocker/eval results. Known Gaps required |
+| **§9 Emergency Mode** | `--emergency` skips Plan/Design. Fix now, verify after |
 
 ## Commands
 
-All commands use the `nova:` prefix.
+Commands provide **additional control** on top of auto-apply rules.
 
-| Command | Description |
-|---------|------------|
-| `/nova:next` | Recommends next action based on project state |
-| `/nova:plan feature` | Creates a CPS Plan document |
-| `/nova:design feature` | Creates a CPS Design document |
-| `/nova:auto feature` | One-shot verification: static analysis + structural review + design alignment |
-| `/nova:xv "question"` | Multi-AI perspective collection (Claude + GPT + Gemini) |
-| `/nova:gap design.md src/` | Detects gaps between design and implementation |
-| `/nova:review src/` | Adversarial code review |
-| `/nova:init project` | Initializes Nova in a new project |
-| `/nova:propose pattern` | Proposes a new rule from recurring patterns |
-| `/nova:metrics` | Measures Nova adoption level |
-
-> **Works without commands too.** Once installed, Nova's auto-apply rules in CLAUDE.md handle complexity assessment → implementation → independent verification in normal conversations.
+| Command | Description | When To Use |
+|---------|------------|-------------|
+| `/nova:next` | Diagnose project state + recommend next action | Session start, unsure what to do |
+| `/nova:plan feature` | Create CPS Plan document | Planning new features |
+| `/nova:design feature` | Create CPS Design document | Technical design after Plan |
+| `/nova:review src/` | Adversarial code review (`--fix` for auto-fix) | Code quality check |
+| `/nova:verify` | Combined review + gap verification | Post-implementation check |
+| `/nova:gap design.md src/` | Design↔Implementation gap detection | Verify design alignment |
+| `/nova:xv "question"` | Multi-AI perspective collection (Claude + GPT + Gemini) | Design decisions, architecture choices |
+| `/nova:auto feature` | One-shot implement→verify (`--verify-only` for verify only) | End-to-end automation |
+| `/nova:init project` | Initialize Nova + create custom agents | New project setup |
+| `/nova:propose pattern` | Propose recurring patterns as rules | Rule evolution |
+| `/nova:metrics` | Measure Nova adoption level | Adoption tracking |
 
 ## Workflow
 
+### Auto Workflow (Natural Language)
+
 ```
-Request
-  │
-  ├── Simple (bug fix, 1-2 files)
-  │   └── Implement → Independent Evaluator → Done
-  │
-  ├── Medium (new feature, 3-7 files)
-  │   └── Plan → Approve → Implement → Independent Evaluator → Done
-  │
-  └── Complex (8+ files, multi-module)
-      └── Plan → Design → Sprint split → Approve
-          → Per-sprint (Implement → Evaluate) loop
-          → Independent Verifier → Done
+"Build a feature" ──→ Auto complexity assessment
+                              │
+              ┌───────────────┼───────────────┐
+              ▼               ▼               ▼
+           [Simple]        [Medium]        [Complex]
+              │               │               │
+           Implement       Plan→Approve    Plan→Design
+              │               │            →Sprint split
+              │            Implement        →Approve
+              │               │               │
+              ▼               ▼               ▼
+        ┌──────────┐    ┌──────────┐    ┌──────────┐
+        │Evaluator │    │Evaluator │    │Evaluator │
+        │  Lite    │    │ Standard │    │  Full    │
+        └──────────┘    └──────────┘    └──────────┘
+              │               │               │
+           [PASS]          [PASS]          [PASS]
+              ↓               ↓               ↓
+            Done             Done            Done
 ```
 
-**Manual mode**: `/nova:plan` → `/nova:xv` (if needed) → `/nova:design` → Build → `/nova:gap` → `/nova:review`
+### Manual Workflow (Commands)
 
-**Verify mode**: `/nova:auto feature` → One-shot verification → Quality Gate verdict
+```
+/nova:plan → /nova:xv (if needed) → /nova:design → Build → /nova:gap → /nova:review
+```
 
-## Specialist Agents
+## Specialist Agents (5 Types)
 
-| Agent | Expertise |
-|-------|----------|
-| `architect` | System architecture, tech selection, scalability |
-| `senior-dev` | Code quality, refactoring, tech debt |
-| `qa-engineer` | Test strategy, edge cases, quality verification |
-| `security-engineer` | Vulnerability scanning, threat modeling, auth review |
-| `devops-engineer` | CI/CD pipelines, infrastructure, deployment |
+Each agent has a built-in Nova self-check checklist.
+
+| Agent | Expertise | Built-in Checklist |
+|-------|----------|-------------------|
+| `architect` | System design, tech selection, scalability | Design alignment, non-functional requirements |
+| `senior-dev` | Code quality, refactoring, tech debt | Execution verification, env change 3-step, boundary values |
+| `qa-engineer` | Test strategy, edge cases, quality verification | Boundary values, Known Gaps, Hard-Block classification |
+| `security-engineer` | Vulnerability scanning, threat modeling, auth | Auth/secret Hard-Block, Known Gaps |
+| `devops-engineer` | CI/CD, infrastructure, deployment | Post-deploy checklist, blocker classification |
+
+## Session State (NOVA-STATE.md)
+
+Nova maintains context across sessions via `NOVA-STATE.md`.
+
+```markdown
+# NOVA-STATE — project-name
+
+## Current
+- **Goal**: JWT → Session-based auth migration
+- **Phase**: building
+- **Blocker**: none
+
+## Recently Done
+| Task | Completed | Verdict |
+|------|-----------|---------|
+| Sprint 1: Session model | 2026-04-01 | PASS |
+
+## Known Gaps
+| Area | Uncovered | Priority |
+|------|-----------|----------|
+| Concurrent session limit | Not implemented | Medium |
+```
+
+- Located at project root (git root)
+- Updated immediately on deploy/test/sprint/blocker/eval results
+- "ALL PASS" alone is not enough — Known Gaps must be included
+
+## Blocker Classification
+
+Nova auto-classifies issue severity.
+
+| Classification | Condition | Response |
+|---------------|-----------|----------|
+| **Auto-Resolve** | Reversible without external changes | Auto-fix |
+| **Soft-Block** | May fail at runtime | Log and continue |
+| **Hard-Block** | Data loss, security, user misjudgment | **Stop immediately**, ask user |
+
+Code review additional criteria:
+- Runtime crash → Hard-Block
+- Data corruption / integrity violation → Hard-Block
+- User misjudgment (wrong amount/status displayed) → Hard-Block
+- Same failure repeated 2x → Forced blocker classification
 
 ## API Keys (Optional)
 
@@ -122,49 +268,33 @@ claude plugin marketplace remove nova-marketplace
 
 ## What Nova Catches
 
-Our CI runs a [self-verification test](tests/test-self-verify.sh) against intentionally flawed code. Here's what the gap detection finds in a simple auth module:
+Our CI runs a [self-verification test](tests/test-self-verify.sh) against intentionally flawed code:
 
 | Defect | Type | Detection Method |
 |--------|------|-----------------|
-| Missing `GET /api/auth/me` endpoint | Design-Implementation Gap | Endpoint diff: design doc vs route handlers |
-| Plaintext password storage | Security | Design requires bcrypt, code has no hashing import |
-| No email duplicate check (missing 409) | Verification Contract Breach | Design specifies 409 response, code has no conflict handling |
-| No password min-length validation | Verification Contract Breach | Design requires 8+ chars, code has no length check |
-| JWT token missing userId | Data Contract Mismatch | Design specifies userId in token payload, code only includes email |
-| Hardcoded JWT secret key | Security Pattern | Static analysis: string literal in `jwt.sign()` |
-
-> These are **structural checks** that run without an AI model. When Nova's AI agents (`/nova:gap`, `/nova:review`) analyze code, they perform deeper semantic analysis on top of these structural patterns.
+| Missing `GET /api/auth/me` endpoint | Design-Implementation Gap | Design doc vs route handler diff |
+| Plaintext password storage | Security | Design requires bcrypt, no hashing in code |
+| No email duplicate check (missing 409) | Verification Contract Breach | Design specifies 409, no conflict handling |
+| Hardcoded JWT secret key | Security Pattern | Static analysis: string literal |
 
 ## FAQ
 
 ### When should I NOT use Nova?
 
-Nova adds value when design decisions matter. For these cases, just code directly:
-
-- **One-line fixes**: Typos, version bumps, config tweaks — no CPS needed.
-- **Well-defined bug fixes**: Stack trace points to the cause? Fix it. Don't write a Plan.
-- **Exploratory prototypes**: If you're going to throw it away, skip the process.
-- **Tasks under 30 minutes**: If the full cycle (Plan → Design → Gap) takes longer than the task itself, it's overhead, not help.
+- **One-line fixes**: Typos, version bumps — no CPS needed
+- **Clear bug fixes**: Stack trace points to cause? Just fix it
+- **Throwaway prototypes**: Skip the process
+- **Tasks under 30 minutes**: If the cycle takes longer than the task, it's overhead
 
 **Rule of thumb**: If you can hold the entire change in your head, you don't need Nova.
 
-### Are the KPIs proven results?
-
-No. The KPIs in our methodology doc are **adoption targets**, not measured outcomes. We're transparent about this — Nova is a young project and we don't yet have statistically significant before/after data. If you run Nova on a real project and measure results, we'd love to hear about it.
-
 ### Can `/nova:xv` multi-AI consensus be wrong?
 
-Yes. Known limitations:
-
-- **Shared training bias**: Claude, GPT, and Gemini share much of the same training corpus. Strong Consensus doesn't guarantee correctness — it may reflect a shared blind spot.
-- **Qualitative judgment**: Consensus levels (Strong/Partial/Divergent) are AI-generated assessments, not quantitative metrics.
-- **Not a substitute for expertise**: `/nova:xv` enriches your decision-making material. The final call is always yours — especially in domains where all LLMs lack depth (niche frameworks, internal systems, novel architectures).
-
-When all three models agree, ask yourself: *"Is this something they could all be wrong about?"* If yes, seek a human expert.
+Yes. Claude, GPT, and Gemini share much training data. Even unanimous agreement may reflect a shared blind spot. The final call is always yours.
 
 ### How does Nova work with orchestrators like Paperclip?
 
-Nova is a Quality Gate — it verifies, not orchestrates. External orchestrators (Paperclip, etc.) handle agent scheduling, budgets, and team coordination. Nova fits inside their loop as a verification checkpoint: the orchestrator builds, Nova checks.
+Nova is a Quality Gate — it verifies, not orchestrates. The orchestrator builds, Nova checks. It's the checkpoint inside their loop.
 
 ## Documentation
 
