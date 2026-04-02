@@ -115,13 +115,10 @@ CPS(Context-Problem-Solution) 프레임워크로 Plan 문서를 작성한다.
 - 프로젝트 루트에 `NOVA-STATE.md`가 없으면 `docs/templates/nova-state.md` 기반으로 생성
 - Current → Goal을 Plan 제목으로, Phase를 `planning`으로 설정
 - Refs → Plan 경로 기록
-- 마지막 활동 섹션 갱신:
+- Last Activity 갱신:
   ```
-  ## 마지막 활동
-  - 커맨드: /nova:plan
-  - 시각: {ISO 8601}
-  - 결과: 완료
-  - 대상: docs/plans/{slug}.md
+  ## Last Activity
+  - /nova:plan → 완료 — docs/plans/{slug}.md | {ISO 8601}
   ```
 
 # Notes

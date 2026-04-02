@@ -5,6 +5,21 @@
 # 플러그인 설치 전환(v2.0.0) 이후 구조.
 # 스크립트 설치 시대의 테스트는 제거하고,
 # 현재 존재하는 파일 기반으로 검증한다.
+#
+# ── 릴리스 전 수동 검증 예제 ──
+# 서브에이전트 필드 테스트는 설치된 플러그인을 참조하므로,
+# 커밋 전에는 스크립트 출력을 직접 검증한다.
+#
+# 1. init-nova-state.sh 구조 확인:
+#   TDIR=$(mktemp -d) && cd "$TDIR" && git init -q && echo x > f && git add -A && git commit -q -m init
+#   echo "{\"cwd\": \"$TDIR\"}" | bash /path/to/nova/scripts/init-nova-state.sh
+#   cat -n "$TDIR/NOVA-STATE.md" && rm -rf "$TDIR"
+#
+# 2. session-start.sh 규칙 텍스트 확인:
+#   bash hooks/session-start.sh | python3 -m json.tool
+#
+# 3. 커맨드/스킬 동기화 확인:
+#   grep -r "Last Activity" .claude/commands/ .claude/skills/ --include="*.md"
 
 set -uo pipefail
 
@@ -382,11 +397,11 @@ assert "init-nova-state: Known Gaps 섹션" \
 assert "init-nova-state: Known Risks 섹션" \
   "grep -q 'Known Risks' '$INIT_DIR/NOVA-STATE.md'"
 
-assert "init-nova-state: 스프린트 전환 이력 섹션" \
-  "grep -q '스프린트 전환 이력' '$INIT_DIR/NOVA-STATE.md'"
+assert "init-nova-state: Tasks 섹션" \
+  "grep -q '## Tasks' '$INIT_DIR/NOVA-STATE.md'"
 
-assert "init-nova-state: 마지막 활동 섹션" \
-  "grep -q '마지막 활동' '$INIT_DIR/NOVA-STATE.md'"
+assert "init-nova-state: Last Activity 섹션" \
+  "grep -q 'Last Activity' '$INIT_DIR/NOVA-STATE.md'"
 
 rm -rf "$INIT_DIR"
 echo ""

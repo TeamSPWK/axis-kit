@@ -207,13 +207,10 @@ FAIL 판정 시 다음 형식의 버그 리포트를 작성한다:
 
 - 프로젝트 루트에 `NOVA-STATE.md`가 없으면 `docs/templates/nova-state.md` 기반으로 생성
 - Refs → Last Verification 갱신
-- 마지막 활동 섹션 갱신:
+- Last Activity 갱신:
   ```
-  ## 마지막 활동
-  - 커맨드: /nova:gap
-  - 시각: {ISO 8601}
-  - 결과: {PASS/CONDITIONAL/FAIL}
-  - 대상: {설계문서} ↔ {코드디렉토리}
+  ## Last Activity
+  - /nova:gap → {PASS/CONDITIONAL/FAIL} — {설계문서} ↔ {코드디렉토리} | {ISO 8601}
   ```
 
 # Notes

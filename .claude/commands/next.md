@@ -24,16 +24,14 @@ description: "현재 프로젝트 상태를 진단하고 다음에 실행할 Nov
        - **Phase**: {planning|building|verifying|done 중 추론}
        - **Blocker**: none
 
-       ## In Progress
-       | Task | Owner | Started | Status |
-       |------|-------|---------|--------|
+       ## Tasks
+       | Task | Status | Verdict | Note |
+       |------|--------|---------|------|
+       | {추천 액션} | todo | - | - |
 
        ## Recently Done (최근 3개만)
        | Task | Completed | Verdict | Ref |
        |------|-----------|---------|-----|
-
-       ## Next Actions (최대 3개)
-       1. [ ] {추천 액션}
 
        ## Refs
        - Plan: {docs/plans/xxx.md 또는 none}
@@ -43,7 +41,7 @@ description: "현재 프로젝트 상태를 진단하고 다음에 실행할 Nov
      - 생성 후 사용자에게 "📋 NOVA-STATE.md를 자동 생성했습니다." 안내
    - **파일이 있으면**: 읽고 상태 기반 추천
      - Blocker가 있으면 → 블로커 해결을 최우선 추천
-     - In Progress 작업이 있으면 → 해당 작업 이어가기 추천
+     - Tasks에 doing 작업이 있으면 → 해당 작업 이어가기 추천
      - Phase가 `verifying`이면 → `/gap` 또는 `/review` 추천
      - Phase가 `done`이면 → "새 기능 시작 준비 완료" 표시
 

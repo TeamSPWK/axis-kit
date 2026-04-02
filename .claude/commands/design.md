@@ -75,13 +75,10 @@ Plan에 스프린트가 정의되어 있으면 스프린트별로, 없으면 기
 - 프로젝트 루트에 `NOVA-STATE.md`가 없으면 `docs/templates/nova-state.md` 기반으로 생성
 - Current → Phase를 `building`으로 전환
 - Refs → Design 경로 기록
-- 마지막 활동 섹션 갱신:
+- Last Activity 갱신:
   ```
-  ## 마지막 활동
-  - 커맨드: /nova:design
-  - 시각: {ISO 8601}
-  - 결과: 완료
-  - 대상: docs/designs/{slug}.md
+  ## Last Activity
+  - /nova:design → 완료 — docs/designs/{slug}.md | {ISO 8601}
   ```
 
 # Design 반복 루프

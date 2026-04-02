@@ -59,6 +59,13 @@ Evaluator는 변경 규모에 따라 검증 깊이를 자동 조절한다:
 > **고위험 상향**: 인증/DB/결제/보안 변경은 파일 수와 무관하게 한 단계 상향.
 > `--fast` → Lite 강제, `--strict` → Full 강제.
 
+## Last Activity 포맷
+
+NOVA-STATE.md 갱신 시 Last Activity는 **반드시 1줄**로 기록한다:
+```
+- /nova:review → PASS — src/api/ | 2026-04-02T15:30:00+09:00
+```
+
 ## 재검증 프로토콜
 
 > "수정 후 Evaluator를 재실행하지 않으면 Evaluator의 가치가 반감된다."

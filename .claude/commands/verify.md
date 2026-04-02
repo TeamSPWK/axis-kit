@@ -190,13 +190,10 @@ Before/After 코드 + 변경 요약
 
 - 프로젝트 루트에 `NOVA-STATE.md`가 없으면 `docs/templates/nova-state.md` 기반으로 생성
 - Refs → Last Verification 갱신
-- 마지막 활동 섹션 갱신:
+- Last Activity 갱신:
   ```
-  ## 마지막 활동
-  - 커맨드: /nova:verify
-  - 시각: {ISO 8601}
-  - 결과: {PASS/CONDITIONAL/FAIL}
-  - 대상: {검증 대상 파일/디렉토리}
+  ## Last Activity
+  - /nova:verify → {PASS/CONDITIONAL/FAIL} — {검증 대상 파일/디렉토리} | {ISO 8601}
   ```
 - **Critical 이슈 발견 시**: `NOVA-STATE.md`의 "Known Gaps" 테이블에 미커버 영역을 추가한다.
   ```

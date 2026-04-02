@@ -49,7 +49,7 @@ grep -rn "TODO\|FIXME\|HACK\|XXX\|DEPRECATED" --include="*.ts" --include="*.tsx"
 ## Step 5: NOVA-STATE.md 브리핑 (있으면)
 
 - Current Goal, Phase, Blocker 확인
-- In Progress 작업 목록
+- Tasks 작업 목록 (doing 상태)
 - Known Gaps 확인
 
 ## Step 6: "어디부터 볼지" 추천
@@ -86,7 +86,7 @@ grep -rn "TODO\|FIXME\|HACK\|XXX\|DEPRECATED" --include="*.ts" --include="*.tsx"
   목표:    {Goal}
   Phase:   {Phase}
   Blocker: {있으면 내용, 없으면 "없음"}
-  진행 중: {In Progress 항목}
+  진행 중: {Tasks doing 항목}
   Known Gaps: {항목 또는 "없음"}
 
 ## 어디부터 볼까

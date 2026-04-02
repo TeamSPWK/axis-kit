@@ -22,6 +22,12 @@ bash hooks/session-start.sh | python3 -m json.tool      # session-start JSON 유
 bash scripts/bump-version.sh <patch|minor|major>         # 버전 범프
 ```
 
+### 릴리스 전 스크립트 단위 검증
+
+서브에이전트 필드 테스트는 설치된 플러그인 버전을 참조하므로, **커밋 전에는 스크립트 출력을 직접 검증**한다. 검증 예제는 `tests/test-scripts.sh` 상단 주석 참조.
+
+검증 관점: **구조**(섹션 존재/부재) · **포맷**(출력 형식) · **동기화**(nova-rules.md, session-start.sh, commands/*.md, skills/*/SKILL.md 일괄 반영)
+
 ## 플러그인 배포 구조 (필수 이해)
 
 Nova는 Claude Code 플러그인이다. **이 CLAUDE.md는 Nova 개발용이지, 플러그인 사용자에게 전달되지 않는다.**

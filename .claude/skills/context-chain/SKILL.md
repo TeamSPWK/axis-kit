@@ -11,7 +11,7 @@ description: Nova Context Chain — 세션 간 맥락 연속성 보장. NOVA-STA
 
 1. 프로젝트 루트에 `NOVA-STATE.md`가 있으면 읽고 현재 상태를 파악한다
    - Current → 지금 뭘 하고 있었는지
-   - In Progress → 진행 중인 작업과 담당자
+   - Tasks → 진행 중/대기 중인 작업 (Status: todo/doing/done)
    - Blocker → 막혀 있는 것이 있는지
    - Refs → 관련 설계/검증 문서
 2. `NOVA-STATE.md`가 없으면 다음을 스캔하여 상태를 추론한다:
@@ -26,14 +26,23 @@ description: Nova Context Chain — 세션 간 맥락 연속성 보장. NOVA-STA
 
 | 이벤트 | NOVA-STATE.md 갱신 내용 |
 |--------|------------------------|
-| 작업 시작 | In Progress에 행 추가 |
+| 작업 시작 | Tasks에 행 추가 (Status: doing) |
 | git commit | 관련 Task의 Status 업데이트 |
 | `/nova:plan` 완료 | Current Goal/Phase 설정, Refs Plan 경로 기록 |
 | `/nova:design` 완료 | Phase → building 전환, Refs Design 경로 기록 |
 | `/nova:auto` 완료 | Recently Done에 추가 (Verdict + Ref) |
 | `/nova:review` 완료 | Refs의 Last Verification 갱신 |
 | `/nova:gap` 완료 | Refs의 Last Verification 갱신 |
-| 작업 완료 | In Progress → Recently Done 이동 |
+| 작업 완료 | Tasks에서 제거 → Recently Done 이동 |
+
+## Last Activity 포맷
+
+NOVA-STATE.md의 Last Activity는 **반드시 1줄**로 기록한다:
+```
+## Last Activity
+- /nova:review → PASS — src/api/ | 2026-04-02T15:30:00+09:00
+```
+4줄(커맨드/시각/결과/대상) 포맷은 사용하지 않는다.
 
 ## 아카이빙 규칙
 
@@ -54,7 +63,7 @@ description: Nova Context Chain — 세션 간 맥락 연속성 보장. NOVA-STA
 
 1. `NOVA-STATE.md`가 최신 상태인지 확인한다
 2. 미완료 작업이 있으면 Blocker 필드에 사유를 기록한다
-3. Next Actions를 다음 세션에서 바로 실행할 수 있는 수준으로 구체화한다
+3. Tasks의 todo 항목을 다음 세션에서 바로 실행할 수 있는 수준으로 구체화한다
 
 ## Context Reset 전략
 

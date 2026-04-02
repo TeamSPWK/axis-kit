@@ -90,6 +90,7 @@ description: "코드를 적대적 관점에서 리뷰하고, 숨겨진 문제를
 | 인증/인가 | 정상 토큰 + 만료 토큰 + 무토큰 3케이스 |
 | 빌드/배포 설정 | 로컬 빌드 성공 + 컨테이너 기동 + health 엔드포인트 확인 |
 
+- 관련 테스트 파일이 없으면 Step 3을 SKIP하고 "관련 테스트 없음 — 수동 검증 필요" 경고를 판정에 포함한다. 인라인 테스트 자동 생성은 하지 않는다.
 - 실행 불가 시 원인을 구체적으로 보고한다:
   - node_modules 미설치 → "pnpm install (또는 npm install) 실행 후 재검증 권장"
   - 가상환경 미활성화 → "python -m venv 또는 pip install 안내"
@@ -236,13 +237,10 @@ Critical 이슈가 발견되면 수정 후 재검증을 권고한다:
 
 - 프로젝트 루트에 `NOVA-STATE.md`가 없으면 `docs/templates/nova-state.md` 기반으로 생성
 - Refs → Last Verification 갱신
-- 마지막 활동 섹션 갱신:
+- Last Activity 갱신:
   ```
-  ## 마지막 활동
-  - 커맨드: /nova:review
-  - 시각: {ISO 8601}
-  - 결과: {PASS/CONDITIONAL/FAIL}
-  - 대상: {리뷰 대상 파일/디렉토리}
+  ## Last Activity
+  - /nova:review → {PASS/CONDITIONAL/FAIL} — {리뷰 대상 파일/디렉토리} | {ISO 8601}
   ```
 - **보안 이슈 발견 시**: `NOVA-STATE.md`의 "알려진 위험(Known Risks)" 테이블에 해당 이슈를 추가한다. 기존 항목과 중복되면 상태만 갱신한다.
   ```
