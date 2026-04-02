@@ -165,6 +165,22 @@
 - {언어}: {버전}
 - {DB}: {버전}
 
+## Build & Test
+
+```bash
+# 빌드
+{빌드 명령}
+
+# 테스트
+{테스트 명령}
+
+# 린트
+{린트 명령}
+
+# 개발 서버
+{개발 서버 명령}
+```
+
 ## Project Structure
 
 ```
@@ -234,7 +250,7 @@ CLAUDE.md는 Claude가 매 세션 시작 시 자동으로 읽는 파일이다.
 |------|------|------|
 | Language | O | AI 응답 언어 통일 |
 | Nova Engineering (자동 적용 규칙) | O | **핵심 — 커맨드 없이도 방법론 자동 적용** |
-| Tech Stack | O | 기술 맥락 제공 |
+| Tech Stack + Build & Test | O | 기술 맥락 + Claude가 추론 불가한 빌드/테스트 명령 |
 | Conventions | O | 일관성 (프로세스 일관성 핵심) |
 | Human-AI Boundary | O | AI 독단 방지 |
 | Credentials | O | 보안 사고 방지 |

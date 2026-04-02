@@ -209,7 +209,7 @@ assert "context-chain 스킬: NOVA-STATE.md 참조" \
   "grep -q 'NOVA-STATE.md' '$ROOT_DIR/.claude/skills/context-chain/SKILL.md'"
 
 assert "CLAUDE.md: 세션 상태 유지 규칙" \
-  "grep -q '세션 상태 유지' '$ROOT_DIR/CLAUDE.md'"
+  "grep -rq '세션 상태 유지' '$ROOT_DIR/docs/nova-rules.md'"
 
 assert "/next: NOVA-STATE.md 우선 확인" \
   "grep -q 'NOVA-STATE.md' '$ROOT_DIR/.claude/commands/next.md'"
@@ -265,19 +265,19 @@ echo ""
 echo -e "${YELLOW}[위임 규칙: Generator-Evaluator 분리]${NC}"
 
 assert "CLAUDE.md: 검증 분리 필수(must)" \
-  "grep -q '검증 분리는 필수' '$ROOT_DIR/CLAUDE.md'"
+  "grep -q '검증 분리는 필수' '$ROOT_DIR/docs/nova-rules.md'"
 
 assert "CLAUDE.md: 구현 위임 권장(should)" \
-  "grep -q '구현 위임은 권장' '$ROOT_DIR/CLAUDE.md'"
+  "grep -q '구현 위임은 권장' '$ROOT_DIR/docs/nova-rules.md'"
 
 assert "CLAUDE.md: 복잡도별 구현/검증 테이블" \
-  "grep -q 'Evaluator Lite' '$ROOT_DIR/CLAUDE.md'"
+  "grep -q 'Evaluator Lite' '$ROOT_DIR/docs/nova-rules.md'"
 
 assert "CLAUDE.md: 복잡도 재판단 규칙" \
-  "grep -q '복잡도를 재판단' '$ROOT_DIR/CLAUDE.md'"
+  "grep -q '복잡도를 재판단' '$ROOT_DIR/docs/nova-rules.md'"
 
 assert "CLAUDE.md: 고위험 영역 상향 규칙" \
-  "grep -q '한 단계 상향' '$ROOT_DIR/CLAUDE.md'"
+  "grep -q '한 단계 상향' '$ROOT_DIR/docs/nova-rules.md'"
 
 # /auto: Full Cycle + Verify Only 모드
 assert "/auto: Full Cycle 모드" \
@@ -325,12 +325,12 @@ assert "field-test: 워크트리 정리 단계" \
   "grep -q 'worktree remove' '$ROOT_DIR/.claude/skills/field-test/SKILL.md'"
 
 # 복잡도 기준 통일 검증 (CLAUDE.md와 auto.md 동일 기준)
-CLAUDE_SMALL=$(grep -c '1~2 파일' "$ROOT_DIR/CLAUDE.md" || true)
+CLAUDE_SMALL=$(grep -c '1~2 파일' "$ROOT_DIR/docs/nova-rules.md" || true)
 AUTO_SMALL=$(grep -c '1~2 파일' "$ROOT_DIR/.claude/commands/auto.md" || true)
 assert "복잡도 기준 통일: Small 1~2 파일" \
   "[ '$CLAUDE_SMALL' -ge 1 ] && [ '$AUTO_SMALL' -ge 1 ]"
 
-CLAUDE_MED=$(grep -c '3~7 파일' "$ROOT_DIR/CLAUDE.md" || true)
+CLAUDE_MED=$(grep -c '3~7 파일' "$ROOT_DIR/docs/nova-rules.md" || true)
 AUTO_MED=$(grep -c '3~7 파일' "$ROOT_DIR/.claude/commands/auto.md" || true)
 assert "복잡도 기준 통일: Medium 3~7 파일" \
   "[ '$CLAUDE_MED' -ge 1 ] && [ '$AUTO_MED' -ge 1 ]"

@@ -88,7 +88,7 @@ Nova auto-judges:
   5. Full verification → Done
 ```
 
-## Auto-Apply Rules (9 Rules)
+## Auto-Apply Rules (10 Rules)
 
 These rules apply to every conversation the moment Nova is installed.
 
@@ -125,7 +125,7 @@ These rules apply to every conversation the moment Nova is installed.
 - "Tests pass" ≠ "Verified" — boundary values must be checked separately
 - Environment changes follow 3 steps: Check current → Change → Verify applied
 
-### 5–9. Additional Rules
+### 5–10. Additional Rules
 
 | Rule | Description |
 |------|------------|
@@ -134,6 +134,7 @@ These rules apply to every conversation the moment Nova is installed.
 | **§7 Blocker Classification** | Auto-Resolve / Soft-Block / Hard-Block. Forced classification after 2 repeated failures |
 | **§8 NOVA-STATE.md** | Immediate update on deploy/test/sprint/blocker/eval results. Known Gaps required |
 | **§9 Emergency Mode** | `--emergency` skips Plan/Design. Fix now, verify after |
+| **§10 Environment Safety** | Never edit config files directly. Use env vars or CLI flags |
 
 ## Commands
 
@@ -144,14 +145,15 @@ Commands provide **additional control** on top of auto-apply rules.
 | `/nova:next` | Diagnose project state + recommend next action | Session start, unsure what to do |
 | `/nova:plan feature` | Create CPS Plan document | Planning new features |
 | `/nova:design feature` | Create CPS Design document | Technical design after Plan |
-| `/nova:review src/` | Adversarial code review (`--fix` for auto-fix) | Code quality check |
-| `/nova:verify` | Combined review + gap verification | Post-implementation check |
-| `/nova:gap design.md src/` | Design↔Implementation gap detection | Verify design alignment |
-| `/nova:xv "question"` | Multi-AI perspective collection (Claude + GPT + Gemini) | Design decisions, architecture choices |
-| `/nova:auto feature` | One-shot implement→verify (`--verify-only` for verify only) | End-to-end automation |
+| `/nova:review src/` | Adversarial code review (`--fast` / `--strict` / `--fix` / `--jury`) | Code quality check |
+| `/nova:verify` | Combined review + gap (`--fast` / `--strict`) | Post-implementation check |
+| `/nova:gap design.md src/` | Design↔Implementation gap detection (`--fast` / `--strict`) | Verify design alignment |
+| `/nova:xv "question"` | Multi-AI perspective (Claude+GPT+Gemini, `--agent` for no API keys) | Design decisions, architecture choices |
+| `/nova:auto feature` | Implement→verify cycle (`--verify-only` / `--emergency`) | End-to-end automation |
 | `/nova:init project` | Initialize Nova + create custom agents | New project setup |
 | `/nova:propose pattern` | Propose recurring patterns as rules | Rule evolution |
 | `/nova:metrics` | Measure Nova adoption level | Adoption tracking |
+| `/nova:explore` | Auto-analyze codebase, brief where to start | First time on a new project |
 
 ## Workflow
 
