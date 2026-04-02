@@ -24,7 +24,7 @@ claude plugin install nova@nova-marketplace
 
 ## Nova란?
 
-Nova는 **AI 오케스트레이터 루프 안의 검문소**다. 코드를 생성하지 않고, 생성된 코드가 제대로 됐는지 검증한다.
+Nova는 **AI 오케스트레이터 루프 안의 검문소**다. 코드를 생성하지 않고, 생성된 코드가 제대로 됐는지 검증한다. 또한 복잡한 멀티 프로젝트 작업을 자동으로 오케스트레이션한다.
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -55,7 +55,7 @@ Nova는 Claude Code의 **하네스 레이어** — 훅, 커맨드, 에이전트,
 │  │                  │    10개 규칙을 LLM 컨텍스트로 주입 │
 │  └─────────────────┘                                 │
 │                                                      │
-│  ┌─────────────────┐   슬래시 커맨드 12개              │
+│  ┌─────────────────┐   슬래시 커맨드 13개              │
 │  │ .claude-plugin/  │──→ /nova:plan, /nova:review,    │
 │  │   *.md           │    /nova:gap, /nova:auto ...    │
 │  └─────────────────┘                                 │
@@ -65,9 +65,10 @@ Nova는 Claude Code의 **하네스 레이어** — 훅, 커맨드, 에이전트,
 │  │   agents/*.md    │    qa-engineer, security, devops │
 │  └─────────────────┘                                 │
 │                                                      │
-│  ┌─────────────────┐   복합 스킬 4종                  │
+│  ┌─────────────────┐   복합 스킬 5종                  │
 │  │ skills/*/SKILL.md│──→ evaluator, jury,             │
-│  │                  │    context-chain, field-test    │
+│  │                  │    context-chain, field-test,   │
+│  │                  │    orchestrator                 │
 │  └─────────────────┘                                 │
 └─────────────────────────────────────────────────────┘
 ```
@@ -77,7 +78,7 @@ Nova는 Claude Code의 **하네스 레이어** — 훅, 커맨드, 에이전트,
 | **규칙 주입** | `hooks/session-start.sh` | SessionStart 훅 | 매 세션 10개 자동 적용 규칙을 LLM 컨텍스트로 주입 |
 | **커맨드** | `.claude-plugin/*.md` | 슬래시 커맨드 | 사용자가 호출하는 워크플로우 (`/nova:plan`, `/nova:review` 등) |
 | **에이전트** | `.claude-plugin/agents/*.md` | 서브에이전트 타입 | 도메인별 체크리스트를 내장한 전문 에이전트 |
-| **스킬** | `skills/*/SKILL.md` | 스킬 시스템 | 복합 다단계 작업 (평가, 배심원, 컨텍스트 체인) |
+| **스킬** | `skills/*/SKILL.md` | 스킬 시스템 | 복합 다단계 작업 (평가, 배심원, 컨텍스트 체인, 오케스트레이션) |
 
 **핵심 구분**: "자동 적용"이란 `session-start.sh`가 세션 시작 시 규칙 텍스트를 Claude 컨텍스트에 주입하는 것이다. Claude가 해당 규칙을 행동 지침으로 따르는 구조 — 코드 수준의 인터셉터가 아니라 하네스 수준의 프롬프트 거버넌스다.
 
@@ -224,6 +225,42 @@ Nova 자동 판단:
 | `/nova:propose 패턴` | 반복 패턴을 규칙으로 제안 | 프로젝트 규칙 진화 |
 | `/nova:metrics` | Nova 도입 수준 측정 | 도입 수준 점검 |
 | `/nova:explore` | 코드베이스 자동 분석, 어디부터 볼지 브리핑 | 새 프로젝트 첫 투입 시 |
+| `/nova:orchestrate 작업` | 설계→구현→검증→수정 전체 사이클 자동화 (`--design-only` / `--skip-qa` / `--strict`) | 복잡한 멀티 스텝 작업 |
+
+## MCP 서버
+
+Nova는 로컬 MCP (Model Context Protocol) 서버를 포함한다. Nova의 규칙, 상태, 도구를 어느 Claude Code 세션에서든 접근할 수 있게 한다 — Nova 프로젝트 밖에서도.
+
+### 설정
+
+```bash
+cd mcp-server && pnpm install && pnpm build
+```
+
+프로젝트 루트의 `.mcp.json`이 Claude Code에 자동 등록한다.
+
+### 제공 도구
+
+| 도구 | 설명 |
+|------|------|
+| `get_rules` | Nova 규칙 반환 (전체 또는 섹션별 §1~§9) |
+| `get_commands` | 전체 슬래시 커맨드 목록과 설명 |
+| `get_state` | 지정 프로젝트의 NOVA-STATE.md 읽기 |
+| `create_plan` | 주제에 대한 CPS Plan 템플릿 생성 |
+| `orchestrate` | 복잡도별 에이전트 편성 가이드 반환 |
+| `verify` | 검증 강도별 체크리스트 반환 (lite/standard/full) |
+
+### 동작 방식
+
+```
+어느 프로젝트든 ──→ Claude Code ──→ Nova MCP 서버 (로컬, stdio)
+                                        │
+                                        ├── get_rules()     → Nova 규칙 전문
+                                        ├── get_state()     → NOVA-STATE.md
+                                        └── orchestrate()   → 에이전트 편성 가이드
+```
+
+MCP 서버는 Nova 설치 디렉토리에서 파일을 직접 읽는다. API 호출 없음, 외부 의존성 없음.
 
 ## 스킬
 
@@ -235,6 +272,7 @@ Nova 자동 판단:
 | **jury** | 멀티 관점 LLM 배심원 — 단일 Evaluator의 편향을 병렬 평가로 보정 | `/nova:review --jury` |
 | **context-chain** | NOVA-STATE.md 기반 세션 연속성 — 대화가 끊겨도 맥락 유지 | `/nova:next`, 세션 시작 |
 | **field-test** | 워크트리 격리로 실제 프로젝트에서 실전 테스트 — 흔적 없이 진행 | 수동 호출 |
+| **orchestrator** | 자동 오케스트레이션 엔진 — 자연어를 CPS 설계 → 에이전트 편성 → 병렬 구현 → QA → 자동 수정으로 변환 | `/nova:orchestrate` |
 
 ## 전문 에이전트 (5종)
 
@@ -346,6 +384,10 @@ claude plugin marketplace remove nova-marketplace
 ### AI 오케스트레이터와 어떻게 함께 쓰나?
 
 Nova는 Quality Gate — 검증만 한다. 오케스트레이터가 만들고, Nova가 검증한다. Claude Code의 하네스 레이어를 통해 그 루프 안의 검문소 역할을 한다.
+
+### MCP 서버는 뭔가?
+
+MCP 서버는 어느 Claude Code 세션에서든 Nova의 규칙과 오케스트레이션 가이드에 접근할 수 있게 한다 — Nova가 플러그인으로 설치되지 않은 프로젝트에서도. 로컬에서 항상 사용 가능한 "Nova의 두뇌"다.
 
 ### "하네스 엔지니어링"이란?
 

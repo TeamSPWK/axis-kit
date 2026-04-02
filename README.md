@@ -12,7 +12,7 @@
 > A single wrong decision in week 1 compounds into a full rewrite by week 4.
 > Nova **structures design decisions** to eliminate rework.
 
-Nova is a [Claude Code](https://claude.ai/code) plugin that acts as a **Quality Gate** for AI-assisted development. It doesn't orchestrate — it verifies. Independent evaluation, multi-AI cross-verification, and design-implementation gap detection.
+Nova is a [Claude Code](https://claude.ai/code) plugin that acts as a **Quality Gate** for AI-assisted development. It verifies generated code and orchestrates complex multi-project workflows. Independent evaluation, multi-AI cross-verification, and design-implementation gap detection.
 
 ## Quick Start
 
@@ -27,7 +27,7 @@ claude plugin install nova@nova-marketplace
 
 ## What Is Nova?
 
-Nova is a **checkpoint inside the AI orchestrator loop**. It doesn't generate code — it verifies that generated code is correct.
+Nova is a **checkpoint inside the AI orchestrator loop**. It verifies that generated code is correct, and orchestrates complex multi-step workflows when needed.
 
 ```
 ┌─────────────────────────────────────────────────┐
@@ -58,7 +58,7 @@ Nova works by engineering Claude Code's **harness layer** — the hooks, command
 │  │                  │    LLM context every session    │
 │  └─────────────────┘                                 │
 │                                                      │
-│  ┌─────────────────┐   12 slash commands             │
+│  ┌─────────────────┐   13 slash commands             │
 │  │ .claude-plugin/  │──→ /nova:plan, /nova:review,    │
 │  │   *.md           │    /nova:gap, /nova:auto ...    │
 │  └─────────────────┘                                 │
@@ -68,9 +68,10 @@ Nova works by engineering Claude Code's **harness layer** — the hooks, command
 │  │   agents/*.md    │    qa-engineer, security, devops │
 │  └─────────────────┘                                 │
 │                                                      │
-│  ┌─────────────────┐   4 complex skills              │
+│  ┌─────────────────┐   5 complex skills              │
 │  │ skills/*/SKILL.md│──→ evaluator, jury,             │
-│  │                  │    context-chain, field-test    │
+│  │                  │    context-chain, field-test,   │
+│  │                  │    orchestrator                 │
 │  └─────────────────┘                                 │
 └─────────────────────────────────────────────────────┘
 ```
@@ -80,7 +81,8 @@ Nova works by engineering Claude Code's **harness layer** — the hooks, command
 | **Rules injection** | `hooks/session-start.sh` | SessionStart hook | Injects 10 auto-apply rules into every session as LLM context |
 | **Commands** | `.claude-plugin/*.md` | Slash commands | User-invocable workflows (`/nova:plan`, `/nova:review`, etc.) |
 | **Agents** | `.claude-plugin/agents/*.md` | Subagent types | Specialist agents with domain-specific checklists |
-| **Skills** | `skills/*/SKILL.md` | Skill system | Complex multi-step operations (evaluation, jury, context chain) |
+| **Skills** | `skills/*/SKILL.md` | Skill system | Complex multi-step operations (evaluation, jury, context chain, orchestration) |
+| **MCP Server** | `mcp-server/` | stdio MCP | Exposes Nova rules, state, and tools to any Claude Code session |
 
 **Key distinction**: "Auto-apply rules" means `session-start.sh` injects rule text into Claude's context at session start. Claude then follows these rules as behavioral guidelines — it's prompt-level governance via the harness, not a code-level interceptor.
 
@@ -227,6 +229,42 @@ Commands provide **additional control** on top of auto-apply rules.
 | `/nova:propose pattern` | Propose recurring patterns as rules | Rule evolution |
 | `/nova:metrics` | Measure Nova adoption level | Adoption tracking |
 | `/nova:explore` | Auto-analyze codebase, brief where to start | First time on a new project |
+| `/nova:orchestrate task` | Auto-orchestrate: design→implement→verify→fix cycle (`--design-only` / `--skip-qa` / `--strict`) | Complex multi-step tasks |
+
+## MCP Server
+
+Nova includes a local MCP (Model Context Protocol) server that exposes Nova's rules, state, and tools to any Claude Code session — even outside the Nova project.
+
+### Setup
+
+```bash
+cd mcp-server && pnpm install && pnpm build
+```
+
+The `.mcp.json` at project root auto-registers the server with Claude Code.
+
+### Available Tools
+
+| Tool | Description |
+|------|------------|
+| `get_rules` | Returns Nova rules (full or by section §1-§9) |
+| `get_commands` | Lists all slash commands with descriptions |
+| `get_state` | Reads NOVA-STATE.md from any project path |
+| `create_plan` | Generates CPS Plan template for a given topic |
+| `orchestrate` | Returns agent formation guide by complexity |
+| `verify` | Returns verification checklist by scope (lite/standard/full) |
+
+### How It Works
+
+```
+Any Project ──→ Claude Code ──→ Nova MCP Server (localhost, stdio)
+                                    │
+                                    ├── get_rules()     → Full Nova ruleset
+                                    ├── get_state()     → NOVA-STATE.md
+                                    └── orchestrate()   → Agent team guide
+```
+
+The MCP server reads files directly from the Nova installation directory. No API calls, no external dependencies.
 
 ## Skills
 
@@ -238,6 +276,7 @@ Skills are multi-step operations that commands invoke internally. They can also 
 | **jury** | Multi-perspective LLM Jury — corrects single-evaluator bias by running parallel assessments | `/nova:review --jury` |
 | **context-chain** | Session continuity via NOVA-STATE.md — preserves context across conversations | `/nova:next`, session start |
 | **field-test** | Live testing in real projects using isolated worktrees — leaves no trace | Manual invocation for validation |
+| **orchestrator** | Auto-orchestration engine — converts natural language to CPS design → agent team formation → parallel implementation → QA → auto-fix | `/nova:orchestrate` |
 
 ## Specialist Agents (5 Types)
 
@@ -349,6 +388,10 @@ Yes. Claude, GPT, and Gemini share much training data. Even unanimous agreement 
 ### How does Nova work with AI orchestrators?
 
 Nova is a Quality Gate — it verifies, not orchestrates. The orchestrator builds, Nova checks. It's the checkpoint inside their loop, integrated via Claude Code's harness layer.
+
+### What is the MCP server for?
+
+The MCP server lets any Claude Code session access Nova's rules and orchestration guides — even in projects that don't have Nova installed as a plugin. It's a "Nova brain" that's always available locally.
 
 ### What is "harness engineering"?
 
