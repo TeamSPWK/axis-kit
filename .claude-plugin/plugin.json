@@ -17,19 +17,5 @@
     "cps",
     "code-review",
     "gap-analysis"
-  ],
-  "userConfig": {
-    "OPENAI_API_KEY": {
-      "title": "OpenAI API Key",
-      "description": "OpenAI API 키 (다관점 수집 /xv용, 선택)",
-      "type": "string",
-      "sensitive": true
-    },
-    "GEMINI_API_KEY": {
-      "title": "Gemini API Key",
-      "description": "Google Gemini API 키 (다관점 수집 /xv용, 선택)",
-      "type": "string",
-      "sensitive": true
-    }
-  }
+  ]
 }
