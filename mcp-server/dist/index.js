@@ -6784,12 +6784,12 @@ var require_dist = __commonJS({
         throw new Error(`Unknown format "${name}"`);
       return f;
     };
-    function addFormats(ajv, list, fs4, exportName) {
+    function addFormats(ajv, list, fs5, exportName) {
       var _a;
       var _b;
       (_a = (_b = ajv.opts.code).formats) !== null && _a !== void 0 ? _a : _b.formats = (0, codegen_1._)`require("ajv-formats/dist/formats").${exportName}`;
       for (const f of list)
-        ajv.addFormat(f, fs4[f]);
+        ajv.addFormat(f, fs5[f]);
     }
     module.exports = exports = formatsPlugin;
     Object.defineProperty(exports, "__esModule", { value: true });
@@ -21012,6 +21012,7 @@ var StdioServerTransport = class {
 // src/index.ts
 import { fileURLToPath } from "url";
 import path4 from "path";
+import fs4 from "fs";
 
 // src/tools/get-rules.ts
 import fs from "fs/promises";
@@ -21177,8 +21178,14 @@ function registerGetState(server2) {
       })
     },
     async ({ project_path }) => {
-      const targetDir = project_path ?? process.cwd();
+      const targetDir = path3.resolve(project_path ?? process.cwd());
       const statePath = path3.join(targetDir, "NOVA-STATE.md");
+      const resolvedState = path3.resolve(statePath);
+      if (!resolvedState.startsWith(targetDir + path3.sep) && resolvedState !== path3.join(targetDir, "NOVA-STATE.md")) {
+        return {
+          content: [{ type: "text", text: "\uC798\uBABB\uB41C \uACBD\uB85C\uC785\uB2C8\uB2E4." }]
+        };
+      }
       try {
         const content = await fs3.readFile(statePath, "utf-8");
         return {
@@ -21599,9 +21606,22 @@ function registerVerify(server2) {
 // src/index.ts
 var __dirname = path4.dirname(fileURLToPath(import.meta.url));
 var NOVA_ROOT = path4.resolve(__dirname, "../..");
+function readVersion() {
+  try {
+    const pluginJson = JSON.parse(
+      fs4.readFileSync(
+        path4.join(NOVA_ROOT, ".claude-plugin", "plugin.json"),
+        "utf-8"
+      )
+    );
+    return pluginJson.version ?? "0.0.0";
+  } catch {
+    return "0.0.0";
+  }
+}
 var server = new McpServer({
   name: "nova",
-  version: "3.12.0"
+  version: readVersion()
 });
 registerGetRules(server, NOVA_ROOT);
 registerGetCommands(server, NOVA_ROOT);

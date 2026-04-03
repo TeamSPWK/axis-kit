@@ -20,8 +20,16 @@ export function registerGetState(server: McpServer): void {
       }),
     },
     async ({ project_path }) => {
-      const targetDir = project_path ?? process.cwd();
+      const targetDir = path.resolve(project_path ?? process.cwd());
       const statePath = path.join(targetDir, "NOVA-STATE.md");
+
+      // Path Traversal 방어: 최종 경로가 targetDir 내부인지 확인
+      const resolvedState = path.resolve(statePath);
+      if (!resolvedState.startsWith(targetDir + path.sep) && resolvedState !== path.join(targetDir, "NOVA-STATE.md")) {
+        return {
+          content: [{ type: "text" as const, text: "잘못된 경로입니다." }],
+        };
+      }
 
       try {
         const content = await fs.readFile(statePath, "utf-8");
