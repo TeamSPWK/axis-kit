@@ -13,13 +13,31 @@ description: "코드를 적대적 관점에서 리뷰하고, 숨겨진 문제를
 > "깔끔해 보이는 코드일수록 더 의심하라."
 
 # Options
-- `--fast` : Lite 검증 — Step 1(정적 분석)만 수행 + 구조적 문제 Top 3만 보고. 오타/설정/README 수준의 변경에 적합.
+- `--fast` : Lite 검증 — Step 1(정적 분석)만 수행 + 구조적 문제 Top 3과 수정 방향을 보고. 오타/설정/README 수준의 변경에 적합.
 - `--strict` : Full 검증 — 3단계 평가 + Mutation Test + 보안 심층 스캔. DB 스키마/결제/인증 변경에 적합.
 - `--jury` : LLM Jury 모드 — 3인 심판(정확성/설계/사용자)으로 다중 관점 리뷰. nova-jury 스킬 참조.
 - `--fix` : 자동 수정 모드 — 리뷰 후 Critical/Warning 이슈에 대해 수정 코드를 제안하고, 사용자 승인 시 자동 적용 + 재검증한다.
-- `--summary` : 요약 모드 — 판정 + Critical/Warning 목록만 출력한다. 상세 분석(Rule Violation, Complexity, Refactoring, Nova Alignment)은 생략. 빠른 피드백 루프에 적합.
+- `--summary` : 요약 모드 — 내부 분석은 기본 모드와 동일하게 수행하되, 출력을 판정 + Critical/Warning 목록으로 축소한다. 상세 섹션(Rule Violation, Complexity, Refactoring, Nova Alignment)은 생략. 빠른 피드백 루프에 적합.
 - `--scope <영역>` : 리뷰 범위를 특정 관점으로 제한한다. 아래 스코프 참조.
 - (기본) : 변경 영역의 위험도를 자동 판단하여 검증 강도를 스케일링한다.
+
+## --summary vs --fast: 언제 뭘 쓸까?
+
+이 둘은 **줄이는 대상이 다르다**:
+
+| | `--summary` | `--fast` |
+|---|---|---|
+| **줄이는 것** | 출력량 | 분석 범위 |
+| **분석 수행** | 기본 모드와 동일 (3단계 전체) | Step 1(정적 분석)만 |
+| **출력** | 판정 + 이슈 목록만 | Top 3 구조적 문제 + 수정 방향 |
+| **적합 상황** | 통과 여부만 빠르게 확인 | 소규모 변경의 가벼운 리뷰 |
+
+```
+/review --summary src/       # "이 코드 괜찮아?" → 판정만 빠르게
+/review --fast src/           # "뭐가 문제야?" → 가벼운 분석 + 수정 방향
+/review src/                  # "어떻게 고칠까?" → 전체 분석 + Before/After
+/review --fast --summary src/ # Lite 분석(Step 1만) + 요약 출력
+```
 
 ## --scope: 리뷰 범위 제한
 
