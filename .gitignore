@@ -35,3 +35,7 @@ mcp-server/dist/
 
 # Nova Orbit (별도 프로젝트)
 nova-orbit/
+
+# Nova Orbit — agent worktrees (do not commit)
+.nova-worktrees/
+.claude/worktrees/
