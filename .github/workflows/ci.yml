@@ -20,5 +20,8 @@ jobs:
       - name: Run tests
         run: bash tests/test-scripts.sh
 
+      - name: Run nova-ci tests
+        run: bash tests/test-nova-ci.sh
+
       - name: Run self-verification tests
         run: bash tests/test-self-verify.sh

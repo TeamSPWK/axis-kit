@@ -1,0 +1,8 @@
+{
+  "verdict": "PASS",
+  "intensity": "Lite",
+  "summary": "All checks passed — no issues found.",
+  "counts": { "critical": 0, "high": 0, "warning": 0 },
+  "issues": [],
+  "known_gaps": []
+}

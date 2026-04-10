@@ -1,0 +1,14 @@
+{
+  "verdict": "CONDITIONAL",
+  "intensity": "Full",
+  "summary": "No critical issues, but uncovered areas remain.",
+  "counts": { "critical": 0, "high": 2, "warning": 5 },
+  "issues": [
+    { "severity": "high", "location": "src/handler.ts:33", "issue": "Missing error handling", "action": "Add try-catch" },
+    { "severity": "high", "location": "src/validator.ts:12", "issue": "Empty string not validated", "action": "Add input validation" }
+  ],
+  "known_gaps": [
+    "Auth module boundary values not tested",
+    "Concurrency handling not verified"
+  ]
+}
