@@ -225,6 +225,30 @@ Nova 자동 판단:
 | `/nova:explore` | 코드베이스 자동 분석, 어디부터 볼지 브리핑 | 새 프로젝트 첫 투입 시 |
 | `/nova:orchestrate 작업` | 설계→구현→검증→수정 전체 사이클 자동화 (`--design-only` / `--skip-qa` / `--strict`) | 복잡한 멀티 스텝 작업 |
 
+## Self-Evolution (자동 진화)
+
+Nova는 스스로 진화한다. `/nova:evolve`가 기술 동향을 스캔하고, Nova에 적용할 개선점을 찾아 제안하거나 직접 구현한다.
+
+```bash
+/nova:evolve              # 기술 동향 스캔 + 제안서 생성 (기본)
+/nova:evolve --apply      # 제안서 기반 구현 + 품질 게이트
+/nova:evolve --auto       # scan + apply + 자율 범위 자동 머지
+```
+
+### 자율 범위 정책
+
+| 수준 | 예시 | 자동화 |
+|------|------|--------|
+| **patch** | 문서 개선, 체크리스트 보완 | 자동 커밋 |
+| **minor** | 검증 기준 추가, 훅 개선 | PR 생성 |
+| **major** | 새 커맨드, 아키텍처 변경 | 제안서만 |
+
+### 자동 스케줄
+
+Claude Code 원격 에이전트로 **매주 월/수/금 06:00 KST**에 자동 실행된다.
+
+관리: https://claude.ai/code/scheduled
+
 ## MCP 서버
 
 Nova는 로컬 MCP (Model Context Protocol) 서버를 포함한다. Nova의 규칙, 상태, 도구를 어느 Claude Code 세션에서든 접근할 수 있게 한다 — Nova 프로젝트 밖에서도.

@@ -229,6 +229,30 @@ Commands provide **additional control** on top of auto-apply rules.
 | `/nova:explore` | Auto-analyze codebase, brief where to start | First time on a new project |
 | `/nova:orchestrate task` | Auto-orchestrate: design→implement→verify→fix cycle (`--design-only` / `--skip-qa` / `--strict`) | Complex multi-step tasks |
 
+## Self-Evolution
+
+Nova evolves itself. `/nova:evolve` scans tech trends, filters by Nova relevance, and proposes or applies improvements automatically.
+
+```bash
+/nova:evolve              # Scan trends + generate proposals (default)
+/nova:evolve --apply      # Implement proposals + quality gate
+/nova:evolve --auto       # scan + apply + auto-merge within scope
+```
+
+### Autonomy Policy
+
+| Level | Example | Automation |
+|-------|---------|-----------|
+| **patch** | Docs improvement, checklist updates | Auto-commit |
+| **minor** | New verification criteria, hook improvements | PR creation |
+| **major** | New commands, architecture changes | Proposal only |
+
+### Automatic Schedule
+
+Runs automatically via Claude Code remote agent **every Mon/Wed/Fri at 06:00 KST**.
+
+Manage: https://claude.ai/code/scheduled
+
 ## MCP Server
 
 Nova includes a local MCP (Model Context Protocol) server that exposes Nova's rules, state, and tools to any Claude Code session — even outside the Nova project.
