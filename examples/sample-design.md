@@ -199,7 +199,7 @@ interface JwtPayload {
 ## 검증 계약 (Verification Contract)
 
 > Generator(구현자)와 Evaluator(검증자)가 사전에 합의하는 성공 조건.
-> `/nova:gap` 실행 시 이 목록을 기준으로 평가한다.
+> `/nova:verify` 실행 시 이 목록을 기준으로 평가한다.
 
 ### 기능 검증 조건
 

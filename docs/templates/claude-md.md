@@ -4,7 +4,7 @@
 > 상세 규칙은 `.claude/skills/`로 분리하고, CLAUDE.md에는 핵심만 유지한다.
 > 프로젝트 특성에 맞게 수정해서 사용할 것.
 >
-> **핵심**: 이 CLAUDE.md가 설치된 프로젝트에서는 커맨드(`/nova:auto`, `/nova:gap` 등)를 명시적으로 사용하지 않아도
+> **핵심**: 이 CLAUDE.md가 설치된 프로젝트에서는 커맨드(`/nova:auto`, `/nova:verify` 등)를 명시적으로 사용하지 않아도
 > Claude가 모든 대화에서 Nova 방법론을 자동으로 따른다.
 
 ---
@@ -41,7 +41,7 @@
 |--------|--------------|----------|
 | **Low** | README, 설정, 스타일 | Senior Dev 단일 리뷰 |
 | **Medium** | 새 컴포넌트, 내부 로직 | Evaluator 3단계 (정적+의미론+실행) |
-| **High** | DB 스키마, 결제, 인증 | Evaluator + xv 교차검증 + Mutation Test |
+| **High** | DB 스키마, 결제, 인증 | Evaluator + 다관점 자문 + Mutation Test |
 
 사용자가 "그냥 빠르게 해줘"라고 하면 복잡도 판단을 건너뛸 수 있다. 단, 경고를 표시한다.
 커맨드에 `--fast` 또는 `--strict`를 붙이면 자동 판단을 오버라이드한다.
@@ -124,15 +124,12 @@
 |--------|------|-------------------|
 | `/nova:next` | 다음 할 일 추천 | 워크플로우 가이드 |
 | `/nova:plan 기능명` | CPS Plan 문서 작성 | 복잡도 "보통" 이상 시 자동 실행 |
-| `/nova:xv "질문"` | 멀티 AI 다관점 수집 | 설계 판단 불확실할 때 |
+| `/nova:consult "질문"` | 멀티 AI 다관점 수집 | 설계 판단 불확실할 때 |
 | `/nova:design 기능명` | CPS Design 문서 작성 | 복잡도 "복잡" 시 자동 실행 |
-| `/nova:gap 설계.md 코드/` | 역방향 검증 | 검증 단계에서 자동 실행 |
 | `/nova:review 코드` | 코드 리뷰 | 검증 단계에서 자동 실행 |
-| `/nova:verify 코드/` | review + gap 통합 검증 | 구현 완료 후 단일 진입점 |
+| `/nova:verify 코드/` | 통합 검증 (갭 탐지 + 리뷰) | 구현 완료 후 단일 진입점 |
 | `/nova:auto 기능명` | 전체 하네스 자율 실행 | 복잡한 기능의 전체 파이프라인 |
-| `/nova:team 프리셋` | Agent Teams 병렬 구성 | 팀 단위 리뷰, QA, 디버깅 |
-| `/nova:propose 패턴` | 규칙 제안 | 반복 패턴 발견 시 |
-| `/nova:metrics` | 도입 수준 측정 | 정기 평가 |
+| `/nova:init --check` | 도입 수준 측정 | 정기 평가 |
 
 ### Workflow
 

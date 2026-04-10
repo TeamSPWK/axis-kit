@@ -38,7 +38,10 @@ export function registerGetRules(server: McpServer, novaRoot: string): void {
       }
 
       if (!section) {
-        return { content: [{ type: "text" as const, text: content }] };
+        return {
+          content: [{ type: "text" as const, text: content }],
+          _meta: { "anthropic/maxResultSizeChars": 100000 },
+        };
       }
 
       const sectionPattern = new RegExp(

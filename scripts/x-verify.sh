@@ -1,5 +1,6 @@
 #!/bin/bash
-# Nova Engineering — X-Verification v2 (멀티 AI 교차검증 + 합의율 자동 산출)
+# Nova Engineering — X-Verification v2 (멀티 AI 다관점 자문 + 합의율 자동 산출)
+# 커맨드: /nova:consult (슬래시 커맨드 이름)
 # Usage: ./scripts/x-verify.sh "질문 내용"
 #        ./scripts/x-verify.sh -f question.txt
 #        ./scripts/x-verify.sh --no-save "질문"  (결과 저장 안 함)
@@ -125,7 +126,7 @@ fi
 SYSTEM_PROMPT="당신은 소프트웨어 아키텍처 전문가입니다. 질문에 대해 명확하고 구조화된 의견을 한국어로 제시하세요. 답변은 500자 이내로 핵심만 간결하게."
 
 divider
-echo -e "${CYAN}  Nova X-Verification v2 — 멀티 AI 교차검증${NC}"
+echo -e "${CYAN}  Nova X-Verification v2 — 멀티 AI 다관점 자문${NC}"
 echo -e "${CYAN}  Claude 모델: ${CLAUDE_MODEL}${NC}"
 divider
 echo ""

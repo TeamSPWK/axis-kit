@@ -1,6 +1,6 @@
 # 튜토리얼: Todo API로 배우는 Nova 워크플로우
 
-> 하나의 기능을 `/nova:plan` → `/nova:xv` → `/nova:design` → 구현 → `/nova:gap` → `/nova:review`까지 따라가는 실전 예시
+> 하나의 기능을 `/nova:plan` → `/nova:consult` → `/nova:design` → 구현 → `/nova:verify`까지 따라가는 실전 예시
 
 ---
 
@@ -32,12 +32,12 @@ CPS 구조로 정리합니다:
 
 ---
 
-## Step 2: X-Verify — 기술 판단 교차검증 (필요시)
+## Step 2: 다관점 자문 — 기술 판단 교차검증 (필요시)
 
 DB 선택에서 고민이 있다면:
 
 ```bash
-/nova:xv "Todo API의 데이터 저장소: 인메모리 vs SQLite vs PostgreSQL, MVP 단계에 최적은?"
+/nova:consult "Todo API의 데이터 저장소: 인메모리 vs SQLite vs PostgreSQL, MVP 단계에 최적은?"
 ```
 
 3개 AI가 동시에 답변하고, 합의율이 자동 산출됩니다:
@@ -110,16 +110,16 @@ export default router;
 
 ---
 
-## Step 5: Gap Check — 설계대로 만들었는가
+## Step 5: Verify — 설계대로 만들었는가 + 코드 품질 점검
 
 ```bash
-/nova:gap docs/designs/todo-api.md src/
+/nova:verify docs/designs/todo-api.md src/
 ```
 
 만약 DELETE 엔드포인트를 깜빡하고 구현하지 않았다면:
 
 ```
-━━━ 📊 갭 분석 결과 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+━━━ 📊 검증 결과 (갭 분석) ━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
   매칭률:  75%
   판정:    ⚠️  REVIEW NEEDED
@@ -133,9 +133,9 @@ export default router;
     • Todo 삭제 API (DELETE /api/todos/:id)
 ```
 
-→ DELETE 구현 후 다시 Gap Check → 매칭률 90%+ 되면 PASS
+→ DELETE 구현 후 다시 실행 → 매칭률 90%+ 되면 PASS
 
-Gap Check에서 확인하는 추가 검증 항목:
+갭 탐지에서 확인하는 추가 검증 항목:
 
 **요구사항 원문 대조**: 설계 문서의 요구사항과 실제 구현을 1:1로 대조한다.
 - 예: `POST /api/todos` — Request body에 `title`이 없을 때 400 반환하는가?
@@ -149,7 +149,9 @@ Gap Check에서 확인하는 추가 검증 항목:
 
 ---
 
-## Step 6: Review — 코드 품질 점검
+## Step 6: Review — 코드 품질 점검 (verify에 포함)
+
+`/nova:verify`가 갭 탐지 후 자동으로 코드 리뷰를 실행합니다. 별도로 실행할 때는:
 
 ```
 /nova:review src/api/todos.ts
@@ -162,12 +164,6 @@ Gap Check에서 확인하는 추가 검증 항목:
 
 > **테스트 통과 ≠ 검증 완료**: 테스트가 모두 통과해도 경계값(빈 title, 없는 id)에서 크래시가 없는지 추가로 확인한다.
 
-Gap Check와 Review를 한 번에 실행하려면 `/nova:verify`를 사용한다:
-
-```
-/nova:verify src/api/todos.ts
-```
-
 ---
 
 ## 전체 흐름 요약
@@ -177,27 +173,25 @@ Gap Check와 Review를 한 번에 실행하려면 `/nova:verify`를 사용한다
     │
     ├─ /nova:plan → 왜 필요한지, 뭐가 문제인지 정리
     │
-    ├─ /nova:xv → DB 선택 등 기술 판단 교차검증 (선택)
+    ├─ /nova:consult → DB 선택 등 기술 판단 교차검증 (선택)
     │
     ├─ /nova:design → 구체적 API 설계
     │
     ├─ 구현 → 코드 작성
     │
-    ├─ /nova:gap → 설계 vs 구현 비교 (DELETE 누락 발견!)
+    ├─ /nova:verify → 설계 vs 구현 비교 + 코드 품질 점검 (DELETE 누락 발견!)
     │
     ├─ 수정 → DELETE 구현
     │
-    ├─ /nova:gap → 재검증 (매칭률 90%+ → PASS)
-    │
-    └─ /nova:review → 코드 품질 최종 점검
+    └─ /nova:verify → 재검증 (매칭률 90%+ → PASS)
 ```
 
 이 과정을 거치면:
 - 뭘 만들어야 하는지 명확하고 (Plan)
-- 기술 판단에 근거가 있고 (X-Verify)
+- 기술 판단에 근거가 있고 (다관점 자문)
 - 어떻게 만들지 구체적이고 (Design)
-- 빠뜨린 게 없는지 자동으로 잡히고 (Gap)
-- 코드 품질도 점검됩니다 (Review)
+- 빠뜨린 게 없는지 자동으로 잡히고 (Verify — 갭 탐지)
+- 코드 품질도 점검됩니다 (Verify — Review)
 
 ---
 

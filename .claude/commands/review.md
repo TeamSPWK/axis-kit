@@ -204,7 +204,7 @@ Before/After 코드 + 변경 요약
 
 ### 5. Nova Alignment
 - 설계 문서 존재 여부 확인
-- 갭이 의심되면 `/gap` 실행 제안
+- 갭이 의심되면 `/verify` 실행하여 설계-구현 정합성도 함께 확인
 
 ### 6. 판정
 
@@ -224,7 +224,7 @@ Before/After 코드 + 변경 요약
 - **CONDITIONAL**: Critical 0개, HIGH 1개 이상 또는 Warning 3개 이상
 - **FAIL**: Critical 1개 이상
 
-> 이 판정 기준은 /gap, /verify, /auto와 동일하다.
+> 이 판정 기준은 /verify, /auto와 동일하다.
 
 # --fix 모드: 자동 수정 워크플로우
 

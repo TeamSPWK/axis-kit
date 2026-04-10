@@ -58,9 +58,9 @@ Nova works by engineering Claude Code's **harness layer** — the hooks, command
 │  │                  │    LLM context every session    │
 │  └─────────────────┘                                 │
 │                                                      │
-│  ┌─────────────────┐   13 slash commands             │
+│  ┌─────────────────┐   slash commands                │
 │  │ .claude-plugin/  │──→ /nova:plan, /nova:review,    │
-│  │   *.md           │    /nova:gap, /nova:auto ...    │
+│  │   *.md           │    /nova:verify, /nova:auto ... │
 │  └─────────────────┘                                 │
 │                                                      │
 │  ┌─────────────────┐   5 specialist subagents        │
@@ -79,7 +79,7 @@ Nova works by engineering Claude Code's **harness layer** — the hooks, command
 | Layer | File | Mechanism | What It Does |
 |-------|------|-----------|-------------|
 | **Rules injection** | `hooks/session-start.sh` | SessionStart hook | Injects 10 auto-apply rules into every session as LLM context |
-| **Commands** | `.claude-plugin/*.md` | Slash commands | User-invocable workflows (`/nova:plan`, `/nova:review`, etc.) |
+| **Commands** | `.claude-plugin/*.md` | Slash commands | User-invocable workflows (`/nova:plan`, `/nova:review`, `/nova:verify`, etc.) |
 | **Agents** | `.claude-plugin/agents/*.md` | Subagent types | Specialist agents with domain-specific checklists |
 | **Skills** | `skills/*/SKILL.md` | Skill system | Complex multi-step operations (evaluation, jury, context chain, orchestration) |
 | **MCP Server** | `mcp-server/` | stdio MCP | Exposes Nova rules, state, and tools to any Claude Code session |
@@ -117,7 +117,7 @@ Once installed, Nova's Quality Gate **automatically applies to every conversatio
 ### Manual Workflow (Commands)
 
 ```
-/nova:plan → /nova:xv (if needed) → /nova:design → Build → /nova:gap → /nova:review
+/nova:plan → /nova:consult (if needed) → /nova:design → Build → /nova:verify
 ```
 
 ## How It Works: Examples
@@ -222,12 +222,10 @@ Commands provide **additional control** on top of auto-apply rules.
 | `/nova:design feature` | Create CPS Design document | Technical design after Plan |
 | `/nova:review src/` | Adversarial code review (`--fast` / `--strict` / `--summary` / `--fix` / `--jury`) | Code quality check |
 | `/nova:verify` | Combined review + gap (`--fast` / `--strict`) | Post-implementation check |
-| `/nova:gap design.md src/` | Design↔Implementation gap detection (`--fast` / `--strict`) | Verify design alignment |
-| `/nova:xv "question"` | Multi-AI perspective (Claude+GPT+Gemini, `--agent` for no API keys) | Design decisions, architecture choices |
+| `/nova:consult "question"` | Multi-AI perspective (Claude+GPT+Gemini, `--agent` for no API keys) | Design decisions, architecture choices |
 | `/nova:auto feature` | Implement→verify cycle (`--verify-only` / `--emergency`) | End-to-end automation |
 | `/nova:init project` | Initialize Nova + create custom agents | New project setup |
-| `/nova:propose pattern` | Propose recurring patterns as rules | Rule evolution |
-| `/nova:metrics` | Measure Nova adoption level | Adoption tracking |
+| `/nova:init --check` | Measure Nova adoption level | Adoption tracking |
 | `/nova:explore` | Auto-analyze codebase, brief where to start | First time on a new project |
 | `/nova:orchestrate task` | Auto-orchestrate: design→implement→verify→fix cycle (`--design-only` / `--skip-qa` / `--strict`) | Complex multi-step tasks |
 
@@ -272,7 +270,7 @@ Skills are multi-step operations that commands invoke internally. They can also 
 
 | Skill | Description | Invoked By |
 |-------|------------|------------|
-| **evaluator** | Adversarial 3-layer evaluation engine (static → semantic → runtime). The core verification engine behind all Nova checks | `/nova:review`, `/nova:gap`, `/nova:verify`, `/nova:auto` |
+| **evaluator** | Adversarial 3-layer evaluation engine (static → semantic → runtime). The core verification engine behind all Nova checks | `/nova:review`, `/nova:verify`, `/nova:auto` |
 | **jury** | Multi-perspective LLM Jury — corrects single-evaluator bias by running parallel assessments | `/nova:review --jury` |
 | **context-chain** | Session continuity via NOVA-STATE.md — preserves context across conversations | `/nova:next`, session start |
 | **field-test** | Live testing in real projects using isolated worktrees — leaves no trace | Manual invocation for validation |
@@ -346,7 +344,7 @@ Our CI runs a [self-verification test](tests/test-self-verify.sh) against intent
 
 ## API Keys (Optional)
 
-Only `/nova:xv` (multi-perspective collection) requires API keys. Everything else works without them.
+Only `/nova:consult` (multi-perspective collection) requires API keys. Everything else works without them.
 
 ```bash
 cat > .env << 'EOF'
@@ -381,7 +379,7 @@ claude plugin marketplace remove nova-marketplace
 
 **Rule of thumb**: If you can hold the entire change in your head, you don't need Nova.
 
-### Can `/nova:xv` multi-AI consensus be wrong?
+### Can `/nova:consult` multi-AI consensus be wrong?
 
 Yes. Claude, GPT, and Gemini share much training data. Even unanimous agreement may reflect a shared blind spot. The final call is always yours.
 
@@ -406,7 +404,7 @@ Prompt engineering shapes *what* the model says. Harness engineering shapes *whe
 ## Requirements
 
 - [Claude Code](https://claude.ai/code) CLI
-- API keys: OpenAI + Google AI Studio (optional, for `/nova:xv` only)
+- API keys: OpenAI + Google AI Studio (optional, for `/nova:consult` only)
 
 ## License
 

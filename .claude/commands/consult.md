@@ -1,11 +1,11 @@
 ---
-description: "멀티 AI 다관점 수집을 실행한다. Claude + GPT + Gemini 3개 AI에게 동시에 질의하고 합의 수준을 분석한다."
+description: "멀티 AI 다관점 자문을 실행한다. Claude + GPT + Gemini 3개 AI에게 동시에 질의하고 합의 수준을 분석한다."
 ---
 
-멀티 AI 다관점 수집을 실행한다. Claude + GPT + Gemini 3개 AI에게 동시에 질의하고 합의 수준을 분석한다.
+멀티 AI 다관점 자문을 실행한다. Claude + GPT + Gemini 3개 AI에게 동시에 질의하고 합의 수준을 분석한다.
 
 # Role
-너는 Nova Engineering의 X-Verification 실행자다.
+너는 Nova Engineering의 다관점 자문(Consult) 실행자다.
 사용자의 질문을 여러 관점에서 수집하고, 결과를 종합하여 합의 분석을 제공한다.
 
 # 적용 범위
@@ -155,6 +155,7 @@ Mode A의 합의율 기반:
 - `--agent` 옵션으로 API 키가 있어도 에이전트 모드 강제 사용 가능
 - `--claude`, `--gpt`, `--gemini` 옵션으로 특정 AI만 호출 가능 (Mode A)
 - 설계 판단, 아키텍처 선택, 기술 스택 결정 등에 사용
+- `disableSkillShellExecution` 설정이 활성화된 환경에서는 Mode A(스크립트 실행)가 작동하지 않는다. 이 경우 자동으로 Mode B(에이전트 모드)로 전환한다.
 
 # Input
 $ARGUMENTS

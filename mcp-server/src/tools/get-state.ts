@@ -95,6 +95,7 @@ export function registerGetState(server: McpServer): void {
               text: `# NOVA-STATE.md (${targetDir})\n\n${content}${advisorySection}`,
             },
           ],
+          _meta: { "anthropic/maxResultSizeChars": 50000 },
         };
       } catch {
         return {

@@ -59,15 +59,21 @@ echo ""
 echo -e "${YELLOW}[구조: 커맨드]${NC}"
 
 EXPECTED_COMMANDS=(
-  auto design explore gap init metrics next
-  orchestrate plan propose review verify xv
+  auto design explore init next
+  orchestrate plan review verify consult
 )
 CMD_COUNT=$(ls "$ROOT_DIR/.claude/commands/"*.md 2>/dev/null | wc -l | tr -d ' ')
-assert "커맨드 파일 존재" "[ '$CMD_COUNT' -ge 13 ]"
+assert "커맨드 파일 존재" "[ '$CMD_COUNT' -ge 10 ]"
 
 for cmd in "${EXPECTED_COMMANDS[@]}"; do
   assert "커맨드: $cmd.md" "[ -f '$ROOT_DIR/.claude/commands/$cmd.md' ]"
 done
+
+# 삭제된 커맨드가 존재하지 않는지 확인
+assert "gap.md 삭제 확인" "[ ! -f '$ROOT_DIR/.claude/commands/gap.md' ]"
+assert "propose.md 삭제 확인" "[ ! -f '$ROOT_DIR/.claude/commands/propose.md' ]"
+assert "metrics.md 삭제 확인" "[ ! -f '$ROOT_DIR/.claude/commands/metrics.md' ]"
+assert "xv.md 삭제 확인 (consult.md로 대체)" "[ ! -f '$ROOT_DIR/.claude/commands/xv.md' ]"
 echo ""
 
 # ═══════════════════════════════════════════
@@ -238,17 +244,11 @@ assert "/init: NOVA-STATE.md 생성" \
 assert "/review: NOVA-STATE.md 갱신 섹션 존재" \
   "grep -q 'CRITICAL.*NOVA-STATE.md' '$ROOT_DIR/.claude/commands/review.md'"
 
-assert "/gap: NOVA-STATE.md 갱신 섹션 존재" \
-  "grep -q 'CRITICAL.*NOVA-STATE.md' '$ROOT_DIR/.claude/commands/gap.md'"
-
 assert "/verify: NOVA-STATE.md 갱신 섹션 존재" \
   "grep -q 'CRITICAL.*NOVA-STATE.md' '$ROOT_DIR/.claude/commands/verify.md'"
 
 assert "/review: 다음 도구 호출로 갱신 지시" \
   "grep -q '다음 도구 호출로' '$ROOT_DIR/.claude/commands/review.md'"
-
-assert "/gap: 다음 도구 호출로 갱신 지시" \
-  "grep -q '다음 도구 호출로' '$ROOT_DIR/.claude/commands/gap.md'"
 
 assert "/verify: 다음 도구 호출로 갱신 지시" \
   "grep -q '다음 도구 호출로' '$ROOT_DIR/.claude/commands/verify.md'"

@@ -150,8 +150,8 @@ Level 3: Human-Review    — 사람이 최종 판단
 
 "3회 반복 감지"는 AI가 자동으로 세션 간 패턴을 추적한다는 의미가 아니다. Claude Code의 컨텍스트 윈도우는 단일 세션에 한정되므로, 감지는 다음 두 가지 방식으로 동작한다:
 
-- **세션 내 감지**: 한 세션 안에서 같은 패턴이 반복될 때 `/nova:propose`가 자동 제안. 이것은 즉시 작동한다.
-- **세션 간 감지**: CLAUDE.md와 `rules-changelog.md`에 기록된 이력을 기반으로 AI가 패턴을 인식. 이것은 사람이 `/nova:propose`를 명시적으로 실행하거나, AI가 CLAUDE.md를 읽고 "이전에도 비슷한 패턴이 있었다"고 판단할 때 작동한다.
+- **세션 내 감지**: 한 세션 안에서 같은 패턴이 반복될 때 AI가 자동 제안. 이것은 즉시 작동한다.
+- **세션 간 감지**: CLAUDE.md와 `rules-changelog.md`에 기록된 이력을 기반으로 AI가 패턴을 인식. 이것은 AI가 CLAUDE.md를 읽고 "이전에도 비슷한 패턴이 있었다"고 판단할 때 작동한다.
 
 즉, 세션 간 감지는 **파일에 기록된 이력에 의존하며**, AI의 자동 카운팅이 아니라 CLAUDE.md + git 히스토리 기반의 휴리스틱이다. 이 방식의 정확도는 기록의 충실도에 비례한다.
 
@@ -178,7 +178,7 @@ Plan/Design을 생략하는 소규모 프로젝트도 비기능 요구사항(인
 |------|----------|---------|----------|
 | **Low** | README, 설정, 스타일, 오타 | 1~2 | **Lite** — Senior Dev 단일 리뷰 |
 | **Medium** | 새 컴포넌트, 내부 로직 수정 | 3~7 | **Standard** — Evaluator 3단계 (정적+의미론+실행) |
-| **High** | DB 스키마, 결제, 인증, 아키텍처 | 8+ | **Full** — xv 교차검증 + Mutation Test + 적대적 Evaluator |
+| **High** | DB 스키마, 결제, 인증, 아키텍처 | 8+ | **Full** — 다관점 자문 + Mutation Test + 적대적 Evaluator |
 
 ### 사용자 통제권 (Override)
 
@@ -337,9 +337,9 @@ Act     → Adaptive 사이클로 규칙 갱신, 개선 반영
 
 ### Phase 2: Verification (3~4주) ✅
 - [x] 멀티 AI 다관점 수집 파이프라인 구축 (X-Verification)
-- [x] 역방향 검증(갭 탐지) 자동화
+- [x] 역방향 검증(갭 탐지) 자동화 (→ `/nova:verify`에 통합)
 - [x] 합의 프로토콜 임계치 설정
-- 산출물: `/nova:xv`, `/nova:gap` 커맨드
+- 산출물: `/nova:consult`, `/nova:verify` 커맨드
 
 ### Phase 3: Context Chain (5~6주) ✅
 - [x] 3계층 메모리 아키텍처 구축 — 파일 기반 컨텍스트 체계
@@ -348,10 +348,10 @@ Act     → Adaptive 사이클로 규칙 갱신, 개선 반영
 - 산출물: `context-chain.md`, CLAUDE.md 템플릿, Decision Record 템플릿
 
 ### Phase 4: Adaptive (7~8주) ✅
-- [x] 패턴 감지 → 규칙 제안 시스템 구축 (`/nova:propose` 커맨드)
+- [x] 패턴 감지 → 규칙 제안 시스템 구축 (CLAUDE.md 기록 기반)
 - [x] 규칙 변경 관리 + 이력 추적 (`rules-changelog.md`)
 - [x] 규칙 제안 템플릿 (감지 → 제안 → 승인 → 적용 → 검증)
-- 산출물: `/nova:propose` 커맨드, Rule Proposal 템플릿, Rules Changelog
+- 산출물: Rule Proposal 템플릿, Rules Changelog
 
 ### Phase 5: Optimization (9주~) ✅
 - [x] Eval 지표 기반 품질 추적 — 자가 평가 체크리스트
