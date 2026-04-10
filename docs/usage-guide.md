@@ -61,6 +61,10 @@ claude plugin marketplace remove nova-marketplace
 
 > `/reload-plugins`를 사용하면 플러그인 업데이트 후 세션을 재시작하지 않아도 변경사항이 즉시 반영됩니다.
 
+### 호환성 참고 (Claude Code v2.1.98+)
+
+Claude Code v2.1.98부터 Bash 도구의 보안 권한이 강화되었습니다. `/dev/tcp` 리다이렉트, 복합 명령어, 패턴 파일 읽기 등에서 추가 권한 프롬프트가 발생할 수 있습니다. Nova의 자동 검증(`/auto`, `/verify`)에서 Bash를 사용하는 경우 `bypassPermissions` 설정 또는 `allowedTools`에 해당 명령을 등록하세요.
+
 ---
 
 ## 커맨드 상세
