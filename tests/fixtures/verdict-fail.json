@@ -1,0 +1,12 @@
+{
+  "verdict": "FAIL",
+  "intensity": "Standard",
+  "summary": "Critical issues detected — must fix before merge.",
+  "counts": { "critical": 2, "high": 1, "warning": 3 },
+  "issues": [
+    { "severity": "critical", "location": "src/auth.ts:42", "issue": "SQL injection vulnerability", "action": "Use parameterized queries" },
+    { "severity": "critical", "location": "src/api.ts:15", "issue": "Authentication bypass", "action": "Apply auth middleware" },
+    { "severity": "high", "location": "src/db.ts:88", "issue": "Connection leak", "action": "Add finally block" }
+  ],
+  "known_gaps": []
+}
