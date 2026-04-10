@@ -123,6 +123,13 @@ description: "기술 동향을 스캔하고 Nova를 자동으로 진화시킨다
 
 `--apply` 또는 `--auto` 모드에서만 실행한다.
 
+### 제안서 소스 (우선순위 순)
+
+1. **GitHub Issues** — `gh issue list --repo TeamSPWK/nova --label evolve --state open`으로 열린 evolve 이슈를 조회한다. 원격 에이전트가 자동 스캔 후 이슈로 전달한 제안서가 여기에 있다.
+2. **docs/proposals/** — 로컬에서 직접 `/nova:evolve --scan`으로 생성한 제안서.
+
+이슈 기반 제안서가 있으면 우선 적용하고, 적용 완료 후 해당 이슈를 close한다.
+
 ### 구현 절차
 
 1. 제안서를 변경 수준별로 정렬한다 (patch → minor → major)
@@ -156,11 +163,26 @@ description: "기술 동향을 스캔하고 Nova를 자동으로 진화시킨다
 
 | 수준 | 게이트 통과 후 행동 |
 |------|-------------------|
-| **patch** | 자동 커밋 (사용자 사후 확인) |
+| **patch** | 자동 커밋 + 버전 범프 + 릴리스 |
 | **minor** | PR 생성 + 사용자 알림 (머지는 사용자) |
 | **major** | 제안서만 생성 + 사용자 결정 대기 |
 
 > **안전 장치**: `--auto`여도 major 변경은 절대 자동 커밋하지 않는다.
+
+### 릴리스 절차 (`--auto` + patch 적용 시)
+
+Gate Chain 통과 후 patch 변경이 1건 이상이면:
+1. `git add` + `git commit -m "feat(evolve): {변경 요약}"`
+2. `bash scripts/bump-version.sh patch`
+3. 범프 파일 `git add` + `git commit -m "chore(v{새버전}): 버전 범프"`
+4. `git tag v{새버전}`
+5. `git push origin main --tags`
+6. `gh release create v{새버전} --title "v{새버전} — Self-Evolution auto-patch" --notes "{변경 목록}"`
+
+적용 완료 후 GitHub Issue 기반 제안이었으면 해당 이슈를 close한다:
+```bash
+gh issue close {이슈번호} --repo TeamSPWK/nova --comment "v{새버전}에서 적용 완료"
+```
 
 ```
 [Nova Evolve] Phase 4/4: 구현 + 품질 게이트 중...
