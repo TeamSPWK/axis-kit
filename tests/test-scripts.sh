@@ -59,11 +59,11 @@ echo ""
 echo -e "${YELLOW}[구조: 커맨드]${NC}"
 
 EXPECTED_COMMANDS=(
-  auto design explore init next
-  orchestrate plan review verify consult
+  auto design explore evolve init next
+  orchestrate plan review verify consult ux-audit
 )
 CMD_COUNT=$(ls "$ROOT_DIR/.claude/commands/"*.md 2>/dev/null | wc -l | tr -d ' ')
-assert "커맨드 파일 존재" "[ '$CMD_COUNT' -ge 10 ]"
+assert "커맨드 파일 존재" "[ '$CMD_COUNT' -ge 12 ]"
 
 for cmd in "${EXPECTED_COMMANDS[@]}"; do
   assert "커맨드: $cmd.md" "[ -f '$ROOT_DIR/.claude/commands/$cmd.md' ]"
@@ -404,6 +404,24 @@ assert "init-nova-state: Last Activity 섹션" \
   "grep -q 'Last Activity' '$INIT_DIR/NOVA-STATE.md'"
 
 rm -rf "$INIT_DIR"
+echo ""
+
+# ═══════════════════════════════════════════
+# 8-4. 커맨드 ↔ session-start.sh 동기화 (자동 감지)
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[동기화: 커맨드 ↔ session-start.sh]${NC}"
+
+SESSION_TMP=$(mktemp)
+bash "$HOOK_FILE" > "$SESSION_TMP" 2>/dev/null
+
+for cmd_file in "$ROOT_DIR/.claude/commands/"*.md; do
+  cmd_name=$(basename "$cmd_file" .md)
+  assert "session-start.sh: /nova:$cmd_name 포함" \
+    "grep -q '/nova:$cmd_name' '$SESSION_TMP'"
+done
+
+rm -f "$SESSION_TMP"
 echo ""
 
 # ═══════════════════════════════════════════

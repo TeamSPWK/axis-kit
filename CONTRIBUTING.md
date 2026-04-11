@@ -34,6 +34,18 @@ refactor: 리팩토링 | chore: 설정/기타
 - 스크립트 수정 시: `bash tests/test-scripts.sh` 통과 필수
 - 문서 추가 시: CPS 구조를 따르는가?
 
+### 커맨드/스킬 추가 시 동기화 체크리스트
+
+새 커맨드(`.claude/commands/*.md`) 또는 스킬(`.claude/skills/*/SKILL.md`)을 추가할 때:
+
+1. `hooks/session-start.sh` 커맨드 목록에 `/nova:{이름}` 추가
+2. `tests/test-scripts.sh`의 `EXPECTED_COMMANDS` 배열에 추가
+3. `.claude/commands/next.md` 워크플로우 추천 경로에 추가 (해당 시)
+4. 관련 커맨드에 크로스 레퍼런스 추가 (해당 시)
+5. `bash tests/test-scripts.sh` 통과 확인
+
+> 1, 2번을 빠뜨리면 테스트가 자동으로 실패합니다.
+
 ### 테스트
 ```bash
 bash tests/test-scripts.sh  # 전체 테스트 (44개 항목)

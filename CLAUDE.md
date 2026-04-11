@@ -54,6 +54,20 @@ Nova는 Claude Code 플러그인이다. **이 CLAUDE.md는 Nova 개발용이지,
 4. bash tests/test-scripts.sh  ← 동기화 테스트 통과 확인
 ```
 
+### 커맨드/스킬 추가 체크리스트
+
+새 커맨드(`.claude/commands/*.md`) 또는 스킬(`.claude/skills/*/SKILL.md`)을 추가할 때 반드시 동기화:
+
+```
+1. hooks/session-start.sh 커맨드 목록에 /nova:{이름} 추가   ← 테스트가 자동 검증
+2. .claude/commands/next.md 워크플로우 추천 경로에 추가 (해당 시)
+3. 관련 커맨드에 크로스 레퍼런스 추가 (해당 시)
+4. tests/test-scripts.sh EXPECTED_COMMANDS 배열에 추가       ← 테스트가 자동 검증
+5. bash tests/test-scripts.sh 통과 확인
+```
+
+> 1, 4번은 테스트가 누락을 자동으로 잡는다. 2, 3번은 "사용자가 커맨드를 명시적으로 호출하지 않아도 자연스럽게 발견하는가?"를 수동 판단한다.
+
 ## Release Workflow (필수)
 
 Nova는 Claude Code 플러그인이므로 **모든 커밋은 릴리스 단위**다.
