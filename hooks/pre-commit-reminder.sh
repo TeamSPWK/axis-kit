@@ -17,6 +17,16 @@ if echo "$INPUT" | grep -qE '^\s*git\s+(.*\s+)?commit(\s|$)'; then
     fi
   fi
 
+  # nova-meta.json 최신 여부 확인
+  META_STALE=""
+  if [ -f "docs/nova-meta.json" ] && [ -f "scripts/generate-meta.sh" ]; then
+    META_VER=$(python3 -c "import json; print(json.load(open('docs/nova-meta.json'))['stats']['commands'])" 2>/dev/null || echo "0")
+    ACTUAL_CMD=$(ls -1 .claude/commands/*.md 2>/dev/null | wc -l | tr -d ' ')
+    if [ "$META_VER" != "$ACTUAL_CMD" ]; then
+      META_STALE="⚠️ nova-meta.json이 최신이 아닙니다 (meta: ${META_VER}개, 실제: ${ACTUAL_CMD}개). bash scripts/release.sh를 사용하세요."
+    fi
+  fi
+
   # 변경 파일 수 감지
   CHANGED_FILES=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
 
@@ -25,7 +35,7 @@ if echo "$INPUT" | grep -qE '^\s*git\s+(.*\s+)?commit(\s|$)'; then
 {
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
-    "additionalContext": "[Nova Quality Gate] git commit 감지 — 변경 파일 ${CHANGED_FILES}개.\n\n${STATE_STALE}\n\n3파일 이상 변경입니다. Nova Always-On 규칙에 따라:\n1. NOVA-STATE.md를 갱신했는가? (필수)\n2. /nova:review --fast 를 실행했는가? (필수)\n3. 검증 결과가 PASS인가?\n\nNOVA-STATE.md 갱신 없이 커밋하면 세션 간 상태가 불일치합니다."
+    "additionalContext": "[Nova Quality Gate] git commit 감지 — 변경 파일 ${CHANGED_FILES}개.\n\n${STATE_STALE}\n${META_STALE}\n\n3파일 이상 변경입니다. Nova Always-On 규칙에 따라:\n1. NOVA-STATE.md를 갱신했는가? (필수)\n2. /nova:review --fast 를 실행했는가? (필수)\n3. 검증 결과가 PASS인가?\n\n💡 릴리스 시 bash scripts/release.sh <patch|minor|major> \"메시지\" 를 사용하면 전체 절차가 자동 실행됩니다."
   }
 }
 NOVA_EOF
@@ -34,7 +44,7 @@ NOVA_EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
-    "additionalContext": "[Nova Quality Gate] git commit 감지 — 변경 파일 ${CHANGED_FILES}개.\n\n${STATE_STALE}\n\n소규모 변경입니다. 로직 변경이 포함되어 있다면 /nova:review --fast를 권장합니다.\nREADME, 설정 등 사소한 변경은 건너뛸 수 있습니다."
+    "additionalContext": "[Nova Quality Gate] git commit 감지 — 변경 파일 ${CHANGED_FILES}개.\n\n${STATE_STALE}\n${META_STALE}\n\n소규모 변경입니다. 로직 변경이 포함되어 있다면 /nova:review --fast를 권장합니다.\n💡 릴리스 시 bash scripts/release.sh <patch|minor|major> \"메시지\" 를 사용하세요."
   }
 }
 NOVA_EOF
