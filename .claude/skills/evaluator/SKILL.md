@@ -19,6 +19,7 @@ description: "Nova Adversarial Evaluator — Nova Quality Gate의 핵심 검증 
 
 ### Layer 3: 실행 기반 검증
 - 테스트 실행 + 결과 피드백
+- **Coverage Gate**: 테스트 커버리지 변화 확인 (아래 상세)
 - 실제 동작 확인 (API 호출, 브라우저 테스트)
 - 에지 케이스 시나리오 실행
 
@@ -35,6 +36,37 @@ description: "Nova Adversarial Evaluator — Nova Quality Gate의 핵심 검증 
 
 > **빌드 성공 ≠ 런타임 정상.** `tsc`/`build` 통과만으로 Layer 3을 PASS하지 않는다.
 > 변경 유형에 해당하는 체크리스트를 1개 이상 실행해야 Layer 3 완료.
+
+### Coverage Gate (Layer 3 확장)
+
+테스트 커버리지를 **회귀 시그널**로 활용한다. 숫자 자체가 아닌 "변경 전후 하락 여부"가 핵심.
+
+#### 커버리지 도구 자동 감지
+
+프로젝트의 lockfile/설정 파일로 테스트 도구를 감지한다:
+
+| 감지 파일 | 도구 | 커버리지 명령 |
+|-----------|------|-------------|
+| `jest.config.*`, `package.json(jest)` | Jest | `npx jest --coverage --changedSince=HEAD~1` |
+| `vitest.config.*` | Vitest | `npx vitest run --coverage` |
+| `pytest.ini`, `pyproject.toml(pytest)` | pytest | `pytest --cov --cov-report=term-missing` |
+| `go.mod` | Go | `go test -cover ./...` |
+| `.cargo/config.toml` | Rust | `cargo tarpaulin --skip-clean` |
+
+감지 실패 시 "커버리지 도구 미감지"로 Info 보고하고 이 단계를 SKIP한다.
+
+#### 판정 기준
+
+| 상황 | 기본 모드 | `--strict` 모드 |
+|------|----------|----------------|
+| 커버리지 상승 또는 유지 | Info (긍정 언급) | Info |
+| 커버리지 하락 (< 5%) | **Warning** | **Warning** |
+| 커버리지 하락 (>= 5%) | **Warning** | **FAIL 요소** |
+| 변경 코드에 테스트 없음 | **Warning** ("테스트 추가 권장") | **FAIL 요소** |
+| 프로젝트에 테스트 자체 없음 | Info ("테스트 프레임워크 도입 권장") | **Warning** |
+
+> **설계 결정**: 기본 모드에서 Coverage는 Warning까지만. FAIL은 `--strict` 전용.
+> 근거: 테스트가 없는 프로젝트에서 Nova 채택 장벽을 낮추면서도, 커버리지 하락을 가시화한다.
 
 #### Layer 3 실행 불가 시 판정 규칙
 

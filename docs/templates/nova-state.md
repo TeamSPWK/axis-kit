@@ -23,6 +23,11 @@
 | 영역 | 미커버 내용 | 우선순위 |
 |------|-----------|----------|
 
+## Quality Metrics
+<!-- /review, /verify 실행 시 자동 누적. /next에서 추세 분석에 활용 -->
+| 기간 | PASS | CONDITIONAL | FAIL | Coverage 추세 |
+|------|------|-------------|------|--------------|
+
 ## Last Activity
 - {/nova:review → PASS — src/foo.ts} | {ISO 8601}
 

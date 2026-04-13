@@ -125,11 +125,12 @@ description: "코드를 적대적 관점에서 리뷰하고, 숨겨진 문제를
 - 위의 Evaluation Criteria 기준으로 심층 분석
 - 설계 문서가 있으면 Design Drift 검증
 
-### Step 3: 실행 검증
+### Step 3: 실행 검증 + Coverage Gate
 ```
-[Skeptical Reviewer] Step 3/3: 실행 검증 중... (테스트 실행)
+[Skeptical Reviewer] Step 3/3: 실행 검증 + Coverage 확인 중...
 ```
 - 관련 테스트가 있으면 실행하여 통과 확인
+- **Coverage Gate**: 프로젝트의 테스트 도구를 자동 감지(lockfile 기반)하고 커버리지 변화를 확인한다. 상세 기준은 Evaluator SKILL.md "Coverage Gate" 참조.
 - 변경된 코드의 동작을 실제로 검증
 - **빌드 성공 ≠ 런타임 정상.** 변경 유형에 맞는 실행 검증을 수행한다:
 
@@ -290,6 +291,43 @@ Before/After 코드 + 변경 요약
 /review --fast --fix utils.py    # Lite 검증 + 자동 수정
 /review --strict --fix auth/     # Full 검증 + 자동 수정
 ```
+
+# Learned Rules: 반복 패턴 → 규칙 제안
+
+리뷰 중 **동일 프로젝트에서 반복 지적되는 패턴**을 발견하면, 판정 후 규칙 후보를 제안한다.
+
+## 제안 트리거
+
+- 같은 유형의 이슈가 현재 리뷰에서 **2건 이상** 발견된 경우
+- 또는 `.claude/rules/`에 이미 관련 규칙이 없는데, 프로젝트 전반에서 흔한 안티패턴인 경우
+
+## 제안 형식
+
+판정 출력 후 다음을 추가한다:
+
+```
+━━━ Learned Rule 후보 ━━━━━━━━━━━━━━━━━━━━━
+  패턴: {반복 지적된 패턴 이름}
+  발견: {이번 리뷰에서 N건}
+  제안: .claude/rules/{slug}.md 생성
+
+  등록하시겠습니까? (y/n)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+## 등록 절차
+
+사용자가 승인하면:
+1. `docs/templates/learned-rule.md` 템플릿을 기반으로 규칙 파일 생성
+2. 파일 경로: `.claude/rules/{slug}.md`
+3. frontmatter에 `description`, `globs` 포함
+4. 패턴 설명, Bad/Good 예시, 근거를 작성
+
+> **사용자 승인 없이 규칙을 자동 생성하지 않는다.** AI는 제안, 인간은 결정.
+
+## 기존 규칙 참조
+
+리뷰 시작 시 `.claude/rules/` 디렉토리를 확인하고, 기존 learned rules를 Evaluation Criteria에 추가 적용한다.
 
 # FAIL 시 재검증 가이드 (v2.4)
 

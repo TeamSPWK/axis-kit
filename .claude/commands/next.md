@@ -102,6 +102,15 @@ description: "현재 프로젝트 상태를 진단하고 다음에 실행할 Nov
 ⏭️ 이후 흐름: command1 → command2 → command3
 ```
 
+# Quality Metrics 참조
+
+NOVA-STATE.md에 `## Quality Metrics` 섹션이 있으면 추세를 분석하여 추천에 반영한다:
+
+- **FAIL 빈도 높음** (최근 5회 중 2+ FAIL) → "품질 게이트 실패가 반복되고 있습니다. 근본 원인 분석을 권장합니다."
+- **CONDITIONAL 누적** (3+ 미해결) → "미검증 항목이 누적되고 있습니다. Layer 3 실행 환경을 점검하세요."
+- **Coverage 하락 추세** → "테스트 커버리지가 하락 중입니다. 테스트 보강을 권장합니다."
+- **Learned Rules 현황**: `.claude/rules/` 파일 수를 진단에 표시한다.
+
 # Notes
 - 워크플로우 전체 흐름:
   - 수동: `/plan` → `/consult` (필요시) → `/design` → 구현 → `/verify` → `/review`
