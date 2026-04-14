@@ -415,8 +415,12 @@ echo -e "${YELLOW}[동기화: 커맨드 ↔ session-start.sh]${NC}"
 SESSION_TMP=$(mktemp)
 bash "$HOOK_FILE" > "$SESSION_TMP" 2>/dev/null
 
+INTERNAL_COMMANDS="evolve"  # 개발자 전용 (사용자에게 노출 안 함)
 for cmd_file in "$ROOT_DIR/.claude/commands/"*.md; do
   cmd_name=$(basename "$cmd_file" .md)
+  if echo "$INTERNAL_COMMANDS" | grep -qw "$cmd_name"; then
+    continue
+  fi
   assert "session-start.sh: /nova:$cmd_name 포함" \
     "grep -q '/nova:$cmd_name' '$SESSION_TMP'"
 done
