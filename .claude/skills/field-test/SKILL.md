@@ -1,6 +1,7 @@
 ---
 name: field-test
 description: 실제 프로젝트에서 Nova를 사용해보며 개선 포인트를 찾는 실전 테스트. 워크트리 격리로 흔적 없이 진행.
+user-invocable: false
 ---
 
 # Nova Field Test

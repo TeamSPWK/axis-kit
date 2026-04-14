@@ -7,9 +7,7 @@ import fs from "fs";
 import { registerGetRules } from "./tools/get-rules.js";
 import { registerGetCommands } from "./tools/get-commands.js";
 import { registerGetState } from "./tools/get-state.js";
-import { registerCreatePlan } from "./tools/create-plan.js";
 import { registerOrchestrate } from "./tools/orchestrate.js";
-import { registerVerify } from "./tools/verify.js";
 import { registerXVerify } from "./tools/x-verify.js";
 import { registerOrchestrationTracker } from "./tools/orchestration-tracker.js";
 
@@ -39,9 +37,7 @@ const server = new McpServer({
 registerGetRules(server, NOVA_ROOT);
 registerGetCommands(server, NOVA_ROOT);
 registerGetState(server);
-registerCreatePlan(server);
 registerOrchestrate(server);
-registerVerify(server);
 registerXVerify(server);
 registerOrchestrationTracker(server);
 

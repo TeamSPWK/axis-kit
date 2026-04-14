@@ -1,6 +1,7 @@
 ---
 name: orchestrator
 description: Nova Orchestrator — 자연어 요청을 CPS 설계→에이전트 편성→구현→검증→수정 전체 사이클로 자동 실행
+user-invocable: false
 ---
 
 # Nova Orchestrator

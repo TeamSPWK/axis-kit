@@ -1,6 +1,7 @@
 ---
 name: evaluator
 description: "Nova Adversarial Evaluator — Nova Quality Gate의 핵심 검증 엔진. 독립 서브에이전트로 코드를 적대적 관점에서 검증. — MUST TRIGGER: /run, /check, /review에서 서브에이전트로 호출. 스프린트 완료 시 필수."
+user-invocable: false
 ---
 
 # Nova Adversarial Evaluator

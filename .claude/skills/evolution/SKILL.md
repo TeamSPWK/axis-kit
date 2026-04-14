@@ -1,6 +1,7 @@
 ---
 name: evolution
 description: "Nova Self-Evolution 엔진 — 기술 동향 스캔, 관련성 필터, 자율 범위 구현까지 전체 파이프라인"
+user-invocable: false
 ---
 
 # Nova Self-Evolution Pipeline
