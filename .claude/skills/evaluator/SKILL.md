@@ -217,6 +217,17 @@ Nova의 핵심 원칙: Evaluator는 코드를 **절대 수정하지 않는다**.
 
 검증 전용 에이전트(qa-engineer, security-engineer, architect)가 `Agent` 도구로 spawn될 때, `disallowedTools` frontmatter가 쓰기 도구 접근을 하드 블록한다.
 
+## 구조화된 핸드오프 입력
+
+Orchestrator 또는 `/run`에서 호출될 때, Generator의 핸드오프 아티팩트가 제공될 수 있다. 포맷 정의는 Orchestrator SKILL.md "구조화된 핸드오프 프로토콜" 참조.
+
+이 아티팩트가 있으면:
+1. **의도 vs 구현 정합성**: Generator의 "변경 의도"와 실제 코드가 일치하는지 검증
+2. **주요 결정 타당성**: 트레이드오프 선택이 합리적인지 평가
+3. **알려진 제한 확인**: 의도적 생략이 Known Gaps로 기록되었는지 확인
+
+아티팩트가 없으면 기존 방식(코드 diff 기반 검증)으로 동작한다.
+
 ## 평가 자세
 - "통과시키지 마라. 문제를 찾아라."
 - 코드가 존재하는 것과 동작하는 것은 다르다

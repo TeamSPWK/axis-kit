@@ -57,10 +57,20 @@ user-invocable: false
 
 각 대상 프로젝트 레포에서 워크트리를 생성한다.
 
+**기존 워크트리 재사용**: `EnterWorktree` 도구의 `path` 파라미터를 활용하여, 이전 필드 테스트에서 생성한 워크트리가 남아있으면 새로 생성하지 않고 재사용한다.
+
 ```bash
-# 각 프로젝트 디렉토리에서 실행
-cd {프로젝트_경로}
-git worktree add /tmp/nova-field-test-{프로젝트명}-{timestamp} -b nova-field-test-{timestamp}
+# 기존 워크트리 확인
+EXISTING=$(git -C {프로젝트_경로} worktree list | grep "nova-field-test" | awk '{print $1}')
+
+if [ -n "$EXISTING" ]; then
+  # 기존 워크트리 재사용 (EnterWorktree path 파라미터 활용)
+  cd "$EXISTING"
+else
+  # 새 워크트리 생성
+  cd {프로젝트_경로}
+  git worktree add /tmp/nova-field-test-{프로젝트명}-{timestamp} -b nova-field-test-{timestamp}
+fi
 ```
 
 워크트리 생성 실패 시 해당 프로젝트는 건너뛰고 사유를 기록한다.
