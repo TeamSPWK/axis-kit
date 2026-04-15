@@ -74,6 +74,13 @@ if [[ -f "$PLUGIN" ]]; then
   echo "  ✅ plugin.json"
 fi
 
+# 3-1. .codex-plugin/plugin.json (있을 경우)
+CODEX_PLUGIN="$ROOT/.codex-plugin/plugin.json"
+if [[ -f "$CODEX_PLUGIN" ]]; then
+  sedi "s/\"version\": \"[0-9]*\.[0-9]*\.[0-9]*\"/\"version\": \"$NEW_VERSION\"/" "$CODEX_PLUGIN"
+  echo "  ✅ .codex-plugin/plugin.json"
+fi
+
 # 4. nova-meta.json 재생성
 META_SCRIPT="$ROOT/scripts/generate-meta.sh"
 if [[ -f "$META_SCRIPT" ]]; then

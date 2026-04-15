@@ -397,6 +397,32 @@ claude plugin uninstall nova@nova-marketplace
 claude plugin marketplace remove nova-marketplace
 ```
 
+### Codex CLI (Beta)
+
+Nova는 [Codex CLI](https://github.com/openai/codex) 사용자를 위한 별도 매니페스트를 제공한다. Phase 1에서는 스킬(7종)과 MCP를 사용할 수 있다.
+
+```bash
+# 1) Codex 플러그인 디렉토리에 클론
+git clone https://github.com/TeamSPWK/nova.git ~/.agents/plugins/nova
+
+# 2) MCP 서버 빌드
+cd ~/.agents/plugins/nova/mcp-server && pnpm install && pnpm build
+
+# 3) Codex CLI의 `/plugins` 커맨드로 활성화하거나,
+#    `~/.agents/plugins/marketplace.json`에 Nova 엔트리를 수동 등록
+```
+
+> **주의**: `session-start.sh` 훅(10개 자동 적용 규칙)은 Claude Code 전용 기능으로 **Codex CLI에서는 동작하지 않는다**. 슬래시 커맨드(`/nova:*`)와 전문 에이전트도 Phase 1에서는 사용 불가. 세션 시작 시 `docs/nova-rules.md`를 수동으로 첨부해 규칙을 적용한다.
+
+**MCP 수동 등록 (폴백 — 번들된 `.codex-plugin/.mcp.json`이 자동 로드되지 않을 경우):**
+
+```toml
+# ~/.codex/config.toml
+[mcp_servers.nova]
+command = "node"
+args = ["/절대경로/nova/mcp-server/dist/index.js"]
+```
+
 ## FAQ
 
 ### Nova를 쓰지 말아야 할 때는?

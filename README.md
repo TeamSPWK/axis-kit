@@ -401,6 +401,32 @@ claude plugin uninstall nova@nova-marketplace
 claude plugin marketplace remove nova-marketplace
 ```
 
+### Codex CLI (Beta)
+
+Nova provides a separate manifest for [Codex CLI](https://github.com/openai/codex) users. Skills (7 types) and MCP are available in Phase 1.
+
+```bash
+# 1) Clone into Codex plugin directory
+git clone https://github.com/TeamSPWK/nova.git ~/.agents/plugins/nova
+
+# 2) Build the MCP server
+cd ~/.agents/plugins/nova/mcp-server && pnpm install && pnpm build
+
+# 3) Activate via Codex CLI `/plugins` command,
+#    or register manually in ~/.agents/plugins/marketplace.json
+```
+
+> **Note**: The `session-start.sh` hook (10 auto-apply rules) is a Claude Code-only feature and **does not work with Codex CLI**. Slash commands (`/nova:*`) and specialist agents are also unavailable in Phase 1. Attach `docs/nova-rules.md` manually at session start to get the rules.
+
+**MCP registration (fallback — if the bundled `.codex-plugin/.mcp.json` does not auto-load):**
+
+```toml
+# ~/.codex/config.toml
+[mcp_servers.nova]
+command = "node"
+args = ["/absolute/path/to/nova/mcp-server/dist/index.js"]
+```
+
 ## FAQ
 
 ### When should I NOT use Nova?

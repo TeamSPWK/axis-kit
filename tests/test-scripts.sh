@@ -137,6 +137,18 @@ assert "marketplace.json: plugins 배열" "jq -e '.plugins[0].name' '$ROOT_DIR/.
 echo ""
 
 # ═══════════════════════════════════════════
+# 5-1. Codex 매니페스트
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[플러그인: Codex 매니페스트]${NC}"
+
+assert ".codex-plugin/plugin.json 존재" "[ -f '$ROOT_DIR/.codex-plugin/plugin.json' ]"
+assert ".codex-plugin/plugin.json: name" "jq -e '.name' '$ROOT_DIR/.codex-plugin/plugin.json' > /dev/null 2>&1"
+assert ".codex-plugin/plugin.json: version" "jq -e '.version' '$ROOT_DIR/.codex-plugin/plugin.json' > /dev/null 2>&1"
+assert ".codex-plugin/plugin.json: description" "jq -e '.description' '$ROOT_DIR/.codex-plugin/plugin.json' > /dev/null 2>&1"
+echo ""
+
+# ═══════════════════════════════════════════
 # 6. 버전 일관성 (Single Source of Truth)
 # ═══════════════════════════════════════════
 
@@ -157,6 +169,9 @@ assert ".nova-version == README 배지 ($NOVA_VER)" "[ '$NOVA_VER' = '$README_VE
 
 README_KO_VER=$(grep -o 'version-[0-9]*\.[0-9]*\.[0-9]*' "$ROOT_DIR/README.ko.md" 2>/dev/null | sed 's/version-//' || echo "")
 assert ".nova-version == README.ko 배지 ($NOVA_VER)" "[ '$NOVA_VER' = '$README_KO_VER' ]"
+
+CODEX_PLUGIN_VER=$(jq -r '.version' "$ROOT_DIR/.codex-plugin/plugin.json" 2>/dev/null || echo "")
+assert ".nova-version == .codex-plugin/plugin.json ($NOVA_VER)" "[ '$NOVA_VER' = '$CODEX_PLUGIN_VER' ]"
 echo ""
 
 # ═══════════════════════════════════════════
@@ -443,16 +458,21 @@ cp -r "$ROOT_DIR/scripts" "$BUMP_DIR/scripts"
 mkdir -p "$BUMP_DIR/.claude-plugin"
 cp "$ROOT_DIR/.claude-plugin/plugin.json" "$BUMP_DIR/.claude-plugin/"
 cp "$ROOT_DIR/.claude-plugin/marketplace.json" "$BUMP_DIR/.claude-plugin/"
+mkdir -p "$BUMP_DIR/.codex-plugin"
+cp "$ROOT_DIR/.codex-plugin/plugin.json" "$BUMP_DIR/.codex-plugin/"
 cp "$ROOT_DIR/README.md" "$BUMP_DIR/README.md"
 
 # patch 테스트
 (cd "$BUMP_DIR" && bash scripts/bump-version.sh patch > /dev/null 2>&1)
 BUMPED=$(tr -d '[:space:]' < "$BUMP_DIR/scripts/.nova-version")
 BUMPED_PLUGIN=$(jq -r '.version' "$BUMP_DIR/.claude-plugin/plugin.json")
+BUMPED_CODEX=$(jq -r '.version' "$BUMP_DIR/.codex-plugin/plugin.json")
 
 assert "patch: 버전 증가" "[ '$BUMPED' != '$NOVA_VER' ]"
 assert "patch: 3곳 동기화 (.nova-version, plugin.json, README)" \
   "[ '$BUMPED' = '$BUMPED_PLUGIN' ]"
+assert "patch: .codex-plugin/plugin.json 동기화" \
+  "[ '$BUMPED' = '$BUMPED_CODEX' ]"
 
 # 직접 지정 테스트
 (cd "$BUMP_DIR" && bash scripts/bump-version.sh 9.9.9 > /dev/null 2>&1)

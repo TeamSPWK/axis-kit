@@ -66,6 +66,8 @@ echo ""
 # ── Step 4: 범프 파일 커밋 ──
 echo "━━━ Step 4/6: 범프 커밋 ━━━"
 git add scripts/.nova-version .claude-plugin/plugin.json README.md README.ko.md docs/nova-meta.json
+# .codex-plugin/plugin.json은 선택적 — 과거 태그 rollback 시 파일이 없을 수 있음
+[[ -f .codex-plugin/plugin.json ]] && git add .codex-plugin/plugin.json
 git commit -m "chore(v${NEW_VERSION}): 버전 범프"
 echo ""
 
