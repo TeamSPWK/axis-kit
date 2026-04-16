@@ -12,6 +12,32 @@ description: "멀티 AI 다관점 자문을 실행한다. Claude + GPT + Gemini 
 - **적합**: 기술 스택 선택, 아키텍처 판단, 설계 트레이드오프 등 "정답이 없는 판단"
 - **부적합**: 사실 확인(factual), 구문 오류, 단순 API 사용법 등 — 대부분 같은 답이 나오므로 합의가 높아도 무의미
 
+# 사전 요구사항 (Mode A)
+
+프로젝트 루트 `.env`에 다음 API 키를 설정한다 (최소 1개):
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+OPENAI_API_KEY=sk-...
+GEMINI_API_KEY=AI...
+```
+
+| 키 보유 | 동작 |
+|---------|------|
+| 3개 | 교차검증 + 합의 분석 (최적) |
+| 2개 | 교차검증 (합의 분석은 GEMINI_API_KEY 필요) |
+| 1개 | 단일 AI 응답 + 에이전트 비교 |
+| 0개 | Mode B (에이전트 폴백) 자동 전환 |
+
+선택적 모델 오버라이드 (.env):
+```
+CLAUDE_MODEL=claude-sonnet-4-6        # 기본 Claude 모델
+CLAUDE_MODEL_OPUS=claude-opus-4-6     # --model opus 시
+CLAUDE_MODEL_HAIKU=claude-haiku-4-5-20251001
+OPENAI_MODEL=gpt-5.4                  # 기본 GPT 모델
+GEMINI_MODEL=gemini-3-flash-preview   # 기본 Gemini 모델
+```
+
 # Execution
 
 ## Mode A: API 다관점 수집 (.env에 API 키가 1개 이상 있을 때)

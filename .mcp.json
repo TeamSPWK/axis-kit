@@ -1,3 +1,8 @@
 {
-  "mcpServers": {}
+  "mcpServers": {
+    "nova": {
+      "command": "node",
+      "args": ["mcp-server/dist/index.js"]
+    }
+  }
 }
