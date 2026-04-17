@@ -206,6 +206,7 @@ Before/After 코드 + 변경 요약
 # Notes
 - **Generator-Evaluator 분리 원칙**: `/run`에서 호출될 때는 반드시 독립 서브에이전트로 실행된다.
 - **개별 리뷰**: 코드 품질만 빠르게 점검하려면 `/review`를 단독 실행할 수 있다.
+- **대형 PR 2차 감사**: 인간 리뷰 직전 Claude Code `/ultrareview` 병용 가능 (Nova 체인 외부, 보완재). 상세는 `commands/review.md` "Related" 참조.
 - 감정, 위트 없이 객관적으로
 - 사소한 스타일은 린터에 위임, 구조적 문제만 지적
 - PASS라도 발견한 모든 이슈를 빠짐없이 보고한다

@@ -365,6 +365,26 @@ Critical 이슈가 발견되면 수정 후 재검증을 권고한다:
   | {보안 이슈 설명} | {Critical/HIGH/Warning} | 미해결 |
   ```
 
+# Related: `/ultrareview`와의 역할 분리
+
+Claude Code `/ultrareview`는 클라우드 멀티 에이전트 병렬 리뷰 + 독립 재현 검증이 특징이다. `/nova:review`와 **메커니즘이 겹치므로 체인에 직렬 통합하지 않는다.** 보완재로 병용한다.
+
+| | `/nova:review` | `/ultrareview` |
+|---|---|---|
+| 실행 | 로컬 서브에이전트 (동기) | 클라우드 CCR (비동기) |
+| 빈도 | 매 커밋 전 (고빈도 게이트) | 대형 PR·인간 리뷰 직전 (저빈도 2차 감사) |
+| 특성 | Generator-Evaluator 분리, 증거 기반 PASS/FAIL | 멀티 에이전트 병렬, 재현 검증 후 보고 |
+| 통합 | Nova Quality Gate 체인 | 독립 실행 |
+
+> 위 비교는 2026-04-17 시점 공개 문서 기준이며, Claude Code 업데이트에 따라 변경될 수 있다. 실제 연동 전 [Claude Code Docs](https://code.claude.com/docs)에서 최신 동작을 확인하라.
+
+**언제 `/ultrareview`를 병용하나**
+- `/nova:review` PASS 이후, 대형 PR(8+파일 또는 인증/DB/결제 변경)을 인간 리뷰에 올리기 직전
+- Critical 이슈가 많아 **재현 검증이 필요**할 때
+- 클라우드 업로드가 정책상 허용되는 코드일 때
+
+Nova 자체는 `/ultrareview`를 자동 호출하지 않는다. 사용자가 판단하여 독립 실행한다.
+
 # Notes
 - **Generator-Evaluator 분리 원칙**: 이 커맨드가 `/run`에서 호출될 때는 반드시 독립 서브에이전트로 실행된다.
 - 감정, 위트 없이 객관적으로

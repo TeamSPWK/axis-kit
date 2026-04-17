@@ -121,6 +121,26 @@ CPS(Context-Problem-Solution) 프레임워크로 Plan 문서를 작성한다.
   - /nova:plan → 완료 — docs/plans/{slug}.md | {ISO 8601}
   ```
 
+# Related: `/ultraplan`과의 역할 분리
+
+Claude Code `/ultraplan`은 클라우드 CCR에서 최대 30분 전용 컴퓨트로 플래닝 세션을 돌리고 브라우저에서 인라인 코멘트로 반복 편집한다. `/nova:plan`과 **실행 모델이 달라 체인 통합하지 않는다.** 보완재로 병용한다.
+
+| | `/nova:plan` | `/ultraplan` |
+|---|---|---|
+| 실행 | 로컬 동기 (터미널) | 클라우드 비동기 (브라우저 리뷰) |
+| 프레임 | CPS(Context-Problem-Solution) + 스프린트 분할 | 자유 형식 + 인라인 피드백 루프 |
+| 적합 | 매 기능 단위, Design으로 이어지는 플래닝 | 대형 마이그레이션·아키텍처 전환·팀 공유 문서 |
+| 통합 | Plan → Design → 구현 체인 | 독립 실행 (결과를 Nova에 수동 흡수) |
+
+> 위 비교는 2026-04-17 시점 공개 문서 기준이며, Claude Code 업데이트에 따라 변경될 수 있다. 실제 연동 전 [Claude Code Docs](https://code.claude.com/docs)에서 최신 동작을 확인하라.
+
+**언제 `/ultraplan`을 병용하나**
+- 대형 마이그레이션(예: 스키마 전환, 프레임워크 교체)에서 **팀 리뷰가 필요**할 때
+- 터미널을 해방하고 플래닝을 병렬로 돌리고 싶을 때
+- 결과를 `/nova:plan`에 **수동으로 옮겨** Nova 체인에 진입시킨다 — 자동 연동 없음
+
+Nova 자체는 `/ultraplan`을 자동 호출하지 않는다. 사용자가 판단하여 독립 실행한다.
+
 # Notes
 - Plan은 "무엇을, 왜" — Design은 "어떻게"
 - Plan 없이 바로 코딩하지 않는다

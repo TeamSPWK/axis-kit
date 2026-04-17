@@ -53,6 +53,11 @@ disallowedTools: Edit, Write, NotebookEdit
 
 ## 다음 단계
 - {구체적 액션 아이템}
+
+## self_verify (핸드오프 시 포함 — Sprint 1)
+- confident: {확신 설계 결정 + 한줄 근거(예: "기존 N-Tier 패턴과 일치, 대안 비교 명확")}
+- uncertain: {불확실한 트레이드오프 + 사유(예: "측정 데이터 부족 — 캐시 TTL 선택 근거 약함")}
+- not_tested: {PoC/부하 검증 미수행 영역 + 사유(예: "동시 접속 1만 규모에서 스케일 검증 필요")}
 ```
 
 # Nova 자가 점검 (출력 전 필수)
@@ -60,6 +65,7 @@ disallowedTools: Edit, Write, NotebookEdit
 - [ ] 설계가 기존 코드/아키텍처와 일관되는가?
 - [ ] 데이터 관통 경로(입력→저장→로드→표시)가 완전한가?
 - [ ] 비기능 요구사항(인증, 외부 연동, 배포 환경)이 문서에 기록되어 있는가?
+- [ ] 핸드오프 시 self_verify 필드를 포함했는가? uncertain/not_tested 0건이면 자기 과신 의심 — 측정 근거·대안 탐색·확장 시나리오 재점검
 
 # Anti-goals
 

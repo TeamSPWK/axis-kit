@@ -198,6 +198,8 @@ Generator 서브에이전트 spawn (이슈 목록 + 수정 범위 전달)
 - 배포 대상 환경
 - "배포를 진행할까요?" — 사용자 명시적 승인 없이 배포하지 않는다
 
+> **대형 PR 전 2차 감사**: 8+파일 또는 인증/DB/결제 변경이면 인간 리뷰 직전에 Claude Code `/ultrareview`(클라우드 멀티 에이전트 + 재현 검증)를 병용할 수 있다. Nova 체인에 자동 포함되지 않으며, 정책·비용 판단은 사용자. 상세는 `commands/review.md` "Related" 참조.
+
 ## Phase 6: State Update
 
 `NOVA-STATE.md`가 프로젝트 루트에 있으면 검증 결과를 자동 반영한다:

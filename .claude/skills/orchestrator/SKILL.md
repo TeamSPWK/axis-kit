@@ -167,6 +167,26 @@ Generator 완료 시 다음 정보를 Evaluator에게 전달한다:
 - 근거: *LLM Evaluators Recognize and Favor Their Own Generations* (arXiv 2404.13076) — self-preference bias는 구조적으로 방어 필요.
 - Sprint 1에서는 **신호 수집만**. Layer 배분 최적화는 Sprint 2, 충돌 학습은 Sprint 3, Jury 참여는 Sprint 4.
 
+**Orchestrator 수신 시 관측 (Sprint 1 채택률 측정)**:
+- Generator 핸드오프 수신 직후 `self_verify` 필드 유무를 한 줄로 로그한다:
+  ```
+  [Handoff] self_verify: present  — confident={N}/uncertain={N}/not_tested={N}
+  [Handoff] self_verify: absent   — Generator에게 필드 포함 재요청 (Sprint 1은 재요청만, 차단 X)
+  ```
+- `absent`인 경우 Evaluator 전달 전 Generator에게 **한 번 재요청**한다 (루프 금지 — 2회차도 absent면 그대로 진행).
+- 이 관측 로그는 Sprint 2의 Layer 배분 최적화 근거 데이터로 활용된다.
+
+**Evaluator 전달 시 메타 필드 (absent 구분)**:
+재요청 시도 후에도 `self_verify`가 없으면 Evaluator에게 아래 메타 필드를 명시적으로 포함시킨다. Evaluator는 "원래 누락"과 "재요청도 실패한 누락"을 구분해 Sprint 1 관측 데이터 품질을 유지한다.
+```
+## self_verify_meta (Orchestrator가 Evaluator에게 전달)
+- status: {present | absent_initial | absent_after_retry}
+- retries: {0 | 1}
+```
+- `present`: Generator가 1차에 포함 → Evaluator는 필드 내용을 그대로 사용
+- `absent_initial`: 1차 누락 (재요청 전). 보통 Orchestrator가 재요청하여 이 상태로는 Evaluator에 도달하지 않음
+- `absent_after_retry`: 재요청도 실패. 채택률 통계에서 "강한 미채택 시그널"로 집계
+
 #### Evaluator → Generator (Fix) 핸드오프 포맷
 
 FAIL 판정 시 수정 지시를 구조화하여 전달한다:

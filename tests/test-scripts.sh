@@ -548,6 +548,33 @@ assert "meta.stats.agents == 에이전트 수" \
 echo ""
 
 # ═══════════════════════════════════════════
+# 13. 에이전트: self_verify 필드 (Sprint 1)
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[에이전트: self_verify 필드]${NC}"
+
+# self_verify 블록이 있어야 하는 Generator 계열 에이전트
+SELF_VERIFY_AGENTS=(
+  "senior-dev"
+  "devops-engineer"
+  "architect"
+  "qa-engineer"
+  "security-engineer"
+)
+
+for agent in "${SELF_VERIFY_AGENTS[@]}"; do
+  agent_file="$ROOT_DIR/.claude/agents/${agent}.md"
+  assert "${agent}.md: self_verify 블록 존재" \
+    "grep -q '^## self_verify' '$agent_file'"
+  assert "${agent}.md: confident/uncertain/not_tested 3필드 포함" \
+    "grep -q 'confident:' '$agent_file' && grep -q 'uncertain:' '$agent_file' && grep -q 'not_tested:' '$agent_file'"
+  assert "${agent}.md: 자가점검 체크리스트에 self_verify 라인" \
+    "grep -q 'self_verify 필드를 포함했는가' '$agent_file'"
+done
+
+echo ""
+
+# ═══════════════════════════════════════════
 # 결과
 # ═══════════════════════════════════════════
 

@@ -6,6 +6,20 @@
 
 ---
 
+## 상태 (2026-04-17 오후 갱신)
+
+| # | 항목 | 상태 | 반영 버전 |
+|---|------|------|----------|
+| P-1 | Opus 모델 ID 업데이트 | ✅ 반영 완료 | v5.2.3 (ac98dc6) |
+| P-2 | Evaluator self-verification 문구 | ✅ 반영 완료 | v5.2.3 (ac98dc6) |
+| Sprint 1 | Self-verify 핸드오프 필드 (P-2 후속) | ✅ 반영 완료 | v5.3.0 (252d133) |
+| Sprint 1 갭 보완 | 누락 에이전트 3종 + 관측 장치 + Ultra 포지셔닝 | ✅ 반영 완료 | v5.3.1 (본 커밋) |
+| M-1 | `xhigh` effort level | ⏸ 보류 | Claude CLI 레벨 기능. Nova 스크립트 관여 여지 적어 별도 스프린트에서 재검토 |
+| M-2 | `/ultrareview` 포지셔닝 문서화 | ✅ 반영 완료 | v5.3.1 — `commands/review.md` + `commands/plan.md`에 Related 섹션. 체인 통합 X, 보완재 |
+| Major-1 | `/less-permission-prompts` 유사 스킬 | ❌ 도입 안 함 (옵션 A 확정) | Nova §10 "설정 파일 직접 수정 금지" 원칙 우선. Claude Code 기본 스킬로 위임 |
+
+---
+
 ## Scan Summary
 
 | # | 항목 | 수준 | 자율 등급 | 출처 |

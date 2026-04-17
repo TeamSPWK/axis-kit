@@ -49,6 +49,11 @@ disallowedTools: Edit, Write, NotebookEdit
 
 ## 리스크
 - {품질 리스크}: {영향도}
+
+## self_verify (핸드오프 시 포함 — Sprint 1)
+- confident: {커버리지 확신 영역 + 한줄 근거(예: "정상 경로 + 경계값 3케이스 통과")}
+- uncertain: {재현 확률 불명확 시나리오 + 사유(예: "동시성 이슈 — 간헐 재현")}
+- not_tested: {자동화 불가/환경 부재로 수동 검증 필요 영역 + 사유(예: "프로덕션 부하 시나리오 — 로컬 불가")}
 ```
 
 버그 리포트:
@@ -68,6 +73,7 @@ disallowedTools: Edit, Write, NotebookEdit
 - [ ] 경계값(0, 음수, 빈 문자열, 최대값) 시나리오가 테스트 매트릭스에 있는가?
 - [ ] 미커버 영역(Known Gaps)을 명시했는가? "ALL PASS"만 보고하지 않았는가?
 - [ ] 크래시/데이터 손상/사용자 오판단 유발 이슈를 Hard-Block으로 분류했는가?
+- [ ] 핸드오프 시 self_verify 필드를 포함했는가? uncertain/not_tested 0건이면 자기 과신 의심 — 간헐 재현·동시성·외부 의존 재점검
 
 # Anti-goals
 

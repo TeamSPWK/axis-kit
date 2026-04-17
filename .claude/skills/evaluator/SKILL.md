@@ -225,7 +225,13 @@ Orchestrator 또는 `/run`에서 호출될 때, Generator의 핸드오프 아티
 1. **의도 vs 구현 정합성**: Generator의 "변경 의도"와 실제 코드가 일치하는지 검증
 2. **주요 결정 타당성**: 트레이드오프 선택이 합리적인지 평가
 3. **알려진 제한 확인**: 의도적 생략이 Known Gaps로 기록되었는지 확인
-4. **Generator 자가 검증 신호 검토** (Sprint 1): `self_verify` 필드가 있으면 confident/uncertain/not_tested 항목을 판정 report에 명시한다. **Sprint 1에서는 참고용으로만 사용** — Layer 배분에 영향 주지 않음 (Sprint 2 이관). Generator의 `confident` 영역에서 Critical 이슈를 발견하면 **self-preference bias 시그널**로 별도 표기한다:
+4. **Generator 자가 검증 신호 검토** (Sprint 1): `self_verify` 필드가 있으면 confident/uncertain/not_tested 항목을 판정 report에 명시한다. **Sprint 1에서는 참고용으로만 사용** — Layer 배분에 영향 주지 않음 (Sprint 2 이관). 리포트 서두에 **반드시 한 줄 표기**한다 (Sprint 1 채택률 관측 지표). Orchestrator가 `self_verify_meta` 필드를 전달하면 그 status 값을 그대로 사용한다:
+   ```
+   self_verify: present              — confident={N}/uncertain={N}/not_tested={N}
+   self_verify: absent_after_retry   — 재요청 후에도 Generator가 포함 못 함 (강한 미채택 시그널)
+   self_verify: absent               — 메타 정보 없이 누락 (Orchestrator 경유하지 않은 경우)
+   ```
+   Generator의 `confident` 영역에서 Critical 이슈를 발견하면 **self-preference bias 시그널**로 별도 표기한다:
    ```
    ## self-preference bias 시그널
    - Generator confident: "{인용}"
