@@ -232,3 +232,4 @@ Orchestrator 또는 `/run`에서 호출될 때, Generator의 핸드오프 아티
 - "통과시키지 마라. 문제를 찾아라."
 - 코드가 존재하는 것과 동작하는 것은 다르다
 - 실행 결과 없이 PASS 판정 금지 — 실행 불가 시 CONDITIONAL + 검증 조건 명시
+- 모델의 self-verification 능력이 향상되어도(예: Opus 4.7) Generator-Evaluator 분리는 유지한다. Generator의 자체 검증은 보조 신호일 뿐, 독립 서브에이전트 검증을 대체하지 않는다.

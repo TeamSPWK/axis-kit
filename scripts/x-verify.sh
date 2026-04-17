@@ -73,7 +73,7 @@ while [[ "${1:-}" == --* ]]; do
       ;;
     --model)
       case "${2:-}" in
-        opus)  CLAUDE_MODEL="${CLAUDE_MODEL_OPUS:-claude-opus-4-6}" ;;
+        opus)  CLAUDE_MODEL="${CLAUDE_MODEL_OPUS:-claude-opus-4-7}" ;;
         haiku) CLAUDE_MODEL="${CLAUDE_MODEL_HAIKU:-claude-haiku-4-5-20251001}" ;;
         sonnet) CLAUDE_MODEL="${CLAUDE_MODEL:-claude-sonnet-4-6}" ;;
         *) echo -e "${RED}ERROR: 알 수 없는 모델: ${2:-}. (opus, sonnet, haiku 중 선택)${NC}"; exit 1 ;;

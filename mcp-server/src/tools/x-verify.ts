@@ -389,7 +389,7 @@ export function registerXVerify(server: McpServer): void {
 
       // 모델 설정
       const claudeModelMap: Record<string, string> = {
-        opus: envVars.CLAUDE_MODEL_OPUS ?? "claude-opus-4-6",
+        opus: envVars.CLAUDE_MODEL_OPUS ?? "claude-opus-4-7",
         sonnet: envVars.CLAUDE_MODEL ?? "claude-sonnet-4-6",
         haiku: envVars.CLAUDE_MODEL_HAIKU ?? "claude-haiku-4-5-20251001",
       };

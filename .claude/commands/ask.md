@@ -32,7 +32,7 @@ GEMINI_API_KEY=AI...
 선택적 모델 오버라이드 (.env):
 ```
 CLAUDE_MODEL=claude-sonnet-4-6        # 기본 Claude 모델
-CLAUDE_MODEL_OPUS=claude-opus-4-6     # --model opus 시
+CLAUDE_MODEL_OPUS=claude-opus-4-7     # --model opus 시
 CLAUDE_MODEL_HAIKU=claude-haiku-4-5-20251001
 OPENAI_MODEL=gpt-5.4                  # 기본 GPT 모델
 GEMINI_MODEL=gemini-3-flash-preview   # 기본 Gemini 모델
