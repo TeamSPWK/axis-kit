@@ -241,6 +241,7 @@ Commands provide **additional control** on top of auto-apply rules.
 | `/nova:scan` | 새 프로젝트에 처음 투입됐을 때 코드베이스를 자동 분석하고 '어디부터 볼지' 브리핑한다. |
 | `/nova:setup` | 새 프로젝트에 Nova Quality Gate를 초기 설정하거나, 기존 프로젝트의 갭을 자동 보완한다 (--upgrade). |
 | `/nova:ux-audit` | 5인 적대적 평가자로 UI/UX를 다관점 심층 평가. 접근성(WCAG 2.2)·인지 부하·성능(Core Web Vitals)·다크 패턴(EU DSA)까지 코드 기반 분석. |
+| `/nova:worktree-setup` | 현재 worktree에서 메인 레포의 .env·시크릿·설정 파일을 즉시 심볼릭 링크한다. SessionStart 자동 훅의 수동 재시도 버전. |
 <!-- /AUTO-GEN:commands -->
 
 ## Self-Evolution
@@ -316,6 +317,7 @@ Skills are multi-step operations that commands invoke internally. They can also 
 | **jury** | Nova LLM Jury — 다중 관점 평가로 단일 Evaluator의 편향을 보정 |
 | **orchestrator** | Nova Orchestrator — 자연어 요청을 CPS 설계→에이전트 편성→구현→검증→수정 전체 사이클로 자동 실행 |
 | **ux-audit** | Nova UX Audit — 5인 적대적 평가자(Adversarial Jury)로 UI/UX를 다관점 심층 평가. 코드 기반 분석 + 선택적 화면 캡처. |
+| **worktree-setup** | Nova Worktree Setup — git worktree 진입 시 메인 레포의 .env·시크릿·설정 파일을 자동 심볼릭 링크한다. 환경 기둥의 첫 시민. |
 <!-- /AUTO-GEN:skills -->
 
 ## Specialist Agents (5 Types)

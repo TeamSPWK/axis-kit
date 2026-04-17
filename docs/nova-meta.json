@@ -1,9 +1,9 @@
 {
   "version": "5.4.0",
-  "generatedAt": "2026-04-17T04:03:15Z",
+  "generatedAt": "2026-04-17T05:22:02Z",
   "stats": {
-    "commands": 12,
-    "skills": 7,
+    "commands": 13,
+    "skills": 8,
     "agents": 5,
     "rules": 10,
     "mcpTools": 6
@@ -20,7 +20,8 @@
     {"cmd": "/nova:run", "description": "구현→검증을 한 사이클로 실행한다 (Full Cycle). --verify-only로 검증만 수행 가능."},
     {"cmd": "/nova:scan", "description": "새 프로젝트에 처음 투입됐을 때 코드베이스를 자동 분석하고 '어디부터 볼지' 브리핑한다."},
     {"cmd": "/nova:setup", "description": "새 프로젝트에 Nova Quality Gate를 초기 설정하거나, 기존 프로젝트의 갭을 자동 보완한다 (--upgrade)."},
-    {"cmd": "/nova:ux-audit", "description": "5인 적대적 평가자로 UI/UX를 다관점 심층 평가. 접근성(WCAG 2.2)·인지 부하·성능(Core Web Vitals)·다크 패턴(EU DSA)까지 코드 기반 분석."}
+    {"cmd": "/nova:ux-audit", "description": "5인 적대적 평가자로 UI/UX를 다관점 심층 평가. 접근성(WCAG 2.2)·인지 부하·성능(Core Web Vitals)·다크 패턴(EU DSA)까지 코드 기반 분석."},
+    {"cmd": "/nova:worktree-setup", "description": "현재 worktree에서 메인 레포의 .env·시크릿·설정 파일을 즉시 심볼릭 링크한다. SessionStart 자동 훅의 수동 재시도 버전."}
   ],
   "skills": [
     {"name": "context-chain", "description": "Nova Context Chain — 세션 간 맥락 연속성 보장. NOVA-STATE.md 기반 상태 관리. — MUST TRIGGER: 세션 시작 시 NOVA-STATE.md 읽기, 커밋 후 상태 갱신, 스프린트 전환 시."},
@@ -29,7 +30,8 @@
     {"name": "field-test", "description": "실제 프로젝트에서 Nova를 사용해보며 개선 포인트를 찾는 실전 테스트. 워크트리 격리로 흔적 없이 진행."},
     {"name": "jury", "description": "Nova LLM Jury — 다중 관점 평가로 단일 Evaluator의 편향을 보정"},
     {"name": "orchestrator", "description": "Nova Orchestrator — 자연어 요청을 CPS 설계→에이전트 편성→구현→검증→수정 전체 사이클로 자동 실행"},
-    {"name": "ux-audit", "description": "Nova UX Audit — 5인 적대적 평가자(Adversarial Jury)로 UI/UX를 다관점 심층 평가. 코드 기반 분석 + 선택적 화면 캡처. — MUST TRIGGER: UI/UX 변경 후 /review 전, 새 기능 론칭 전, 프론트엔드 리팩토링 후."}
+    {"name": "ux-audit", "description": "Nova UX Audit — 5인 적대적 평가자(Adversarial Jury)로 UI/UX를 다관점 심층 평가. 코드 기반 분석 + 선택적 화면 캡처. — MUST TRIGGER: UI/UX 변경 후 /review 전, 새 기능 론칭 전, 프론트엔드 리팩토링 후."},
+    {"name": "worktree-setup", "description": "Nova Worktree Setup — git worktree 진입 시 메인 레포의 .env·시크릿·설정 파일을 자동 심볼릭 링크한다. 환경 기둥의 첫 시민. — MUST TRIGGER: 새 worktree 진입 직후, 사용자가 '환경변수 안 읽힘·시크릿 못 찾음'을 보고할 때, EnterWorktree 도구 호출 직후."}
   ],
   "agents": [
     {"name": "architect", "description": "시스템 아키텍처 설계, 기술 선택, 확장성/유지보수성 검토가 필요할 때 사용. 설계 문서 리뷰, 모듈 간 결합도 분석, ADR 작성에 적합.", "tools": "Read, Glob, Grep, Agent, WebSearch"},

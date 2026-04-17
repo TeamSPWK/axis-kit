@@ -61,9 +61,10 @@ echo -e "${YELLOW}[구조: 커맨드]${NC}"
 EXPECTED_COMMANDS=(
   run design scan evolve setup next
   auto plan review check ask ux-audit
+  worktree-setup
 )
 CMD_COUNT=$(ls "$ROOT_DIR/.claude/commands/"*.md 2>/dev/null | wc -l | tr -d ' ')
-assert "커맨드 파일 존재" "[ '$CMD_COUNT' -ge 12 ]"
+assert "커맨드 파일 존재" "[ '$CMD_COUNT' -ge 13 ]"
 
 for cmd in "${EXPECTED_COMMANDS[@]}"; do
   assert "커맨드: $cmd.md" "[ -f '$ROOT_DIR/.claude/commands/$cmd.md' ]"
@@ -572,6 +573,108 @@ for agent in "${SELF_VERIFY_AGENTS[@]}"; do
     "grep -q 'self_verify 필드를 포함했는가' '$agent_file'"
 done
 
+echo ""
+
+# ═══════════════════════════════════════════
+# 10. 환경 기둥: worktree-setup
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[환경: worktree-setup]${NC}"
+
+WT_HOOK="$ROOT_DIR/hooks/worktree-setup.sh"
+WT_SKILL="$ROOT_DIR/.claude/skills/worktree-setup/SKILL.md"
+WT_CMD="$ROOT_DIR/.claude/commands/worktree-setup.md"
+
+assert "worktree-setup.sh 존재 + 실행 권한" \
+  "[ -f '$WT_HOOK' ] && [ -x '$WT_HOOK' ]"
+assert "worktree-setup/SKILL.md 존재" "[ -f '$WT_SKILL' ]"
+assert "worktree-setup.md (커맨드) 존재" "[ -f '$WT_CMD' ]"
+
+# hooks.json에 등록됐는지
+assert "hooks.json: worktree-setup.sh 참조" \
+  "grep -q 'worktree-setup.sh' '$ROOT_DIR/hooks/hooks.json'"
+
+# session-start.sh 커맨드 목록에 /nova:worktree-setup 포함 (자동 감지 테스트가 잡지만 명시)
+assert "session-start.sh: /nova:worktree-setup 포함" \
+  "bash '$ROOT_DIR/hooks/session-start.sh' | grep -q '/nova:worktree-setup'"
+
+# 런타임 동작: 메인 레포에서 실행 시 skip
+WT_TMP=$(mktemp -d)
+(cd "$WT_TMP" && git init -q && echo x > f && git add -A && git commit -q -m init) 2>/dev/null
+assert "worktree-setup: 메인 레포에서 skip (exit 0)" \
+  "(cd '$WT_TMP' && bash '$WT_HOOK'); [ \$? -eq 0 ]"
+
+# 런타임 동작: worktree에서 gitignored 파일을 심링크
+(cd "$WT_TMP" && \
+  echo -e ".env\n.secret/\n.npmrc" > .gitignore && \
+  git add .gitignore && git commit -q -m ignore && \
+  echo "FOO=bar" > .env && \
+  mkdir -p .secret && echo "tok" > .secret/s && \
+  echo "//r=x" > .npmrc && \
+  git worktree add -b nova-test-wt wt1 -q) 2>/dev/null
+
+if [ -d "$WT_TMP/wt1" ]; then
+  (cd "$WT_TMP/wt1" && bash "$WT_HOOK" >/dev/null 2>&1)
+  assert "worktree-setup: .env 심링크 생성" \
+    "[ -L '$WT_TMP/wt1/.env' ]"
+  assert "worktree-setup: .secret 심링크 생성" \
+    "[ -L '$WT_TMP/wt1/.secret' ]"
+  assert "worktree-setup: .npmrc 심링크 생성" \
+    "[ -L '$WT_TMP/wt1/.npmrc' ]"
+
+  # 멱등성: 재실행해도 깨지지 않음
+  (cd "$WT_TMP/wt1" && bash "$WT_HOOK" >/dev/null 2>&1)
+  assert "worktree-setup: 재실행 멱등 (.env 링크 유지)" \
+    "[ -L '$WT_TMP/wt1/.env' ]"
+
+  # 깨진 심링크: 메인에서 파일 삭제해도 자동 교체 안 함 + stderr 경고
+  rm -f "$WT_TMP/.npmrc"
+  BROKEN_OUT=$( (cd "$WT_TMP/wt1" && bash "$WT_HOOK" >/dev/null) 2>&1 )
+  assert "worktree-setup: 깨진 심링크 skip (링크 유지)" \
+    "[ -L '$WT_TMP/wt1/.npmrc' ] && [ ! -e '$WT_TMP/wt1/.npmrc' ]"
+  assert "worktree-setup: 깨진 심링크 경고 출력" \
+    "echo \"\$BROKEN_OUT\" | grep -q '깨진 심링크'"
+fi
+
+# 악성 경로 주입 차단 (worktree-sync.json override)
+WT_TMP2=$(mktemp -d)
+(cd "$WT_TMP2" && git init -q && echo x > f && git add -A && git commit -q -m init && \
+  mkdir -p .claude && \
+  cat > .claude/worktree-sync.json <<'JSON'
+{"links":["/etc/passwd","../../../etc/shadow",".env"]}
+JSON
+  echo "FOO=bar" > .env && \
+  git worktree add -b nova-sec-wt wt2 -q) 2>/dev/null
+
+if [ -d "$WT_TMP2/wt2" ] && command -v jq >/dev/null 2>&1; then
+  (cd "$WT_TMP2/wt2" && bash "$WT_HOOK" >/dev/null 2>&1)
+  assert "worktree-setup: 절대 경로(/etc/passwd) 차단" \
+    "[ ! -e '$WT_TMP2/wt2/etc/passwd' ] && [ ! -L '$WT_TMP2/wt2/etc' ]"
+  assert "worktree-setup: 상위 이동(../../..) 차단" \
+    "[ ! -L '$WT_TMP2/wt2/../../../etc/shadow' ]"
+  assert "worktree-setup: 정당한 경로(.env)는 링크됨" \
+    "[ -L '$WT_TMP2/wt2/.env' ]"
+fi
+
+# 파일명에 ..가 포함된 정당한 경로는 허용되어야 함 (경로 세그먼트 ..만 차단)
+WT_TMP3=$(mktemp -d)
+(cd "$WT_TMP3" && git init -q && echo x > f && git add -A && git commit -q -m init && \
+  mkdir -p .claude && \
+  cat > .claude/worktree-sync.json <<'JSON'
+{"links":[".env..backup"]}
+JSON
+  echo "BAK=1" > .env..backup && \
+  git worktree add -b nova-dotdot-wt wt3 -q) 2>/dev/null
+
+if [ -d "$WT_TMP3/wt3" ] && command -v jq >/dev/null 2>&1; then
+  (cd "$WT_TMP3/wt3" && bash "$WT_HOOK" >/dev/null 2>&1)
+  assert "worktree-setup: 파일명 내 ..는 허용 (.env..backup 링크됨)" \
+    "[ -L '$WT_TMP3/wt3/.env..backup' ]"
+fi
+
+rm -rf "$WT_TMP3"
+
+rm -rf "$WT_TMP" "$WT_TMP2"
 echo ""
 
 # ═══════════════════════════════════════════
