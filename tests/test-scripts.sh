@@ -670,14 +670,14 @@ else
 fi
 
 # 악성 경로 주입 차단 (worktree-sync.json override)
+# NOTE: 서브셸 내 heredoc이 Ubuntu CI에서 불안정 — printf로 교체 (v5.8.1 hotfix)
+# .env는 worktree add 후 생성 (tracked 방지)
 WT_TMP2=$(mktemp -d)
-(cd "$WT_TMP2" && git init -q && echo x > f && git add -A && git commit -q -m init && \
-  mkdir -p .claude && \
-  cat > .claude/worktree-sync.json <<'JSON'
-{"links":["/etc/passwd","../../../etc/shadow",".env"]}
-JSON
-  echo "FOO=bar" > .env && \
-  git worktree add -b nova-sec-wt wt2 -q)
+(cd "$WT_TMP2" && git init -q && echo x > f && git add -A && git commit -q -m init)
+mkdir -p "$WT_TMP2/.claude"
+printf '%s\n' '{"links":["/etc/passwd","../../../etc/shadow",".env"]}' > "$WT_TMP2/.claude/worktree-sync.json"
+printf 'FOO=bar\n' > "$WT_TMP2/.env"
+(cd "$WT_TMP2" && git worktree add -b nova-sec-wt wt2 -q)
 
 if [ -d "$WT_TMP2/wt2" ] && command -v jq >/dev/null 2>&1; then
   WT2_ERR=$( (cd "$WT_TMP2/wt2" && bash "$WT_HOOK" >/dev/null) 2>&1 )
@@ -693,14 +693,14 @@ elif [ ! -d "$WT_TMP2/wt2" ]; then
 fi
 
 # 파일명에 ..가 포함된 정당한 경로는 허용되어야 함 (경로 세그먼트 ..만 차단)
+# NOTE: 서브셸 내 heredoc이 Ubuntu CI에서 불안정 — printf로 교체 (v5.8.1 hotfix)
+# .env..backup은 worktree add 후 생성 (tracked 방지)
 WT_TMP3=$(mktemp -d)
-(cd "$WT_TMP3" && git init -q && echo x > f && git add -A && git commit -q -m init && \
-  mkdir -p .claude && \
-  cat > .claude/worktree-sync.json <<'JSON'
-{"links":[".env..backup"]}
-JSON
-  echo "BAK=1" > .env..backup && \
-  git worktree add -b nova-dotdot-wt wt3 -q)
+(cd "$WT_TMP3" && git init -q && echo x > f && git add -A && git commit -q -m init)
+mkdir -p "$WT_TMP3/.claude"
+printf '%s\n' '{"links":[".env..backup"]}' > "$WT_TMP3/.claude/worktree-sync.json"
+printf 'BAK=1\n' > "$WT_TMP3/.env..backup"
+(cd "$WT_TMP3" && git worktree add -b nova-dotdot-wt wt3 -q)
 
 if [ -d "$WT_TMP3/wt3" ] && command -v jq >/dev/null 2>&1; then
   WT3_LOG=$( (cd "$WT_TMP3/wt3" && NOVA_WORKTREE_DEBUG=1 bash "$WT_HOOK" 2>&1) )
@@ -709,6 +709,7 @@ if [ -d "$WT_TMP3/wt3" ] && command -v jq >/dev/null 2>&1; then
   else
     echo "[DIAG wt3] 링크 실패 — 환경: $(uname -a)" >&2
     echo "[DIAG wt3] hook log: $WT3_LOG" >&2
+    echo "[DIAG wt3] override file: $(cat "$WT_TMP3/.claude/worktree-sync.json" 2>&1)" >&2
     echo "[DIAG wt3] main file: $(ls -la "$WT_TMP3/.env..backup" 2>&1)" >&2
     echo "[DIAG wt3] wt3 dir: $(ls -la "$WT_TMP3/wt3" 2>&1)" >&2
     echo "[DIAG wt3] worktree list: $(git -C "$WT_TMP3/wt3" worktree list 2>&1)" >&2
