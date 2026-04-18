@@ -727,6 +727,45 @@ rm -rf "$WT_TMP" "$WT_TMP2"
 echo ""
 
 # ═══════════════════════════════════════════
+# Sprint A: ux-audit Cognitive Load 디자인 항목 검증
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[ux-audit: Sprint A — Cognitive Load 디자인 항목]${NC}"
+
+# 케이스 a: SKILL.md에 항목 11/12 포함
+assert "ux-audit SKILL.md에 디자인 시스템 정합 항목 11/12 포함" \
+  "grep -q '디자인 시스템 정합 — 인지 부하 관점' '$ROOT_DIR/.claude/skills/ux-audit/SKILL.md' && \
+   grep -q '학습한 시각 패턴' '$ROOT_DIR/.claude/skills/ux-audit/SKILL.md' && \
+   grep -q '인지 일관성을 깨는가' '$ROOT_DIR/.claude/skills/ux-audit/SKILL.md'"
+
+# 케이스 b: SKILL.md ↔ commands/ux-audit.md 동기화
+assert "ux-audit SKILL.md ↔ commands/ux-audit.md 평가자 3 동기화" \
+  "grep -q '디자인 시스템 정합 — 인지 부하 관점' '$ROOT_DIR/.claude/commands/ux-audit.md' && \
+   grep -q '학습한 시각 패턴' '$ROOT_DIR/.claude/commands/ux-audit.md' && \
+   grep -q '인지 일관성을 깨는가' '$ROOT_DIR/.claude/commands/ux-audit.md'"
+
+# 케이스 c: 디자인 시스템 자동 감지 5단계 우선순위 명시
+assert "ux-audit Phase 1에 디자인 시스템 자동 감지 5단계" \
+  "grep -q '디자인 시스템 자동 감지' '$ROOT_DIR/.claude/skills/ux-audit/SKILL.md' && \
+   grep -q 'tailwind.config' '$ROOT_DIR/.claude/skills/ux-audit/SKILL.md' && \
+   grep -q 'design-tokens/' '$ROOT_DIR/.claude/skills/ux-audit/SKILL.md' && \
+   grep -q 'packages/\*/tokens' '$ROOT_DIR/.claude/skills/ux-audit/SKILL.md'"
+
+# 케이스 d: B 비활성화 + 끝줄 표기 규칙
+assert "ux-audit B 비활성화 Context Override + 끝줄 표기" \
+  "grep -q 'Context Override' '$ROOT_DIR/.claude/skills/ux-audit/SKILL.md' && \
+   grep -q '디자인 시스템 정의 없음' '$ROOT_DIR/.claude/skills/ux-audit/SKILL.md' && \
+   grep -q '토큰 검증 스킵' '$ROOT_DIR/.claude/skills/ux-audit/SKILL.md'"
+
+# 케이스 e: 디자인 항목 3건 서브 제한 + 8건 전체 제한
+assert "ux-audit 디자인 항목 출력 제한 + 8건 전체 제한 명시" \
+  "grep -q '디자인 항목 출력 제한' '$ROOT_DIR/.claude/skills/ux-audit/SKILL.md' && \
+   grep -q '최대 3건' '$ROOT_DIR/.claude/skills/ux-audit/SKILL.md' && \
+   grep -q '전체 출력 8건 제한은 그대로 유지합니다' '$ROOT_DIR/.claude/skills/ux-audit/SKILL.md'"
+
+echo ""
+
+# ═══════════════════════════════════════════
 # 결과
 # ═══════════════════════════════════════════
 
