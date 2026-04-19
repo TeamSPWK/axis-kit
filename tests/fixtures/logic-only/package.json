@@ -1,0 +1,5 @@
+{
+  "name": "logic-only-fixture",
+  "version": "1.0.0",
+  "description": "Nova test fixture — .tsx file with logic only, no JSX/CSS"
+}

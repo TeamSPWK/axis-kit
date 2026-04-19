@@ -1,0 +1,8 @@
+{
+  "name": "monorepo-fixture",
+  "version": "1.0.0",
+  "description": "Nova test fixture — monorepo with UI packages",
+  "workspaces": [
+    "packages/*"
+  ]
+}

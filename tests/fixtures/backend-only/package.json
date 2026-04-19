@@ -1,0 +1,5 @@
+{
+  "name": "backend-only-fixture",
+  "version": "1.0.0",
+  "description": "Nova test fixture — backend only, no UI"
+}

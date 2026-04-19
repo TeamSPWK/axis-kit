@@ -1,0 +1,9 @@
+{
+  "name": "css-in-js-fixture",
+  "version": "1.0.0",
+  "description": "Nova test fixture — CSS-in-JS with .ts extension",
+  "dependencies": {
+    "@emotion/styled": "^11.0.0",
+    "@emotion/react": "^11.0.0"
+  }
+}
