@@ -6,6 +6,11 @@ user-invocable: false
 
 # Nova Orchestrator
 
+## 적용 규칙 (on-demand 로드)
+
+- `docs/nova-rules.md §2` Generator-Evaluator 분리 + 핸드오프 (self_verify 필드)
+- `docs/nova-rules.md §6` 복잡한 작업의 스프린트 분할 (각 스프린트 완료 = Evaluator 필수)
+
 자연어 한 줄을 받아서 설계→구현→검증→수정 전체 파이프라인을 자동 실행한다.
 
 ## 핵심 원칙

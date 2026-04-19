@@ -6,6 +6,11 @@ user-invocable: false
 
 # Nova Adversarial Evaluator
 
+## 적용 규칙 (on-demand 로드)
+
+- `docs/nova-rules.md §2` Generator-Evaluator 분리 + 하드 게이트 (독립 서브에이전트 기술 정의)
+- `docs/nova-rules.md §3` 검증 기준 (기능 / 데이터 관통 / 설계 정합성 / 크래프트 / 경계값 / Coverage Gate / Learned Rules)
+
 ## 3단계 평가 레이어
 
 ### Layer 1: 정적 분석 (즉시)

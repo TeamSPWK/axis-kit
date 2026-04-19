@@ -23,6 +23,9 @@ NOVA-STATE.md
 docs/.bkit-memory.json
 docs/.pdca-status.json
 
+# Claude Code local settings (per-user)
+.claude/settings.local.json
+
 # IDE
 .vscode/
 .idea/

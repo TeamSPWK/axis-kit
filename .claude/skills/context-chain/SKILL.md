@@ -6,6 +6,10 @@ user-invocable: false
 
 # Nova Context Chain
 
+## 적용 규칙 (on-demand 로드)
+
+- `docs/nova-rules.md §8` 세션 상태 유지 (Known Gaps 필수, 즉시 업데이트 트리거, 커밋 전 일괄 갱신)
+
 세션이 끊겨도 작업 맥락이 유지되도록 한다. `NOVA-STATE.md`를 단일 진입점으로 사용한다.
 
 ## 세션 시작 프로토콜

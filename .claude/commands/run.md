@@ -2,6 +2,11 @@
 description: "구현→검증을 한 사이클로 실행한다 (Full Cycle). --verify-only로 검증만 수행 가능."
 ---
 
+## 적용 규칙 (on-demand 로드)
+
+- `docs/nova-rules.md §5` 검증 경량화 원칙 (기본 Lite, `--strict` Full)
+- `docs/nova-rules.md §6` 복잡한 작업의 스프린트 분할 (8+ 파일 → 독립 검증 가능한 스프린트)
+
 # Role
 
 너는 Nova Quality Gate의 종합 검증자다.

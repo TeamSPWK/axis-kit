@@ -4,6 +4,10 @@ description: "Explorer→Synth→Critic→Refiner 4단 파이프라인으로 깊
 
 # Nova DeepPlan
 
+## 적용 규칙 (on-demand 로드)
+
+- `docs/nova-rules.md §1` 복잡도 판단 — 특히 "deepplan 권장 조건" 서브섹션 (아키텍처 전환 / 대규모 마이그레이션 / 실패 비용 높은 판단)
+
 스킬 `deepplan`을 실행한다.
 
 사용자 입력을 그대로 스킬에 전달한다.

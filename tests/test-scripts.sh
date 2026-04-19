@@ -581,17 +581,48 @@ echo ""
 
 echo -e "${YELLOW}[의미: 문서 간 일관성]${NC}"
 
-# A) §5 경량화 원칙 ↔ review.md 기본값
-assert "session-start §5 기본 Lite 존재" \
-  "bash '$ROOT_DIR/hooks/session-start.sh' | grep -q '기본 Lite'"
+# A) §5 경량화 원칙 — session-start는 경량화로 §5 제거됨. review.md/check.md 단독 보유
 assert "review.md 기본 강도 Lite 선언 존재" \
   "grep -q '기본 강도는 Lite' '$ROOT_DIR/.claude/commands/review.md'"
+assert "review.md: §5 on-demand 로드 선언" \
+  "grep -q 'nova-rules.md §5' '$ROOT_DIR/.claude/commands/review.md'"
+assert "check.md: §5 on-demand 로드 선언" \
+  "grep -q 'nova-rules.md §5' '$ROOT_DIR/.claude/commands/check.md'"
+assert "run.md: §5/§6 on-demand 로드 선언" \
+  "grep -q 'nova-rules.md §5' '$ROOT_DIR/.claude/commands/run.md' && grep -q 'nova-rules.md §6' '$ROOT_DIR/.claude/commands/run.md'"
+assert "auto.md: §6/§9 on-demand 로드 선언" \
+  "grep -q 'nova-rules.md §6' '$ROOT_DIR/.claude/commands/auto.md' && grep -q 'nova-rules.md §9' '$ROOT_DIR/.claude/commands/auto.md'"
+assert "plan.md: §1 on-demand 로드 선언" \
+  "grep -q 'nova-rules.md §1' '$ROOT_DIR/.claude/commands/plan.md'"
+assert "deepplan.md: §1 on-demand 로드 선언 (deepplan 권장 조건)" \
+  "grep -q 'nova-rules.md §1' '$ROOT_DIR/.claude/commands/deepplan.md'"
+assert "context-chain/SKILL.md: §8 on-demand 로드 선언" \
+  "grep -q 'nova-rules.md §8' '$ROOT_DIR/.claude/skills/context-chain/SKILL.md'"
+assert "evaluator/SKILL.md: §2/§3 on-demand 로드 선언" \
+  "grep -q 'nova-rules.md §2' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md' && grep -q 'nova-rules.md §3' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md'"
+assert "orchestrator/SKILL.md: §2/§6 on-demand 로드 선언" \
+  "grep -q 'nova-rules.md §2' '$ROOT_DIR/.claude/skills/orchestrator/SKILL.md' && grep -q 'nova-rules.md §6' '$ROOT_DIR/.claude/skills/orchestrator/SKILL.md'"
 
 # B) §1 재판단 조항 동기화 (nova-rules.md ↔ session-start.sh ↔ run.md)
 assert "nova-rules.md: '작업 중 재판단' 조항" \
   "grep -q '작업 중 재판단' '$ROOT_DIR/docs/nova-rules.md'"
 assert "session-start.sh: '자가 완화 금지' 조항" \
   "bash '$ROOT_DIR/hooks/session-start.sh' | grep -q '자가 완화 금지'"
+
+# D) session-start 출력 크기 상한 (Sprint 0 경량화 회귀 방지)
+#    - hard limit 2500 bytes: 초과 시 플러그인 로드 가능성 파손
+#    - soft target 1900 bytes: 새 규칙 추가 예산 여유 확보
+SESSION_SIZE=$(bash "$ROOT_DIR/hooks/session-start.sh" | wc -c | tr -d ' ')
+assert "session-start 출력 크기 hard limit 2500 bytes 이하 ($SESSION_SIZE)" \
+  "[ $SESSION_SIZE -le 2500 ]"
+assert "session-start 출력 크기 soft target 1900 bytes 이하 ($SESSION_SIZE)" \
+  "[ $SESSION_SIZE -le 1900 ]"
+
+# E) on-demand 로드 — 제거된 §3/§5/§6/§8/§9 세부가 session-start에 없어야 함
+assert "session-start: §6 '스프린트 분할' 상세 없음 (on-demand 로드 증명)" \
+  "! bash '$ROOT_DIR/hooks/session-start.sh' | grep -q '스프린트 분할'"
+assert "session-start: §9 '긴급 모드' 상세 없음 (on-demand 로드 증명)" \
+  "! bash '$ROOT_DIR/hooks/session-start.sh' | grep -q '긴급 모드'"
 assert "run.md: '복잡도 재판단' Phase 2 Checkpoint" \
   "grep -q '복잡도 재판단' '$ROOT_DIR/.claude/commands/run.md'"
 
