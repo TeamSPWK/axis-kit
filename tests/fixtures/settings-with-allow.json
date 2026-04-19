@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "defaultMode": "deny",
+    "allow": [
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Read(*)"
+    ]
+  },
+  "env": {
+    "USER_CUSTOM_VAR": "preserved"
+  }
+}

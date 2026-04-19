@@ -1076,6 +1076,139 @@ assert "Privacy: entropy MIN_LEN 48 상향 (40자 합법 토큰 미-redact)" \
 echo ""
 
 # ═══════════════════════════════════════════
+# Sprint 2a (v5.14.0): 도구 제약 정적 — audit + settings 템플릿
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[Sprint 2a: 도구 제약 정적]${NC}"
+
+# 파일/실행 권한
+assert "Sprint 2a: scripts/audit-agent-tools.sh 존재 + 실행 권한" \
+  "[ -x '$ROOT_DIR/scripts/audit-agent-tools.sh' ]"
+assert "Sprint 2a: scripts/setup-permissions.sh 존재 + 실행 권한" \
+  "[ -x '$ROOT_DIR/scripts/setup-permissions.sh' ]"
+assert "Sprint 2a: scripts/permissions-template.json 유효 JSON" \
+  "jq -e . '$ROOT_DIR/scripts/permissions-template.json' > /dev/null 2>&1"
+
+# plugin.json tool_contract 구조
+assert "Sprint 2a: plugin.json tool_contract 필드 존재 + per_agent 5개" \
+  "jq -e '.tool_contract.per_agent | length == 5' '$ROOT_DIR/.claude-plugin/plugin.json' > /dev/null 2>&1"
+assert "Sprint 2a: plugin.json tool_contract — _nova_comment에 U1 명시" \
+  "jq -r '.tool_contract._nova_comment' '$ROOT_DIR/.claude-plugin/plugin.json' | grep -q 'U1'"
+assert "Sprint 2a: plugin.json tool_contract.deferred_allow에 ToolSearch 포함" \
+  "jq -e '.tool_contract.deferred_allow | index(\"ToolSearch\")' '$ROOT_DIR/.claude-plugin/plugin.json' > /dev/null 2>&1"
+
+# permissions-template 구조
+assert "Sprint 2a: permissions-template.json — deny 10+ 패턴" \
+  "[ \$(jq '.permissions.deny | length' '$ROOT_DIR/scripts/permissions-template.json') -ge 10 ]"
+assert "Sprint 2a: permissions-template.json — defaultMode=ask" \
+  "[ \"\$(jq -r '.permissions.defaultMode' '$ROOT_DIR/scripts/permissions-template.json')\" = 'ask' ]"
+
+# S2a.2: audit 실행 exit 0 (기본 상태)
+assert "S2a.2: audit-agent-tools.sh exit 0 (5/5 일치)" \
+  "bash '$ROOT_DIR/scripts/audit-agent-tools.sh' > /dev/null 2>&1"
+
+# S2a.4: fixture 1 — 빈 settings 병합 (path traversal 방어 우회: --allow-outside)
+assert "S2a.4: setup-permissions fixture 1(빈) → Nova deny 10+ 주입" \
+  "TMPD=\$(mktemp -d); cp '$ROOT_DIR/tests/fixtures/settings-empty.json' \"\$TMPD/s.json\"; \
+   bash '$ROOT_DIR/scripts/setup-permissions.sh' --target \"\$TMPD/s.json\" --allow-outside > /dev/null 2>&1; \
+   COUNT=\$(jq '.permissions.deny | length' \"\$TMPD/s.json\" 2>/dev/null); \
+   rm -rf \"\$TMPD\"; [ \"\$COUNT\" -ge 10 ]"
+
+# S2a.5: fixture 2 — 기존 allow 보존 + env 최상위 키 보존
+assert "S2a.5: fixture 2(기존 allow+env) → 사용자 값 보존 + Nova 병합" \
+  "TMPD=\$(mktemp -d); cp '$ROOT_DIR/tests/fixtures/settings-with-allow.json' \"\$TMPD/s.json\"; \
+   bash '$ROOT_DIR/scripts/setup-permissions.sh' --target \"\$TMPD/s.json\" --allow-outside > /dev/null 2>&1; \
+   HAS_GIT=\$(jq '.permissions.allow | index(\"Bash(git status)\") != null' \"\$TMPD/s.json\" 2>/dev/null); \
+   HAS_ENV=\$(jq -r '.env.USER_CUSTOM_VAR' \"\$TMPD/s.json\" 2>/dev/null); \
+   MODE=\$(jq -r '.permissions.defaultMode' \"\$TMPD/s.json\" 2>/dev/null); \
+   rm -rf \"\$TMPD\"; [ \"\$HAS_GIT\" = 'true' ] && [ \"\$HAS_ENV\" = 'preserved' ] && [ \"\$MODE\" = 'deny' ]"
+
+# S2a.6: fixture 3 — 충돌 → CONFLICT stderr + deny 우선
+assert "S2a.6: fixture 3(충돌) → stderr CONFLICT 리포트 + deny에 'rm -rf *' 유지" \
+  "TMPD=\$(mktemp -d); cp '$ROOT_DIR/tests/fixtures/settings-with-conflict.json' \"\$TMPD/s.json\"; \
+   OUT=\$(bash '$ROOT_DIR/scripts/setup-permissions.sh' --target \"\$TMPD/s.json\" --allow-outside 2>&1 >/dev/null); \
+   HAS_CONFLICT=\$(echo \"\$OUT\" | grep -c 'CONFLICT'); \
+   HAS_DENY=\$(jq '.permissions.deny | index(\"Bash(rm -rf *)\") != null' \"\$TMPD/s.json\" 2>/dev/null); \
+   ALLOW_HAS_RM=\$(jq '.permissions.allow | index(\"Bash(rm -rf *)\") != null' \"\$TMPD/s.json\" 2>/dev/null); \
+   rm -rf \"\$TMPD\"; [ \"\$HAS_CONFLICT\" -ge 2 ] && [ \"\$HAS_DENY\" = 'true' ] && [ \"\$ALLOW_HAS_RM\" = 'false' ]"
+
+# S2a.7: nova-rules.md §11 신설 + fewer-permission-prompts 명시
+assert "S2a.7: nova-rules.md §11 도구 제약 계약 신설" \
+  "grep -q '^## §11' '$ROOT_DIR/docs/nova-rules.md'"
+assert "S2a.7: nova-rules.md §11 — fewer-permission-prompts 역할 분담 명시" \
+  "grep -q 'fewer-permission-prompts' '$ROOT_DIR/docs/nova-rules.md'"
+
+# S2a.9: setup.md --permissions 옵션 문서화
+assert "S2a.9: setup.md — --permissions 옵션 문서" \
+  "grep -q -- '\`--permissions\`' '$ROOT_DIR/.claude/commands/setup.md'"
+
+# Bootstrap 이벤트 자동 주입 (cd 후 상대경로 — cwd 하위라 traversal 방어 통과)
+assert "Sprint 2a: setup-permissions.sh — bootstrap=true 이벤트 자동 기록" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    bash '$ROOT_DIR/scripts/setup-permissions.sh' --target ./s.json > /dev/null 2>&1 && \
+    jq -r 'select(.extra.bootstrap == true) | .event_type' .nova/events.jsonl | grep -q session_start \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# Sprint 2a Evaluator 피드백 보강: P0/P1 Issue 해소 회귀
+# Issue #1: Path traversal — 외부 경로 거부
+assert "Sprint 2a #1: setup-permissions path traversal 방어 (외부 경로 exit 2)" \
+  "TMPD=\$(mktemp -d); RC=0; bash '$ROOT_DIR/scripts/setup-permissions.sh' --target /tmp/nova-traversal-test-\$\$.json 2>/dev/null >/dev/null || RC=\$?; rm -f /tmp/nova-traversal-test-\$\$.json; rm -rf \"\$TMPD\"; [ \$RC -eq 2 ]"
+
+# Issue #1': Path traversal — `..` bypass 차단 (cwd 부모로 escape)
+assert "Sprint 2a #1': setup-permissions '..' bypass 차단 (cwd 부모로 escape 거부)" \
+  "TMPD=\$(mktemp -d); mkdir -p \"\$TMPD/proj\"; \
+   RC=0; (cd \"\$TMPD/proj\" && bash '$ROOT_DIR/scripts/setup-permissions.sh' --target '../escape.json' 2>/dev/null >/dev/null) || RC=\$?; \
+   EXISTS=\$([ -f \"\$TMPD/escape.json\" ] && echo 1 || echo 0); \
+   rm -rf \"\$TMPD\"; [ \$RC -eq 2 ] && [ \"\$EXISTS\" = '0' ]"
+
+# Issue #2: Symlink 거부
+assert "Sprint 2a #2: setup-permissions symlink 거부 (exit 2)" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && touch target.json && ln -s target.json link.json && \
+    RC=0; bash '$ROOT_DIR/scripts/setup-permissions.sh' --target link.json --allow-outside 2>/dev/null >/dev/null || RC=\$?; \
+    [ \$RC -eq 2 ]); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# Issue #3: Bootstrap 중복 방지
+assert "Sprint 2a #3: setup-permissions 2회 실행 시 bootstrap 이벤트 1건만" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    bash '$ROOT_DIR/scripts/setup-permissions.sh' --target ./s1.json > /dev/null 2>&1 && \
+    bash '$ROOT_DIR/scripts/setup-permissions.sh' --target ./s2.json > /dev/null 2>&1 && \
+    COUNT=\$(jq -s '[.[] | select(.event_type==\"session_start\" and (.extra.bootstrap // false) == true)] | length' .nova/events.jsonl 2>/dev/null) && \
+    [ \"\$COUNT\" = '1' ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# Issue #4: Orphan agent 감지
+assert "Sprint 2a #4: audit-agent-tools orphan 감지 (plugin.json 키에 파일 없으면 FAIL)" \
+  "TMPD=\$(mktemp -d); cp -r '$ROOT_DIR/.claude-plugin' \"\$TMPD/\" && cp -r '$ROOT_DIR/.claude' \"\$TMPD/\" && \
+    jq '.tool_contract.per_agent += {\"phantom-agent\": [\"Read\"]}' \"\$TMPD/.claude-plugin/plugin.json\" > \"\$TMPD/pj.json\" && \
+    mv \"\$TMPD/pj.json\" \"\$TMPD/.claude-plugin/plugin.json\" && \
+    AUDIT_COPY=\$(cat '$ROOT_DIR/scripts/audit-agent-tools.sh' | sed \"s#^ROOT_DIR=.*#ROOT_DIR=\\\"\$TMPD\\\"#\" | sed \"s#^MANIFEST=.*#MANIFEST=\\\"\$TMPD/.claude-plugin/plugin.json\\\"#\" | sed \"s#^AGENTS_DIR=.*#AGENTS_DIR=\\\"\$TMPD/.claude/agents\\\"#\") && \
+    echo \"\$AUDIT_COPY\" > \"\$TMPD/audit.sh\" && chmod +x \"\$TMPD/audit.sh\" && \
+    RC=0; bash \"\$TMPD/audit.sh\" 2>/dev/null >/dev/null || RC=\$?; \
+    rm -rf \"\$TMPD\"; [ \$RC -eq 1 ]"
+
+# Issue #7: 위험 패턴 확장
+assert "Sprint 2a #7: permissions-template deny 15+ (추가 패턴 반영)" \
+  "[ \$(jq '.permissions.deny | length' '$ROOT_DIR/scripts/permissions-template.json') -ge 15 ]"
+assert "Sprint 2a #7: permissions-template에 mkfs* 패턴 포함" \
+  "jq -e '.permissions.deny | index(\"Bash(mkfs* *)\")' '$ROOT_DIR/scripts/permissions-template.json' > /dev/null 2>&1"
+
+# nova-rules §11 — 알려진 제약 섹션
+assert "Sprint 2a: nova-rules.md §11 — disallowedTools 제약 명시" \
+  "grep -q 'disallowedTools' '$ROOT_DIR/docs/nova-rules.md'"
+assert "Sprint 2a: nova-rules.md §11 — path traversal 방어 명시" \
+  "grep -q 'Path traversal' '$ROOT_DIR/docs/nova-rules.md'"
+
+# U2 해소 문서
+assert "Sprint 2a: U2 해소 docs/unknowns-resolution.md 기록" \
+  "grep -qE '^## U2' '$ROOT_DIR/docs/unknowns-resolution.md' && grep -q '해소 일자.*2026-04-19' '$ROOT_DIR/docs/unknowns-resolution.md'"
+
+# session-start 크기 회귀
+assert "Sprint 2a 회귀: session-start 여전히 soft 1900 이하" \
+  "[ \$(bash '$ROOT_DIR/hooks/session-start.sh' | wc -c | tr -d ' ') -le 1900 ]"
+
+echo ""
+
+# ═══════════════════════════════════════════
 # 결과
 # ═══════════════════════════════════════════
 

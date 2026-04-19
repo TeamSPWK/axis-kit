@@ -54,7 +54,33 @@ Nova Plan/Design에서 열린 Unknowns 항목의 해소 결과를 기록한다. 
 
 ## U2 — Deferred 도구 resolution 타이밍
 
-**상태**: 미착수 (Sprint 2a 진입 시 해소 예정)
+**해소 일자**: 2026-04-19 (Sprint 2a 진입 시점)
+**해소자**: main-agent + Sprint 2a Evaluator 권고
+**방법**: Claude Code v2.1.112 ToolSearch 동작 관찰 + 설계 결정
+
+### 결정
+
+Claude Code의 deferred 도구(ToolSearch 패턴)는 다음 3단계로 동작:
+1. `ToolSearch("select:ToolName")` 호출 — deferred 도구 **목록 로드** (스키마 획득)
+2. 호출 측이 이제 해당 도구를 일반 도구처럼 사용
+3. 실제 도구 실행(`ToolName(...)`) 시 Claude Code가 **최종 도구명**으로 권한 체크
+
+즉, **permission 체크는 최종 실행 시점**이다. ToolSearch 자체는 로드 매커니즘일 뿐 권한 우회 경로가 아니다.
+
+### Sprint 2b precheck-tool.sh 설계 전제
+
+- `precheck-tool.sh`는 **최종 tool name 기준**으로 `.claude/settings.json permissions.deny/allow` 평가.
+- ToolSearch 호출 자체는 통과(별도 deny 없으면).
+- ToolSearch로 로드된 도구가 deny 목록에 있으면 **실행 시점에 차단**.
+- `tool_contract.deferred_allow = ["ToolSearch"]`는 정적 audit용(agent frontmatter에 ToolSearch 명시 없어도 audit 통과).
+
+### 실무 영향
+
+- Nova 사용자가 `permissions.deny`에 넣지 않은 도구는 ToolSearch로 로드 + 실행 가능 → 의도대로 작동.
+- 악의적 프롬프트가 ToolSearch로 위험 도구 로드 시도 → 최종 실행에서 PreToolUse 훅이 차단.
+- Sprint 2b가 이 가정 위에서 설계되며, 추가 조사 불요.
+
+**Owner**: Sprint 2b 구현자가 `precheck-tool.sh` 설계 시 본 결정 준수.
 
 ## U3 — 이벤트 로그 저장 경로
 

@@ -8,6 +8,7 @@
     "defaultMode": "ask",
     "deny": [
       "Bash(rm -rf *)",
+      "Bash(rm -rf .)",
       "Bash(rm -rf /*)",
       "Bash(rm -rf ~/*)",
       "Bash(rm -rf $HOME/*)",
@@ -18,7 +19,11 @@
       "Bash(wget * | bash)",
       "Bash(chmod 777 *)",
       "Bash(sudo *)",
-      "Bash(dd if=* of=/dev/*)"
+      "Bash(dd if=* of=/dev/*)",
+      "Bash(mkfs* *)",
+      "Bash(eval *)",
+      "Write(/etc/*)",
+      "Edit(/etc/*)"
     ],
     "allow": [
       "Bash(bash hooks/*.sh)",
