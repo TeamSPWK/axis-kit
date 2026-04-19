@@ -10,6 +10,25 @@ user-invocable: false
 
 - `docs/nova-rules.md §2` Generator-Evaluator 분리 + 하드 게이트 (독립 서브에이전트 기술 정의)
 - `docs/nova-rules.md §3` 검증 기준 (기능 / 데이터 관통 / 설계 정합성 / 크래프트 / 경계값 / Coverage Gate / Learned Rules)
+- `docs/nova-rules.md §10` 관찰성 계약 — 판정 직후 `hooks/record-event.sh evaluator_verdict` 호출
+
+## 관찰성 훅 (v5.12.0+)
+
+판정(PASS/CONDITIONAL/FAIL)을 내린 직후 **반드시** 이벤트 기록:
+
+```bash
+bash hooks/record-event.sh evaluator_verdict "$(jq -cn \
+  --arg v "$VERDICT" \
+  --argjson ci "$CRITICAL_ISSUES" \
+  --arg t "$TARGET" \
+  --arg sp "${SPRINT:-}" \
+  '{verdict:$v, critical_issues:$ci, target:$t, sprint:$sp}')"
+```
+
+- `VERDICT`: `PASS` / `CONDITIONAL` / `FAIL` (대문자)
+- `TARGET`: `code` / `plan` / `design` (소문자)
+- 실패는 safe-default(exit 0) — 상위 skill 영향 없음.
+- Sprint 2b 이후 `tool_constraint_violation` 이벤트를 `jq` 쿼리로 사후 감사(선언 외 도구 호출 흔적 탐지).
 
 ## 3단계 평가 레이어
 

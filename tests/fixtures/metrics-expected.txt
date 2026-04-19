@@ -1,0 +1,22 @@
+# Nova Metrics Expected Output — fixture 기반 KPI 정합 검증
+#
+# 입력: tests/fixtures/events-fixture.jsonl (7 이벤트)
+# 명령: bash scripts/nova-metrics.sh --fixture tests/fixtures/events-fixture.jsonl --since all
+#
+# 기대 수치:
+# - plan_created(orch-1) + sprint_completed(orch-1,planned_files=5) → preceded
+# - sprint_completed(orch-2,planned_files=5) + plan_created(orch-2) 없음 → not preceded
+# - sprint_completed(orch-3,planned_files=5) + plan_created(orch-3) 없음 → not preceded
+# process_consistency = 1/3 = 33.3% (n=3)
+#
+# - evaluator_verdict(orch-3, verdict=FAIL) 1건
+# - orch-3에 이후 sprint_completed(verdict=PASS) 존재 → resolved
+# gap_detection_rate = 1/1 = 100.0% (n=1)
+#
+# - jury_verdict 2건 (fixddd 동일 세션), changed_direction=true 1건
+# multi_perspective_impact = 1/2 = 50.0% (n=2)
+#
+# rule_evolution_rate: 프로젝트 docs/rules-changelog.md 상태 의존 (fixture로 격리 불가) — assert에서 제외
+Process consistency:     33.3% (n=3)
+Gap detection rate:      100.0% (n=1)
+Multi-perspective:       50.0% (n=2)

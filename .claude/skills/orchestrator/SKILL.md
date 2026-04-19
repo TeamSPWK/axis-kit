@@ -10,6 +10,34 @@ user-invocable: false
 
 - `docs/nova-rules.md §2` Generator-Evaluator 분리 + 핸드오프 (self_verify 필드)
 - `docs/nova-rules.md §6` 복잡한 작업의 스프린트 분할 (각 스프린트 완료 = Evaluator 필수)
+- `docs/nova-rules.md §10` 관찰성 계약 — Phase 전이·스프린트 전환 시 이벤트 기록
+
+## 관찰성 훅 (v5.12.0+)
+
+**Phase 전이** 시 (예: Phase A→B, pending→running→completed) 이벤트 기록:
+
+```bash
+bash hooks/record-event.sh phase_transition "$(jq -cn \
+  --arg oid "$ORCHESTRATION_ID" \
+  --arg phase "$PHASE_NAME" \
+  --arg from "$FROM_STATUS" \
+  --arg to "$TO_STATUS" \
+  '{orchestration_id:$oid, phase_name:$phase, from_status:$from, to_status:$to}')"
+```
+
+**Sprint 전환** 시:
+```bash
+bash hooks/record-event.sh sprint_started "{...}"   # 착수
+bash hooks/record-event.sh sprint_completed "{...}" # 종료 (verdict 포함)
+```
+
+**블로커 감지/해소** 시 (§7 분류):
+```bash
+bash hooks/record-event.sh blocker_raised "$(jq -cn --arg t \"$BTYPE\" --arg c \"$CAUSE\" '{blocker_type:$t, cause:$c}')" 2>/dev/null || true
+bash hooks/record-event.sh blocker_resolved "$(jq -cn --arg t \"$BTYPE\" --arg r \"$RESOLUTION\" '{blocker_type:$t, resolution:$r}')" 2>/dev/null || true
+```
+
+Safe-default: 실패는 exit 0, 상위 파이프라인 영향 없음.
 
 자연어 한 줄을 받아서 설계→구현→검증→수정 전체 파이프라인을 자동 실행한다.
 

@@ -1,0 +1,40 @@
+{
+  "_nova_meta": {
+    "purpose": "Nova Tool Constraint Template — /nova:setup --permissions가 사용자 프로젝트 .claude/settings.json에 병합한다. plugin.json은 permission 필드를 공식 지원하지 않음(U1: 2026-04-19 확정). 실제 런타임 enforcement는 PreToolUse 훅(scripts/precheck-tool.sh — Sprint 2b)이 담당.",
+    "sprint": "Sprint 2a (정적 템플릿) / Sprint 2b (PreToolUse 훅 엔트리 활성)",
+    "merge_rules": "jq 기반 merge. 스칼라는 사용자값 보존, 배열(allow/deny)은 합집합, 충돌(같은 항목이 양쪽)은 deny 우선 + stderr CONFLICT 리포트"
+  },
+  "permissions": {
+    "defaultMode": "ask",
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(rm -rf /*)",
+      "Bash(rm -rf ~/*)",
+      "Bash(rm -rf $HOME/*)",
+      "Bash(:(){ :|:&};:)",
+      "Bash(curl * | sh)",
+      "Bash(curl * | bash)",
+      "Bash(wget * | sh)",
+      "Bash(wget * | bash)",
+      "Bash(chmod 777 *)",
+      "Bash(sudo *)",
+      "Bash(dd if=* of=/dev/*)"
+    ],
+    "allow": [
+      "Bash(bash hooks/*.sh)",
+      "Bash(bash scripts/*.sh)",
+      "Bash(bash tests/*.sh)",
+      "Bash(git status)",
+      "Bash(git diff*)",
+      "Bash(git log*)",
+      "Bash(git show*)",
+      "Bash(git branch*)",
+      "Read(*)",
+      "Grep(*)",
+      "Glob(*)"
+    ]
+  },
+  "_hooks_placeholder": {
+    "_comment": "Sprint 2b에서 활성화: PreToolUse 훅으로 scripts/precheck-tool.sh가 정책 평가 + 위반 시 exit 2 차단 + JSONL tool_constraint_violation 이벤트 기록. 현재(Sprint 2a)는 placeholder만."
+  }
+}

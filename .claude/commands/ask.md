@@ -4,6 +4,24 @@ description: "멀티 AI 다관점 자문을 실행한다. Claude + GPT + Gemini 
 
 멀티 AI 다관점 자문을 실행한다. Claude + GPT + Gemini 3개 AI에게 동시에 질의하고 합의 수준을 분석한다.
 
+## 적용 규칙 (on-demand 로드)
+
+- `docs/nova-rules.md §10` 관찰성 계약 — 합의 분석 직후 `jury_verdict` 이벤트 기록
+
+## 관찰성 훅 (v5.12.0+)
+
+합의 수준 판정 직후 반드시:
+```bash
+bash hooks/record-event.sh jury_verdict "$(jq -cn \
+  --arg cl "$CONSENSUS_LEVEL" \
+  --argjson cd "$CHANGED_DIRECTION" \
+  '{consensus_level:$cl, changed_direction:$cd}')" 2>/dev/null || true
+```
+- `CONSENSUS_LEVEL`: `strong` / `partial` / `divergent` (소문자)
+- `CHANGED_DIRECTION`: 자문 결과가 초기 방향을 뒤집었으면 `true`, 유지면 `false`
+
+Safe-default: 기록 실패는 ask 결과 반환에 영향 없음.
+
 # Role
 너는 Nova Engineering의 다관점 자문(Consult) 실행자다.
 사용자의 질문을 여러 관점에서 수집하고, 결과를 종합하여 합의 분석을 제공한다.

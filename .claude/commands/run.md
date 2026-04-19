@@ -6,6 +6,17 @@ description: "구현→검증을 한 사이클로 실행한다 (Full Cycle). --v
 
 - `docs/nova-rules.md §5` 검증 경량화 원칙 (기본 Lite, `--strict` Full)
 - `docs/nova-rules.md §6` 복잡한 작업의 스프린트 분할 (8+ 파일 → 독립 검증 가능한 스프린트)
+- `docs/nova-rules.md §7` 블로커 분류 (Auto/Soft/Hard, 2회 실패 시 강제 분류)
+- `docs/nova-rules.md §10` 관찰성 계약 — 스프린트/블로커 이벤트 기록
+
+## 관찰성 훅 (v5.12.0+)
+
+- Sprint 착수: `bash hooks/record-event.sh sprint_started "$(jq -cn --arg n \"$SPRINT\" --argjson pf $PLANNED_FILES '{sprint_name:$n, planned_files:$pf}')" 2>/dev/null || true`
+- Sprint 완료: `bash hooks/record-event.sh sprint_completed "$(jq -cn --arg n \"$SPRINT\" --arg v \"$VERDICT\" --argjson rt $REGRESSION_PASS '{sprint_name:$n, verdict:$v, regression_tests_pass:$rt}')" 2>/dev/null || true`
+- 블로커 감지: `bash hooks/record-event.sh blocker_raised "$(jq -cn --arg t \"$BTYPE\" --arg c \"$CAUSE\" '{blocker_type:$t, cause:$c}')" 2>/dev/null || true`
+- 블로커 해소: `bash hooks/record-event.sh blocker_resolved "$(jq -cn --arg t \"$BTYPE\" --arg r \"$RESOLUTION\" '{blocker_type:$t, resolution:$r}')" 2>/dev/null || true`
+
+Safe-default: 기록 실패는 run 사이클 진행에 영향 없음.
 
 # Role
 

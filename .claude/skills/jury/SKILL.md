@@ -6,6 +6,21 @@ user-invocable: false
 
 # Nova LLM Jury
 
+## 적용 규칙 (on-demand 로드)
+
+- `docs/nova-rules.md §10` 관찰성 계약 — 최종 합의 판정 직후 `jury_verdict` 이벤트 기록
+
+## 관찰성 훅 (v5.12.0+)
+
+합의 판정 후 반드시:
+```bash
+bash hooks/record-event.sh jury_verdict "$(jq -cn \
+  --arg cl "$CONSENSUS" \
+  --argjson cd "$CHANGED" \
+  '{consensus_level:$cl, changed_direction:$cd}')" 2>/dev/null || true
+```
+Safe-default: 기록 실패는 판정 반환에 영향 없음.
+
 > 단일 LLM 심판은 위치 편향(position bias)과 장황함 편향(verbosity bias)이 있다.
 > 다중 관점으로 평가하면 이 편향을 구조적으로 상쇄할 수 있다.
 

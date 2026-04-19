@@ -392,6 +392,16 @@ Plan을 저장하되 헤더에 미해결 마커를 추가한다:
 
 ### Phase E: 저장 및 완료
 
+> **관찰성 훅 (v5.12.0+)**: Plan 파일 저장(Step 2) 직후 `plan_created` 이벤트 기록.
+> ```bash
+> bash hooks/record-event.sh plan_created "$(jq -cn \
+>   --arg p "docs/plans/${slug}.md" \
+>   --argjson it "${iteration_count}" \
+>   --argjson cr "${critic_pass:-false}" \
+>   '{path:$p, mode:"deep", iterations:$it, critic_resolved:$cr}')" 2>/dev/null || true
+> ```
+> Safe-default: 기록 실패는 파이프라인 영향 없음.
+
 1. **최종 Plan 헤더 업데이트**:
    ```markdown
    > Mode: deep

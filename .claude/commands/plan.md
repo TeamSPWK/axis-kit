@@ -7,6 +7,17 @@ CPS(Context-Problem-Solution) 프레임워크로 Plan 문서를 작성한다.
 ## 적용 규칙 (on-demand 로드)
 
 - `docs/nova-rules.md §1` 작업 전 복잡도 + 위험도 판단 (간단/보통/복잡 분기, 자가 완화 금지, 작업 중 재판단)
+- `docs/nova-rules.md §10` 관찰성 계약 — Plan 저장 직후 `plan_created` 이벤트 기록
+
+## 관찰성 훅 (v5.12.0+)
+
+Plan 문서(`docs/plans/<slug>.md`) 저장 직후 반드시:
+```bash
+bash hooks/record-event.sh plan_created "$(jq -cn \
+  --arg p "docs/plans/${SLUG}.md" \
+  '{path:$p, mode:"plan", iterations:0, critic_resolved:true}')" 2>/dev/null || true
+```
+Safe-default: 실패해도 Plan 작성은 완료로 간주.
 
 # Role
 너는 Nova Engineering의 Plan 작성자다.

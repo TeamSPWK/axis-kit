@@ -15,6 +15,20 @@ fi
 # JSON 특수문자 이스케이프
 SESSION_TITLE=$(echo "$SESSION_TITLE" | sed 's/\\/\\\\/g; s/"/\\"/g; s/\t/\\t/g')
 
+# Sprint 1: session_id 동기 선발급 + session_start 이벤트 기록 + start_epoch 저장 (safe-default)
+NOVA_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+if [[ -f "${NOVA_ROOT}/hooks/record-event.sh" ]] && [[ -z "${NOVA_DISABLE_EVENTS:-}" ]]; then
+  mkdir -p .nova 2>/dev/null || true
+  # Race-safe session.id 선발급 (이후 child spawn들이 이 id를 공유)
+  if [[ ! -f .nova/session.id ]]; then
+    _RAND=$(od -An -N8 -tx1 /dev/urandom 2>/dev/null | tr -d ' \n' | head -c 16)
+    _SID=$(printf '%s%s%s' "$PWD" "$$" "$_RAND" | shasum -a 256 2>/dev/null | head -c 12)
+    [[ -n "$_SID" ]] && ( set -C; echo "$_SID" > .nova/session.id ) 2>/dev/null || true
+  fi
+  date -u +%s > .nova/session.start_epoch 2>/dev/null || true
+  bash "${NOVA_ROOT}/hooks/record-event.sh" session_start '{}' 2>/dev/null &
+fi
+
 cat << NOVA_EOF
 {
   "hookSpecificOutput": {

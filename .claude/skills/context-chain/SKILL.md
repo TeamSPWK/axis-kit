@@ -9,8 +9,22 @@ user-invocable: false
 ## 적용 규칙 (on-demand 로드)
 
 - `docs/nova-rules.md §8` 세션 상태 유지 (Known Gaps 필수, 즉시 업데이트 트리거, 커밋 전 일괄 갱신)
+- `docs/nova-rules.md §10` 관찰성 계약 — NOVA-STATE(사람용) × JSONL(기계용) 역할 분담
 
 세션이 끊겨도 작업 맥락이 유지되도록 한다. `NOVA-STATE.md`를 단일 진입점으로 사용한다.
+
+## 역할 분담: NOVA-STATE(사람용) × `.nova/events.jsonl`(기계용) — v5.12.0+
+
+Sprint 1부터 Nova는 두 기록 체계를 **병행**한다(이중화 아님):
+
+| 기록 | 용도 | 수명 | 형태 |
+|------|------|------|------|
+| `NOVA-STATE.md` | **사람이 읽는 상위 요약** — Current/Tasks/Blockers/Last Activity | 프로젝트 생애 | Markdown, 50줄 이내 |
+| `.nova/events.jsonl` | **기계가 집계하는 원자 이벤트** — 11 타입 × timestamp | rotation (10MB/5 파일/30일) | JSONL |
+
+**동시 기록 원칙**: 검증 결과, Phase 전이, 블로커 발생/해소는 **NOVA-STATE.md 갱신 + `hooks/record-event.sh` 호출을 동시** 수행한다. 하나만 빠지면 사람/기계 중 한쪽이 맹목이 된다.
+
+**KPI 집계**: `scripts/nova-metrics.sh`가 JSONL을 집계하여 `/nova:next`가 표시한다. NOVA-STATE.md는 그 수치의 해석/맥락 역할.
 
 ## 세션 시작 프로토콜
 

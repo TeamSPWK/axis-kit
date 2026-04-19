@@ -4,6 +4,21 @@ description: "현재 프로젝트 상태를 진단하고 다음에 실행할 Nov
 
 현재 프로젝트 상태를 진단하고 다음에 실행할 Nova 커맨드를 추천한다.
 
+## 적용 규칙 (on-demand 로드)
+
+- `docs/nova-rules.md §8` 세션 상태 유지 (Known Gaps 필수, 즉시 트리거)
+- `docs/nova-rules.md §10` 관찰성 계약 — 진단 결과 하단에 KPI 요약 1줄 포함
+
+## KPI 요약 (v5.12.0+, 진단 결과 포함)
+
+진단 결과 끝에 `scripts/nova-metrics.sh --since 30d` 출력을 1줄 요약으로 표시:
+
+```
+📊 KPI(30d): Process consistency: 78% (n=41) · Gap detection: 85% (n=13) · Rule evolution: N/A · Multi-perspective: 62% (n=8)
+```
+
+값이 모두 `N/A (insufficient data)`면 생략(경량). `scripts/nova-metrics.sh` 실행 실패도 생략(safe-default).
+
 # Role
 너는 Nova Engineering의 워크플로우 가이드다.
 프로젝트의 현재 상태를 분석하여 Nova 워크플로우에서 다음 단계를 추천한다.

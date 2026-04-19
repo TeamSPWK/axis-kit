@@ -907,6 +907,175 @@ assert "next.md: deepplan 진입 조건 언급 존재" \
 echo ""
 
 # ═══════════════════════════════════════════
+# Sprint 1 (v5.12.0): 관찰성 레이어 — JSONL + KPI + Privacy
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[Sprint 1: 관찰성 레이어]${NC}"
+
+# 파일 존재 + 실행 권한
+assert "Sprint 1: hooks/record-event.sh 존재 + 실행 권한" \
+  "[ -x '$ROOT_DIR/hooks/record-event.sh' ]"
+assert "Sprint 1: hooks/stop-event.sh 존재 + 실행 권한" \
+  "[ -x '$ROOT_DIR/hooks/stop-event.sh' ]"
+assert "Sprint 1: hooks/_privacy-filter.py 존재" \
+  "[ -f '$ROOT_DIR/hooks/_privacy-filter.py' ]"
+assert "Sprint 1: scripts/nova-metrics.sh 존재 + 실행 권한" \
+  "[ -x '$ROOT_DIR/scripts/nova-metrics.sh' ]"
+assert "Sprint 1: scripts/permissions-template.json 존재 + 유효 JSON" \
+  "[ -f '$ROOT_DIR/scripts/permissions-template.json' ] && jq -e . '$ROOT_DIR/scripts/permissions-template.json' > /dev/null 2>&1"
+
+# hooks.json에 Stop 엔트리
+assert "Sprint 1: hooks.json에 Stop 엔트리 존재" \
+  "jq -e '.hooks.Stop' '$ROOT_DIR/hooks/hooks.json' > /dev/null 2>&1"
+assert "Sprint 1: hooks.json Stop → stop-event.sh 참조" \
+  "jq -r '.hooks.Stop[0].hooks[0].command' '$ROOT_DIR/hooks/hooks.json' | grep -q 'stop-event.sh'"
+
+# session-start.sh에 record-event.sh 호출 포함
+assert "Sprint 1: session-start.sh에 record-event 호출 포함" \
+  "grep -q 'record-event.sh' '$ROOT_DIR/hooks/session-start.sh'"
+
+# S1.1 / S1.2 / S1.3: record-event 기본 스모크
+assert "S1.1/1.2/1.3: record-event 3 타입 기록 + JSONL 유효 + 3종 event_type" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    bash '$ROOT_DIR/hooks/record-event.sh' session_start '{}' && \
+    bash '$ROOT_DIR/hooks/record-event.sh' evaluator_verdict '{\"verdict\":\"PASS\",\"critical_issues\":0,\"target\":\"code\"}' && \
+    bash '$ROOT_DIR/hooks/record-event.sh' phase_transition '{\"orchestration_id\":\"t\",\"phase_name\":\"A\"}' && \
+    [ \"\$(wc -l < .nova/events.jsonl | tr -d ' ')\" = '3' ] && \
+    jq -s '.' .nova/events.jsonl > /dev/null && \
+    [ \"\$(jq -r '.event_type' .nova/events.jsonl | sort -u | wc -l | tr -d ' ')\" = '3' ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# 필수 필드 존재
+assert "S1.3: 필수 필드 — schema_version/timestamp/session_id/event_type 모두 non-null" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    bash '$ROOT_DIR/hooks/record-event.sh' session_start '{}' && \
+    [ \"\$(jq -c 'select(.schema_version==null or .timestamp==null or .session_id==null or .event_type==null)' .nova/events.jsonl | wc -l | tr -d ' ')\" = '0' ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# S1.4: Privacy 10종 redact
+assert "S1.4: Privacy 필터 10종 (sk-ant/sk-proj/ghp_/xoxb-/sk_live/AIza/AKIA/JWT/password/private_key) 전수 redacted" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    STRIPE_FIX=\"sk_\"\"live_\"\"1234567890abcdefghijklmn\"; \
+    for v in 'sk-ant-api03-abcdefghij1234567890' 'sk-proj-AbcDef123456789012345678' 'ghp_ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghij' 'xoxb-1234567890-abcdefgh' \"\$STRIPE_FIX\" 'AIzaSyA1B2C3D4E5F6G7H8I9J0K1L2M3N4O5P6Q' 'AKIAIOSFODNN7EXAMPLE' 'eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJ1In0.sigsigsigsigsigsigsig' '-----BEGIN RSA PRIVATE KEY-----ABC'; do \
+      bash '$ROOT_DIR/hooks/record-event.sh' t \"{\\\"key\\\":\\\"\$v\\\"}\"; \
+    done && \
+    bash '$ROOT_DIR/hooks/record-event.sh' t '{\"password\":\"abcdef123\"}' && \
+    [ \"\$(jq -s '[.[] | select(.redacted == true)] | length' .nova/events.jsonl)\" = '10' ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# S1.5: 동시성 xargs -P 20
+assert "S1.5: 병렬 append 20회 → 20 라인 + 전수 JSON parse" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    seq 1 20 | xargs -P 20 -I{} bash '$ROOT_DIR/hooks/record-event.sh' phase_transition '{\"p\":\"x\"}' 2>/dev/null && \
+    [ \"\$(wc -l < .nova/events.jsonl | tr -d ' ')\" = '20' ] && \
+    jq -s 'length == 20' .nova/events.jsonl > /dev/null \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# S1.9: NOVA_DISABLE_EVENTS=1 → 0 라인
+assert "S1.9: NOVA_DISABLE_EVENTS=1 → 이벤트 기록 생략" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    NOVA_DISABLE_EVENTS=1 bash '$ROOT_DIR/hooks/record-event.sh' session_start '{}' && \
+    [ ! -f .nova/events.jsonl ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# S1.10: 기록 실패 safe-default (권한 없는 디렉토리)
+assert "S1.10: 기록 실패 시 exit 0 (safe-default) — chmod 000 .nova" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && mkdir .nova && chmod 000 .nova && \
+    bash '$ROOT_DIR/hooks/record-event.sh' session_start '{}' ; \
+    RC=\$?; chmod 755 .nova; [ \$RC -eq 0 ]); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# S1.7: nova-metrics 빈 fixture → N/A 4건
+assert "S1.7a: nova-metrics.sh 빈 fixture → N/A 4건" \
+  "TMPD=\$(mktemp -d); touch \"\$TMPD/empty.jsonl\"; \
+    OUT=\$(bash '$ROOT_DIR/scripts/nova-metrics.sh' --fixture \"\$TMPD/empty.jsonl\" 2>&1); \
+    COUNT=\$(echo \"\$OUT\" | grep -c 'N/A (insufficient data)'); \
+    rm -rf \"\$TMPD\"; [ \$COUNT -ge 4 ]"
+
+# S1.7b: nova-metrics 없는 파일 → N/A + exit 0 (pipefail-safe: grep -q가 pipe 조기 종료 시 141 방지)
+assert "S1.7b: nova-metrics.sh 없는 파일 → N/A 4건 + exit 0" \
+  "OUT=\$(bash '$ROOT_DIR/scripts/nova-metrics.sh' --fixture /nonexistent/path 2>&1); RC=\$?; [ \$RC -eq 0 ] && [ \$(echo \"\$OUT\" | grep -c 'N/A (insufficient data)') -ge 4 ]"
+
+# S1.11: docs/nova-engineering.md §9 — 실측 없음 제거 + nova-metrics 참조
+assert "S1.11: nova-engineering.md §9 — '실측 결과가 아니다' 제거됨" \
+  "! grep -q '실측 결과가 아니다' '$ROOT_DIR/docs/nova-engineering.md'"
+assert "S1.11: nova-engineering.md §9 — scripts/nova-metrics.sh 참조" \
+  "grep -q 'scripts/nova-metrics.sh' '$ROOT_DIR/docs/nova-engineering.md'"
+
+# S1.13: nova-rules.md §10 신설
+assert "S1.13: nova-rules.md §10 관찰성 계약 신설" \
+  "grep -q '^## §10' '$ROOT_DIR/docs/nova-rules.md'"
+
+# 스킬 3종 on-demand §10 참조
+assert "Sprint 1: evaluator/SKILL.md — §10 on-demand 로드 선언" \
+  "grep -q 'nova-rules.md §10' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md'"
+assert "Sprint 1: orchestrator/SKILL.md — §10 on-demand 로드 선언" \
+  "grep -q 'nova-rules.md §10' '$ROOT_DIR/.claude/skills/orchestrator/SKILL.md'"
+assert "Sprint 1: context-chain/SKILL.md — §10 on-demand 로드 선언" \
+  "grep -q 'nova-rules.md §10' '$ROOT_DIR/.claude/skills/context-chain/SKILL.md'"
+
+# 스킬 관찰성 훅 (record-event 호출 지시)
+assert "Sprint 1: evaluator/SKILL.md — record-event.sh 호출 지시 포함" \
+  "grep -q 'record-event.sh' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md'"
+assert "Sprint 1: orchestrator/SKILL.md — record-event.sh 호출 지시 포함" \
+  "grep -q 'record-event.sh' '$ROOT_DIR/.claude/skills/orchestrator/SKILL.md'"
+
+# next.md KPI 요약
+assert "Sprint 1: next.md — nova-metrics.sh KPI 요약 포함" \
+  "grep -q 'nova-metrics.sh' '$ROOT_DIR/.claude/commands/next.md'"
+
+# session-start.sh 크기 여전히 soft 1900 이하 (회귀)
+assert "Sprint 1 회귀: session-start 출력 여전히 soft 1900 bytes 이하" \
+  "[ \$(bash '$ROOT_DIR/hooks/session-start.sh' | wc -c | tr -d ' ') -le 1900 ]"
+
+# S1.6: Rotation 트리거 (MAX_SIZE=512, 10 events → 2+ 파일 + rotation_marker 첫 라인)
+assert "S1.6: rotation MAX_SIZE=512 + 10 events → 2+ 파일 + rotation_marker" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    for i in 1 2 3 4 5 6 7 8 9 10; do \
+      NOVA_EVENTS_MAX_SIZE=512 bash '$ROOT_DIR/hooks/record-event.sh' test_event \"{\\\"i\\\":\$i}\" ; \
+    done && \
+    FCOUNT=\$(ls .nova/events.jsonl* 2>/dev/null | wc -l | tr -d ' ') && [ \$FCOUNT -ge 2 ] && \
+    head -1 .nova/events.jsonl | jq -e '.event_type == \"rotation_marker\"' > /dev/null \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# S1.7c: KPI 스냅샷 — fixture 기반 정확 일치 (process/gap/multi)
+assert "S1.7c: KPI 스냅샷 fixture — process=33.3% · gap=100.0% · multi=50.0%" \
+  "OUT=\$(bash '$ROOT_DIR/scripts/nova-metrics.sh' --fixture '$ROOT_DIR/tests/fixtures/events-fixture.jsonl' --since all 2>&1); \
+   echo \"\$OUT\" | grep -q 'Process consistency:.*33\\.3% (n=3)' && \
+   echo \"\$OUT\" | grep -q 'Gap detection rate:.*100\\.0% (n=1)' && \
+   echo \"\$OUT\" | grep -q 'Multi-perspective:.*50\\.0% (n=2)'"
+
+# Sprint 1 wiring 회귀: 4개 이벤트 타입 호출 지시 존재
+assert "Wiring: plan.md — plan_created" \
+  "grep -q 'plan_created' '$ROOT_DIR/.claude/commands/plan.md'"
+assert "Wiring: deepplan/SKILL.md — plan_created" \
+  "grep -q 'plan_created' '$ROOT_DIR/.claude/skills/deepplan/SKILL.md'"
+assert "Wiring: ask.md — jury_verdict" \
+  "grep -q 'jury_verdict' '$ROOT_DIR/.claude/commands/ask.md'"
+assert "Wiring: jury/SKILL.md — jury_verdict" \
+  "grep -q 'jury_verdict' '$ROOT_DIR/.claude/skills/jury/SKILL.md'"
+assert "Wiring: run.md — blocker_raised" \
+  "grep -q 'blocker_raised' '$ROOT_DIR/.claude/commands/run.md'"
+assert "Wiring: orchestrator/SKILL.md — blocker_raised" \
+  "grep -q 'blocker_raised' '$ROOT_DIR/.claude/skills/orchestrator/SKILL.md'"
+
+# Race-safe session_id (noclobber): 20 병렬 → unique id 1개
+assert "Race-safe: session_id 20 병렬 → unique 1개" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    seq 1 20 | xargs -P 20 -I{} bash '$ROOT_DIR/hooks/record-event.sh' test_event '{}' 2>/dev/null && \
+    UNIQ=\$(jq -r '.session_id' .nova/events.jsonl | sort -u | wc -l | tr -d ' ') && \
+    [ \"\$UNIQ\" = '1' ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# Entropy MIN_LEN 48 회귀 (오탐 방어)
+assert "Privacy: entropy MIN_LEN 48 상향 (40자 합법 토큰 미-redact)" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    bash '$ROOT_DIR/hooks/record-event.sh' test_event '{\"commit_sha\":\"abc123def456abc123def456abc123def456abcd\"}' && \
+    jq -r '.extra.commit_sha' .nova/events.jsonl | head -1 | grep -qv '<redacted' \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+echo ""
+
+# ═══════════════════════════════════════════
 # 결과
 # ═══════════════════════════════════════════
 

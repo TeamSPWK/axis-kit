@@ -363,7 +363,9 @@ Act     → Adaptive 사이클로 규칙 갱신, 개선 반영
 
 ## 9. 성공 지표 (KPIs)
 
-> ⚠️ 아래 수치는 **도입 목표**이며, 실측 결과가 아니다. Nova는 아직 이 지표들에 대한 통계적으로 유의미한 before/after 데이터를 보유하지 않는다. 실제 프로젝트에서의 측정 결과가 축적되면 이 섹션을 업데이트할 예정이다.
+> 📊 **실측 경로 (v5.12.0 Sprint 1부터)**: `scripts/nova-metrics.sh --since 30d`로 현재 수치를 조회한다. 원시 이벤트는 `.nova/events.jsonl`(JSONL)에 기록되며, `hooks/record-event.sh`가 evaluator/orchestrator/context-chain 스킬에서 호출된다. 상세 계산 정의는 `docs/designs/harness-engineering-gap-coverage.md` §KPI 계산 정의 참조.
+>
+> 아래 "목표" 컬럼은 도입 기준이다. 실측이 충분히 축적되기 전에는 N/A로 출력되며, `NOVA_DISABLE_EVENTS=1`로 옵트아웃 가능.
 
 | 지표 | 측정 방법 | 목표 |
 |------|----------|------|
