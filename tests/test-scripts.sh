@@ -1209,6 +1209,164 @@ assert "Sprint 2a 회귀: session-start 여전히 soft 1900 이하" \
 echo ""
 
 # ═══════════════════════════════════════════
+# Sprint 2b (v5.15.0): 도구 제약 런타임 — PreToolUse 차단
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[Sprint 2b: 도구 제약 런타임]${NC}"
+
+# S2b.1: precheck-tool.sh 존재 + 실행 권한
+assert "S2b.1: scripts/precheck-tool.sh 존재 + 실행 권한" \
+  "[ -x '$ROOT_DIR/scripts/precheck-tool.sh' ]"
+
+# S2b.2: 허용 도구(Read) → exit 0 (settings 없는 경로에서도 safe-default)
+assert "S2b.2: Read 도구 → exit 0 (허용)" \
+  "echo '{\"tool_name\":\"Read\",\"tool_input\":{\"file_path\":\"/tmp/x\"}}' | bash '$ROOT_DIR/scripts/precheck-tool.sh' > /dev/null 2>&1"
+
+# S2b.3: 위반 도구(Bash rm -rf *) → exit 2 + JSONL violation
+assert "S2b.3: Bash(rm -rf *) → exit 2 + stderr DENIED + JSONL tool_constraint_violation" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && mkdir -p .claude && \
+    echo '{\"permissions\":{\"deny\":[\"Bash(rm -rf *)\"]}}' > .claude/settings.json && \
+    RC=0; STDERR=\$(echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /tmp/foo\"}}' | bash '$ROOT_DIR/scripts/precheck-tool.sh' 2>&1 >/dev/null) || RC=\$?; \
+    [ \$RC -eq 2 ] && \
+    echo \"\$STDERR\" | grep -q 'DENIED' && \
+    [ \"\$(jq -r '.event_type' .nova/events.jsonl | head -1)\" = 'tool_constraint_violation' ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# S2b.4: settings.json 없음 → exit 0 (safe-default)
+assert "S2b.4: settings.json 없음 → exit 0 (safe-default)" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /tmp/x\"}}' | bash '$ROOT_DIR/scripts/precheck-tool.sh' > /dev/null 2>&1 \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# S2b.5: permissions-template.json — PreToolUse 훅 엔트리 활성
+assert "S2b.5: permissions-template.json PreToolUse → precheck-tool.sh 참조" \
+  "jq -r '.hooks.PreToolUse[0].hooks[0].command' '$ROOT_DIR/scripts/permissions-template.json' | grep -q 'precheck-tool.sh'"
+
+# S2b.6: record-event.sh tool_constraint_violation 타입 지원
+assert "S2b.6: record-event.sh tool_constraint_violation 기록 + schema 유효" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    bash '$ROOT_DIR/hooks/record-event.sh' tool_constraint_violation '{\"agent\":\"test\",\"tool_attempted\":\"Bash\",\"matched_pattern\":\"Bash(rm -rf *)\"}' && \
+    [ \"\$(jq -r '.event_type' .nova/events.jsonl | head -1)\" = 'tool_constraint_violation' ] && \
+    [ \"\$(jq -r '.schema_version' .nova/events.jsonl | head -1)\" = '1' ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# S2b.7: evaluator SKILL.md — tool_constraint_violation 감사 섹션
+assert "S2b.7: evaluator/SKILL.md — 사후 감사 섹션 + jq 쿼리 예시" \
+  "grep -q 'tool_constraint_violation' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md' && grep -q 'VIOLATION_COUNT' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md'"
+
+# S2b.8: 성능 벤치 — 허용 경로 100ms 이내
+assert "S2b.8: precheck-tool 허용 경로 지연 < 500ms (성능)" \
+  "START=\$(date +%s%N 2>/dev/null || python3 -c 'import time; print(int(time.time()*1e9))'); \
+   echo '{\"tool_name\":\"Read\",\"tool_input\":{}}' | bash '$ROOT_DIR/scripts/precheck-tool.sh' > /dev/null 2>&1; \
+   END=\$(date +%s%N 2>/dev/null || python3 -c 'import time; print(int(time.time()*1e9))'); \
+   DIFF_MS=\$(( (END - START) / 1000000 )); \
+   [ \$DIFF_MS -lt 500 ]"
+
+# S2b: 다중 deny 패턴 — 첫 매치로 차단
+assert "S2b: 다중 deny 패턴 — 첫 매치로 차단 확인" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && mkdir -p .claude && \
+    echo '{\"permissions\":{\"deny\":[\"Bash(sudo *)\",\"Bash(rm -rf *)\"]}}' > .claude/settings.json && \
+    RC=0; echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"sudo apt update\"}}' | bash '$ROOT_DIR/scripts/precheck-tool.sh' 2>/dev/null >/dev/null || RC=\$?; \
+    [ \$RC -eq 2 ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# S2b: jq 없는 환경 safe-default
+assert "S2b: jq 없는 환경 → exit 0 (safe-default, 도구 허용)" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    PATH=/usr/bin:/bin echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /\"}}' | PATH=/usr/bin:/bin bash '$ROOT_DIR/scripts/precheck-tool.sh' > /dev/null 2>&1 \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# Sprint 2b Evaluator FAIL 해소 — Critical Bypass 12종 회귀 가드
+# Issue #1: Bash 복합 명령 bypass (세그먼트 분리)
+assert "S2b #1a: 'echo x && rm -rf *' → 차단 (복합 && 분리)" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && mkdir -p .claude && \
+    echo '{\"permissions\":{\"deny\":[\"Bash(rm -rf *)\"]}}' > .claude/settings.json && \
+    RC=0; echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"echo x && rm -rf /tmp/foo\"}}' | bash '$ROOT_DIR/scripts/precheck-tool.sh' 2>/dev/null >/dev/null || RC=\$?; \
+    [ \$RC -eq 2 ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+assert "S2b #1b: '   rm -rf *' (선행 공백) → 차단" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && mkdir -p .claude && \
+    echo '{\"permissions\":{\"deny\":[\"Bash(rm -rf *)\"]}}' > .claude/settings.json && \
+    RC=0; printf '%s' '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"   rm -rf /tmp/foo\"}}' | bash '$ROOT_DIR/scripts/precheck-tool.sh' 2>/dev/null >/dev/null || RC=\$?; \
+    [ \$RC -eq 2 ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+assert "S2b #1c: 'rm -rf *; echo done' → 차단 (세미콜론 분리)" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && mkdir -p .claude && \
+    echo '{\"permissions\":{\"deny\":[\"Bash(rm -rf *)\"]}}' > .claude/settings.json && \
+    RC=0; echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /tmp/x; echo done\"}}' | bash '$ROOT_DIR/scripts/precheck-tool.sh' 2>/dev/null >/dev/null || RC=\$?; \
+    [ \$RC -eq 2 ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# Issue C: newline 세그먼트 분리
+assert "S2b #C: 'echo x\\nrm -rf *' (newline 분리) → 차단" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && mkdir -p .claude && \
+    echo '{\"permissions\":{\"deny\":[\"Bash(rm -rf *)\"]}}' > .claude/settings.json && \
+    RC=0; printf '%s' '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"echo x\\nrm -rf /tmp/x\"}}' | bash '$ROOT_DIR/scripts/precheck-tool.sh' 2>/dev/null >/dev/null || RC=\$?; \
+    [ \$RC -eq 2 ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# §11 Issue A/B 명시
+assert "S2b §11 Issue A: 'sh -c/bash -c' 래핑 한계 명시" \
+  "grep -q 'sh -c/bash -c' '$ROOT_DIR/docs/nova-rules.md' || grep -q 'bash -c.*bypass' '$ROOT_DIR/docs/nova-rules.md'"
+assert "S2b §11 Issue B: Write/Edit file_path 정규화 없음 명시" \
+  "grep -q 'file_path.*정규화' '$ROOT_DIR/docs/nova-rules.md'"
+
+# Issue #2: Write/Edit deny 매칭 구현
+assert "S2b #2a: Write(/etc/passwd) → 차단" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && mkdir -p .claude && \
+    echo '{\"permissions\":{\"deny\":[\"Write(/etc/*)\"]}}' > .claude/settings.json && \
+    RC=0; echo '{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"/etc/passwd\"}}' | bash '$ROOT_DIR/scripts/precheck-tool.sh' 2>/dev/null >/dev/null || RC=\$?; \
+    [ \$RC -eq 2 ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+assert "S2b #2b: Edit(/home/foo.txt) → 허용 (deny 패턴 불일치)" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && mkdir -p .claude && \
+    echo '{\"permissions\":{\"deny\":[\"Edit(/etc/*)\"]}}' > .claude/settings.json && \
+    echo '{\"tool_name\":\"Edit\",\"tool_input\":{\"file_path\":\"/home/foo.txt\"}}' | bash '$ROOT_DIR/scripts/precheck-tool.sh' > /dev/null 2>&1 \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# Issue #3: settings.local.json이 project deny를 축소할 수 없음 (union)
+assert "S2b #3: settings.local(빈 deny) + settings(Bash rm) → 차단 유지 (union)" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && mkdir -p .claude && \
+    echo '{\"permissions\":{\"deny\":[\"Bash(rm -rf *)\"]}}' > .claude/settings.json && \
+    echo '{\"permissions\":{\"deny\":[]}}' > .claude/settings.local.json && \
+    RC=0; echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /tmp/x\"}}' | bash '$ROOT_DIR/scripts/precheck-tool.sh' 2>/dev/null >/dev/null || RC=\$?; \
+    [ \$RC -eq 2 ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# Issue #10: NOVA_BYPASS_PRECHECK 환경변수로 일시 해제 + 감사 이벤트
+assert "S2b #10: NOVA_BYPASS_PRECHECK=1 → exit 0 + tool_constraint_bypass 이벤트" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && mkdir -p .claude && \
+    echo '{\"permissions\":{\"deny\":[\"Bash(rm -rf *)\"]}}' > .claude/settings.json && \
+    NOVA_BYPASS_PRECHECK=1 echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /tmp/x\"}}' | NOVA_BYPASS_PRECHECK=1 bash '$ROOT_DIR/scripts/precheck-tool.sh' > /dev/null 2>&1 && \
+    [ \"\$(jq -r '.event_type' .nova/events.jsonl | head -1)\" = 'tool_constraint_bypass' ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# Issue #6: Invalid JSON → schema_error 이벤트 + fail-open (exit 0)
+assert "S2b #6: settings.json invalid JSON → exit 0 + schema_error 이벤트" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && mkdir -p .claude && \
+    echo '{ invalid json' > .claude/settings.json && \
+    echo '{\"tool_name\":\"Bash\",\"tool_input\":{\"command\":\"rm -rf /tmp/x\"}}' | bash '$ROOT_DIR/scripts/precheck-tool.sh' > /dev/null 2>&1 && \
+    jq -s '[.[] | select(.event_type==\"schema_error\")] | length' .nova/events.jsonl | grep -q '^[1-9]' \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# nova-rules §11 런타임 범위와 한계 명시
+assert "S2b: nova-rules §11 — '런타임 Enforcement 범위와 한계' 섹션" \
+  "grep -q '런타임 Enforcement' '$ROOT_DIR/docs/nova-rules.md' && grep -q 'Fail-open 정책' '$ROOT_DIR/docs/nova-rules.md' && grep -q 'NOVA_BYPASS_PRECHECK' '$ROOT_DIR/docs/nova-rules.md'"
+
+# Evaluator SKILL.md — idempotent jq 쿼리 예시
+assert "S2b: evaluator/SKILL.md — HIGH_RISK/BYPASS/SCHEMA_ERRORS jq 쿼리 3종" \
+  "grep -q 'HIGH_RISK' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md' && grep -q 'BYPASS_COUNT' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md' && grep -q 'SCHEMA_ERRORS' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md'"
+
+# session-start 크기 회귀
+assert "Sprint 2b 회귀: session-start 여전히 soft 1900 이하" \
+  "[ \$(bash '$ROOT_DIR/hooks/session-start.sh' | wc -c | tr -d ' ') -le 1900 ]"
+
+echo ""
+
+# ═══════════════════════════════════════════
 # 결과
 # ═══════════════════════════════════════════
 

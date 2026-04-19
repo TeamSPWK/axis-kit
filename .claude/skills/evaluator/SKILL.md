@@ -30,6 +30,35 @@ bash hooks/record-event.sh evaluator_verdict "$(jq -cn \
 - 실패는 safe-default(exit 0) — 상위 skill 영향 없음.
 - Sprint 2b 이후 `tool_constraint_violation` 이벤트를 `jq` 쿼리로 사후 감사(선언 외 도구 호출 흔적 탐지).
 
+## 사후 감사: tool_constraint_violation (Sprint 2b, v5.15.0+)
+
+`scripts/precheck-tool.sh`가 런타임에 차단한 위반을 `.nova/events.jsonl`에 기록. Evaluator가 세션 종료 후 감사:
+
+```bash
+# 세션 내 위반 건수
+VIOLATION_COUNT=$(jq -s '[.[] | select(.event_type=="tool_constraint_violation")] | length' .nova/events.jsonl 2>/dev/null || echo 0)
+
+# 위반 상세 (tool × pattern 조합)
+jq -r 'select(.event_type=="tool_constraint_violation") | [.extra.tool_attempted, .extra.matched_pattern, .extra.command] | @tsv' .nova/events.jsonl 2>/dev/null
+
+# 고위험 위반 자동 필터 (FAIL 판정용 idempotent jq)
+HIGH_RISK=$(jq -s '[.[] | select(.event_type=="tool_constraint_violation" and (.extra.matched_pattern | test("rm -rf|sudo |eval |dd if=|mkfs|chmod 777")))] | length' .nova/events.jsonl 2>/dev/null || echo 0)
+
+# Bypass 이벤트 (NOVA_BYPASS_PRECHECK 사용 흔적 감사)
+BYPASS_COUNT=$(jq -s '[.[] | select(.event_type=="tool_constraint_bypass")] | length' .nova/events.jsonl 2>/dev/null || echo 0)
+
+# Schema_error 이벤트 (공격자가 settings.json 훼손 시도 탐지)
+SCHEMA_ERRORS=$(jq -s '[.[] | select(.event_type=="schema_error" and .extra.source=="precheck-tool")] | length' .nova/events.jsonl 2>/dev/null || echo 0)
+
+# Evaluator 판정 기준 (idempotent):
+# - HIGH_RISK ≥ 1 → FAIL (Hard-Block)
+# - VIOLATION_COUNT ≥ 1 (고위험 아님) → CONDITIONAL (사용자 승인 필요)
+# - BYPASS_COUNT ≥ 1 → 보고만 (사용자 의도적 해제)
+# - SCHEMA_ERRORS ≥ 3 → CONDITIONAL (fail-open 악용 의심)
+```
+
+감사 결과를 `## 이슈` 표에 포함한다: 심각도=High(고위험 deny 매칭 시 Hard-Block).
+
 ## 3단계 평가 레이어
 
 ### Layer 1: 정적 분석 (즉시)

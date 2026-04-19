@@ -39,7 +39,18 @@
       "Glob(*)"
     ]
   },
-  "_hooks_placeholder": {
-    "_comment": "Sprint 2b에서 활성화: PreToolUse 훅으로 scripts/precheck-tool.sh가 정책 평가 + 위반 시 exit 2 차단 + JSONL tool_constraint_violation 이벤트 기록. 현재(Sprint 2a)는 placeholder만."
+  "hooks": {
+    "_nova_comment": "Sprint 2b (v5.15.0+) — PreToolUse 훅이 scripts/precheck-tool.sh를 호출. permissions.deny 패턴과 매칭되면 exit 2 차단 + JSONL tool_constraint_violation 이벤트 기록. 자체 오류는 safe-default(exit 0, 허용).",
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/scripts/precheck-tool.sh\""
+          }
+        ]
+      }
+    ]
   }
 }
