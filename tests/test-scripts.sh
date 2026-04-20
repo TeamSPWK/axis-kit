@@ -1409,6 +1409,10 @@ assert "MCP dist 무결성: $MCP_ENTRY 가 git tracked" \
 assert "MCP dist 무결성: $MCP_ENTRY 가 .gitignore에 걸려있지 않음" \
   "(cd '$ROOT_DIR' && ! git check-ignore '$MCP_ENTRY' > /dev/null 2>&1)"
 
+# release.sh가 multiline 커밋 메시지의 첫 줄만 title로 쓰는가 (v5.16.0 릴리스 단계 422 오류 재발 방지)
+assert "release.sh: 릴리스 title에 head -1 + cut 240자 제한" \
+  "grep -q 'head -1' '$ROOT_DIR/scripts/release.sh' && grep -q 'cut -c1-240' '$ROOT_DIR/scripts/release.sh'"
+
 # ═══════════════════════════════════════════
 # Orchestration 추적 계약 (Phase 0 강제 + 사후 감사)
 # ═══════════════════════════════════════════

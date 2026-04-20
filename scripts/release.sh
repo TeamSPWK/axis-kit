@@ -115,10 +115,12 @@ echo ""
 
 # ── Step 6: GitHub 릴리스 ──
 echo "━━━ Step 7/7: GitHub 릴리스 ━━━"
-# 커밋 메시지에서 릴리스 제목 추출 (prefix 제거)
-TITLE=$(echo "$COMMIT_MSG" | sed 's/^[a-z]*: //' | sed 's/^[a-z]*(.*): //')
+# 커밋 메시지에서 릴리스 제목 추출 (prefix 제거 + 첫 줄만, 240자 이하로 잘라 GitHub 256자 한도 방어)
+TITLE_FIRST_LINE=$(echo "$COMMIT_MSG" | head -1 | sed 's/^[a-z]*: //' | sed 's/^[a-z]*(.*): //')
+# "vX.Y.Z — " prefix 고려해 본문 240자 제한
+TITLE_TRIMMED=$(printf '%s' "$TITLE_FIRST_LINE" | cut -c1-240)
 gh release create "v${NEW_VERSION}" \
-  --title "v${NEW_VERSION} — ${TITLE}" \
+  --title "v${NEW_VERSION} — ${TITLE_TRIMMED}" \
   --notes "${COMMIT_MSG}"
 echo ""
 
