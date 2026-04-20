@@ -19,6 +19,9 @@ docs/verifications/
 NOVA-STATE.md
 .nova-orchestration.json
 
+# record-event.sh CI 분기 출력 (CI=true + CI_ARTIFACTS 미지정 시 프로젝트 루트에 생성됨)
+nova-events/
+
 # bkit generated files
 docs/.bkit-memory.json
 docs/.pdca-status.json

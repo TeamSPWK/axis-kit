@@ -23,6 +23,12 @@
 
 set -uo pipefail
 
+# record-event.sh는 CI 환경변수가 set이면 ${CI_ARTIFACTS:-.}/nova-events/events.jsonl로
+# 이벤트 파일 경로를 치환한다. 테스트는 격리된 TMPD의 .nova/events.jsonl을 전제로
+# 작성돼 있어 GitHub Actions 러너(CI=true)에서 경로 불일치로 실패한다.
+# CI 분기 자체는 별도 assertion으로 검증하고, 본 스위트에서는 분기를 비활성화한다.
+unset CI
+
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 ROOT_DIR="$(dirname "$SCRIPT_DIR")"
 
@@ -975,6 +981,14 @@ assert "S1.5: 병렬 append 20회 → 20 라인 + 전수 JSON parse" \
 assert "S1.9: NOVA_DISABLE_EVENTS=1 → 이벤트 기록 생략" \
   "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
     NOVA_DISABLE_EVENTS=1 bash '$ROOT_DIR/hooks/record-event.sh' session_start '{}' && \
+    [ ! -f .nova/events.jsonl ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# S1.9b: CI=true → \${CI_ARTIFACTS:-.}/nova-events/events.jsonl 경로 치환 (CI 분기 자체 검증)
+assert "S1.9b: CI=true → CI_ARTIFACTS/nova-events/events.jsonl로 경로 치환" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    CI=true CI_ARTIFACTS=\"\$TMPD/artifacts\" bash '$ROOT_DIR/hooks/record-event.sh' session_start '{}' && \
+    [ -f \"\$TMPD/artifacts/nova-events/events.jsonl\" ] && \
     [ ! -f .nova/events.jsonl ] \
   ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
 
