@@ -79,7 +79,7 @@ printf '\n'
 printf '> --emergency 플래그 사용 또는 Evaluator 건너뛸 때 반드시 기록. 미기록 = Hard-Block.\n'
 printf '\n'
 printf '## Last Activity\n'
-printf -- '- (자동 생성) | -\n'
+printf -- '- /nova:init → PASS — NOVA-STATE.md 자동 생성 (cold-start) | %s\n' "$(date +%Y-%m-%d)"
 printf '\n'
 printf '## Refs\n'
 printf -- '- Plan: %s\n' "$PLAN_REF"

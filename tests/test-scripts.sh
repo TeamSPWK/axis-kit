@@ -1694,6 +1694,153 @@ assert "S8.7: session-start.sh debounce — 2회 연속 호출 시 1회 기록" 
 echo ""
 
 # ═══════════════════════════════════════════
+# S9: Enforcement Layer (v5.18.3) — pre-commit-reminder.sh 7상태 머신 + stdin JSON
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[S9: Enforcement Layer — pre-commit-reminder.sh]${NC}"
+
+# 공통 헬퍼 — PRE_COMMIT 훅 실행 sandbox
+# (temp dir + fixture NOVA-STATE.md + stdin JSON 주입)
+HOOK="$ROOT_DIR/hooks/pre-commit-reminder.sh"
+FIXTURE_DIR="$ROOT_DIR/tests/fixtures"
+TODAY=$(date +%Y-%m-%d)
+
+# S9.0: pre-commit-reminder.sh 실행 권한
+assert "S9.0: hooks/pre-commit-reminder.sh 실행 권한" \
+  "test -x '$HOOK'"
+
+# S9.1: $TOOL_INPUT env var 의존 제거 (회귀 방지 — v5.18.2까지의 버그)
+assert "S9.1: pre-commit-reminder.sh — \$TOOL_INPUT env 사용 금지 (stdin JSON 전환)" \
+  "! grep -qE 'TOOL_INPUT|\\\$TOOL_INPUT' '$HOOK'"
+
+# S9.2: stdin JSON 파싱 패턴 존재 (tool_input.command)
+assert "S9.2: pre-commit-reminder.sh — stdin JSON 파싱(tool_input.command) 포함" \
+  "grep -qE 'tool_input\\.command' '$HOOK'"
+
+# S9.3: 7상태 머신 전부 정의
+assert "S9.3: 7상태 머신 모든 상태(PASS/MISSING/CONFLICT/EMPTY/NO_PASS/TIMESTAMP_BROKEN/STALE) 정의" \
+  "grep -qE '\"PASS\"|^\\s*echo PASS' '$HOOK' && \
+   grep -qE '\"MISSING\"|^\\s*echo MISSING' '$HOOK' && \
+   grep -qE '\"CONFLICT\"|^\\s*echo CONFLICT' '$HOOK' && \
+   grep -qE '\"EMPTY\"|^\\s*echo EMPTY' '$HOOK' && \
+   grep -qE '\"NO_PASS\"|^\\s*echo NO_PASS' '$HOOK' && \
+   grep -qE '\"TIMESTAMP_BROKEN\"|^\\s*echo TIMESTAMP_BROKEN' '$HOOK' && \
+   grep -qE '\"STALE\"|^\\s*echo STALE' '$HOOK'"
+
+# S9.4: CONFLICT 감지 (^<<<<<<< merge marker)
+assert "S9.4: CONFLICT 감지 — '^<<<<<<<' 마커 grep 패턴" \
+  "grep -qE \"grep -q '\\^<<<<<<<'\" '$HOOK'"
+
+# S9.5: non-git Bash 호출은 조기 종료 (exit 0)
+assert "S9.5: non-git Bash 입력 → exit 0 (조기 종료)" \
+  "TMPD=\$(mktemp -d); cd \"\$TMPD\"; \
+   echo '{\"tool_input\":{\"command\":\"bash -c echo\"}}' | bash '$HOOK' >/dev/null 2>&1; S=\$?; \
+   cd - >/dev/null; rm -rf \"\$TMPD\"; [ \$S -eq 0 ]"
+
+# S9.6: PASS fixture + stdin JSON → exit 0
+assert "S9.6: PASS fixture (오늘 PASS) → exit 0" \
+  "TMPD=\$(mktemp -d); cd \"\$TMPD\"; \
+   sed 's/TODAY_PLACEHOLDER/$TODAY/g' '$FIXTURE_DIR/nova-state-pass.md' > NOVA-STATE.md; \
+   echo '{\"tool_input\":{\"command\":\"git commit -m x\"}}' | bash '$HOOK' >/dev/null 2>&1; S=\$?; \
+   cd - >/dev/null; rm -rf \"\$TMPD\"; [ \$S -eq 0 ]"
+
+# S9.7: NO_PASS fixture → exit 2 + stderr 차단 메시지
+assert "S9.7: NO_PASS fixture → exit 2 + 차단 메시지" \
+  "TMPD=\$(mktemp -d); cd \"\$TMPD\"; \
+   sed 's/TODAY_PLACEHOLDER/$TODAY/g' '$FIXTURE_DIR/nova-state-no_pass.md' > NOVA-STATE.md; \
+   OUT=\$(echo '{\"tool_input\":{\"command\":\"git commit -m x\"}}' | bash '$HOOK' 2>&1); S=\$?; \
+   cd - >/dev/null; rm -rf \"\$TMPD\"; \
+   [ \$S -eq 2 ] && echo \"\$OUT\" | grep -qE 'COMMIT BLOCKED|NO_PASS'"
+
+# S9.8: NO_PASS + NOVA_EMERGENCY=1 → exit 0 (우회 가능)
+assert "S9.8: NO_PASS + NOVA_EMERGENCY=1 → exit 0 (우회)" \
+  "TMPD=\$(mktemp -d); cd \"\$TMPD\"; \
+   sed 's/TODAY_PLACEHOLDER/$TODAY/g' '$FIXTURE_DIR/nova-state-no_pass.md' > NOVA-STATE.md; \
+   NOVA_EMERGENCY=1 bash '$HOOK' < <(echo '{\"tool_input\":{\"command\":\"git commit -m x\"}}') >/dev/null 2>&1; S=\$?; \
+   cd - >/dev/null; rm -rf \"\$TMPD\"; [ \$S -eq 0 ]"
+
+# S9.9: CONFLICT fixture + NOVA_EMERGENCY=1 → exit 2 (fail-closed 초월, N3)
+assert "S9.9: CONFLICT + NOVA_EMERGENCY=1 → exit 2 (EMERGENCY 우회 불가)" \
+  "TMPD=\$(mktemp -d); cd \"\$TMPD\"; \
+   cp '$FIXTURE_DIR/nova-state-conflict.md' NOVA-STATE.md; \
+   OUT=\$(NOVA_EMERGENCY=1 bash '$HOOK' < <(echo '{\"tool_input\":{\"command\":\"git commit -m x\"}}') 2>&1); S=\$?; \
+   cd - >/dev/null; rm -rf \"\$TMPD\"; \
+   [ \$S -eq 2 ] && echo \"\$OUT\" | grep -qE 'CONFLICT|merge conflict'"
+
+# S9.10: MISSING → exit 2
+assert "S9.10: NOVA-STATE.md 없음 (MISSING) → exit 2" \
+  "TMPD=\$(mktemp -d); cd \"\$TMPD\"; \
+   OUT=\$(echo '{\"tool_input\":{\"command\":\"git commit -m x\"}}' | bash '$HOOK' 2>&1); S=\$?; \
+   cd - >/dev/null; rm -rf \"\$TMPD\"; \
+   [ \$S -eq 2 ] && echo \"\$OUT\" | grep -qE 'MISSING'"
+
+# S9.11: EMPTY fixture → exit 2
+assert "S9.11: EMPTY fixture → exit 2" \
+  "TMPD=\$(mktemp -d); cd \"\$TMPD\"; \
+   cp '$FIXTURE_DIR/nova-state-empty.md' NOVA-STATE.md; \
+   OUT=\$(echo '{\"tool_input\":{\"command\":\"git commit -m x\"}}' | bash '$HOOK' 2>&1); S=\$?; \
+   cd - >/dev/null; rm -rf \"\$TMPD\"; \
+   [ \$S -eq 2 ] && echo \"\$OUT\" | grep -qE 'EMPTY'"
+
+# S9.12: STALE fixture → exit 2 + NOVA_EMERGENCY=1 우회 가능
+assert "S9.12: STALE fixture → exit 2 (EMERGENCY=0)" \
+  "TMPD=\$(mktemp -d); cd \"\$TMPD\"; \
+   cp '$FIXTURE_DIR/nova-state-stale.md' NOVA-STATE.md; \
+   echo '{\"tool_input\":{\"command\":\"git commit -m x\"}}' | bash '$HOOK' >/dev/null 2>&1; S=\$?; \
+   cd - >/dev/null; rm -rf \"\$TMPD\"; [ \$S -eq 2 ]"
+
+# S9.13: TIMESTAMP_BROKEN fixture → exit 2
+assert "S9.13: TIMESTAMP_BROKEN fixture → exit 2" \
+  "TMPD=\$(mktemp -d); cd \"\$TMPD\"; \
+   cp '$FIXTURE_DIR/nova-state-timestamp_broken.md' NOVA-STATE.md; \
+   OUT=\$(echo '{\"tool_input\":{\"command\":\"git commit -m x\"}}' | bash '$HOOK' 2>&1); S=\$?; \
+   cd - >/dev/null; rm -rf \"\$TMPD\"; \
+   [ \$S -eq 2 ] && echo \"\$OUT\" | grep -qE 'TIMESTAMP_BROKEN'"
+
+# S9.14: NOVA_DISABLE_EVENTS=1 → 무조건 exit 0 (훅 최상위 우회)
+assert "S9.14: NOVA_DISABLE_EVENTS=1 → exit 0 (훅 최상위 우회)" \
+  "TMPD=\$(mktemp -d); cd \"\$TMPD\"; \
+   echo 'garbage-not-json' | NOVA_DISABLE_EVENTS=1 bash '$HOOK' >/dev/null 2>&1; S=\$?; \
+   cd - >/dev/null; rm -rf \"\$TMPD\"; [ \$S -eq 0 ]"
+
+# S9.15: 빈 stdin → exit 2 (fail-closed)
+assert "S9.15: 빈 stdin → exit 2 (fail-closed)" \
+  "TMPD=\$(mktemp -d); cd \"\$TMPD\"; \
+   : | bash '$HOOK' >/dev/null 2>&1; S=\$?; \
+   cd - >/dev/null; rm -rf \"\$TMPD\"; [ \$S -eq 2 ]"
+
+# S9.16: init-nova-state.sh Last Activity 포맷 — 당일 PASS 마커 포함 (R3 catch-22 해소)
+assert "S9.16: init-nova-state.sh 생성 NOVA-STATE.md가 Hard Gate PASS로 인식됨 (cold-start)" \
+  "TMPD=\$(mktemp -d); cd \"\$TMPD\"; \
+   echo \"{\\\"cwd\\\":\\\"\$TMPD\\\"}\" | bash '$ROOT_DIR/scripts/init-nova-state.sh' >/dev/null 2>&1; \
+   echo '{\"tool_input\":{\"command\":\"git commit -m x\"}}' | bash '$HOOK' >/dev/null 2>&1; S=\$?; \
+   cd - >/dev/null; rm -rf \"\$TMPD\"; [ \$S -eq 0 ]"
+
+# S9.17: hooks.json pre-commit-reminder 엔트리 — Design 원본 구조 (공식 스펙 준수)
+# 공식 문서 (code.claude.com/docs/en/hooks) 재확인 결과:
+#   - 여러 matcher 엔트리는 모두 병렬 평가 + 매칭 시 모두 실행
+#   - 같은 matcher 내 hooks[] 배열도 모두 병렬 실행
+#   - `if` 필드는 permission rule syntax로 hook 단위 skip 제어 (inner 위치)
+# 원래 Design 구조가 스펙상 정답. dispatcher 롤백.
+assert "S9.17: hooks.json pre-commit-reminder 엔트리 matcher=\"Bash\" + inner hooks[].if=\"Bash(git *)\"" \
+  "jq -e '.hooks.PreToolUse[] | select(.matcher==\"Bash\") | .hooks[0] | .if == \"Bash(git *)\" and (.command | contains(\"pre-commit-reminder\"))' $ROOT_DIR/hooks/hooks.json >/dev/null"
+
+# S9.17b: pre-commit-reminder.sh 내부 git commit 정규식 필터 (이중 방어)
+assert "S9.17b: pre-commit-reminder.sh 내부 git commit 정규식 필터 존재" \
+  "grep -qE 'git\\\\s\\+.*commit' '$HOOK'"
+
+# S9.18: fixture 7개 중 6개 파일 존재 (MISSING은 파일 없음으로 표현)
+assert "S9.18: tests/fixtures/nova-state-*.md 6개 존재 (pass/empty/no_pass/stale/timestamp_broken/conflict)" \
+  "[ -f '$FIXTURE_DIR/nova-state-pass.md' ] && \
+   [ -f '$FIXTURE_DIR/nova-state-empty.md' ] && \
+   [ -f '$FIXTURE_DIR/nova-state-no_pass.md' ] && \
+   [ -f '$FIXTURE_DIR/nova-state-stale.md' ] && \
+   [ -f '$FIXTURE_DIR/nova-state-timestamp_broken.md' ] && \
+   [ -f '$FIXTURE_DIR/nova-state-conflict.md' ]"
+
+echo ""
+
+# ═══════════════════════════════════════════
 # 결과
 # ═══════════════════════════════════════════
 

@@ -1,51 +1,132 @@
 #!/usr/bin/env bash
 
-# Nova Engineering — PreToolUse Hook (Bash)
-# git commit 명령 감지 시 NOVA-STATE.md 갱신 확인 + verify 리마인더를 주입.
+# Nova Engineering — PreToolUse Hook (Bash) — v5.18.3
+# git commit 감지 시 Evaluator Hard Gate 적용 + NOVA-STATE.md 갱신 리마인더
+#
+# Claude Code hooks 공식 스펙: stdin으로 JSON 전달. v5.18.2가 공식 스펙 확정.
+# v5.18.2 이전 버전은 환경변수 가정이 no-op 버그였음 (v5.18.3 hotfix로 수정).
+#
+# 상태 머신 7가지:
+#   PASS / MISSING / CONFLICT / EMPTY / NO_PASS / TIMESTAMP_BROKEN / STALE
+#
+# 우회 스위치:
+#   NOVA_DISABLE_EVENTS=1 — 훅 최상위 우회 (테스트용)
+#   NOVA_EMERGENCY=1 또는 커밋 메시지에 --emergency — EMERGENCY 우회
+#     (단, CONFLICT 상태에서는 우회 불가 — repo 손상 유발)
 
-# $TOOL_INPUT 환경변수에 Bash 도구의 command가 전달됨
-INPUT="${TOOL_INPUT:-}"
+# ── 최상위 우회 스위치 ──
+if [ "${NOVA_DISABLE_EVENTS:-0}" = "1" ]; then
+  exit 0
+fi
 
-# git commit 패턴 감지 (git commit, git -c ... commit 등)
-if echo "$INPUT" | grep -qE '^\s*git\s+(.*\s+)?commit(\s|$)'; then
+# ── stdin JSON 파싱 (fail-closed 정책) ──
+# tty 수동 실행(Claude Code 외부)은 차단 안 함. 빈/깨진 stdin은 fail-closed.
+COMMAND=""
+if [ ! -t 0 ]; then
+  INPUT_JSON=$(cat 2>/dev/null || true)
+  if [ -z "$INPUT_JSON" ]; then
+    exit 2
+  fi
+  COMMAND=$(echo "$INPUT_JSON" | jq -r '.tool_input.command // empty' 2>/dev/null) || exit 2
+else
+  exit 0
+fi
 
-  # ------ Evaluator Hard Gate (Sprint 1) ------
-  check_evaluator_pass() {
-    # 출력: PASS | MISSING | EMPTY | NO_PASS | STALE | TIMESTAMP_BROKEN
+# ── git commit 패턴 필터 ──
+# `git commit`, `git -c foo=bar commit`, `git commit --amend` 등 매칭
+if ! echo "$COMMAND" | grep -qE '^\s*git\s+(.*\s+)?commit(\s|$)'; then
+  exit 0
+fi
 
-    [ ! -f "NOVA-STATE.md" ] && echo "MISSING" && return
+# ── EMERGENCY 플래그 감지 (CONFLICT 상태에서는 무시) ──
+EMERGENCY=0
+if echo "$COMMAND" | grep -q -- "--emergency" || [ "${NOVA_EMERGENCY:-0}" = "1" ]; then
+  EMERGENCY=1
+fi
 
-    # ## Last Activity 섹션 첫 줄 추출 (헤더 다음 첫 번째 "- " 라인)
-    LAST_LINE=$(awk '/^## Last Activity/{flag=1; next} flag && /^- /{print; exit}' NOVA-STATE.md)
-
-    [ -z "$LAST_LINE" ] && echo "EMPTY" && return
-
-    # PASS 포함 여부 — 화살표 이후 PASS/CONDITIONAL만 인정 (서술형 오탐 방지)
-    echo "$LAST_LINE" | grep -qE '→\s*(PASS|CONDITIONAL)' || { echo "NO_PASS"; return; }
-
-    # 타임스탬프 추출: "| YYYY-MM-DD" 패턴
-    TS=$(echo "$LAST_LINE" | grep -oE '\| [0-9]{4}-[0-9]{2}-[0-9]{2}' | sed 's/| //')
-    [ -z "$TS" ] && echo "TIMESTAMP_BROKEN" && return
-
-    # 오늘 날짜와 비교 (Sprint 1은 당일 기준)
-    TODAY=$(date +%Y-%m-%d)
-    [ "$TS" = "$TODAY" ] && echo "PASS" || echo "STALE"
-  }
-
-  # --emergency 감지 (플래그 또는 환경변수)
-  EMERGENCY=0
-  if echo "$INPUT" | grep -q -- "--emergency" || [ "${NOVA_EMERGENCY:-0}" = "1" ]; then
-    EMERGENCY=1
+# ── Evaluator Hard Gate 7상태 판정 ──
+# 판정 순서 고정: MISSING → CONFLICT → EMPTY → NO_PASS → TIMESTAMP_BROKEN → STALE → PASS
+check_evaluator_pass() {
+  if [ ! -f "NOVA-STATE.md" ]; then
+    echo "MISSING"
+    return
   fi
 
-  if [ "$EMERGENCY" = "1" ]; then
-    echo "[Nova Hard Gate] --emergency 우회 감지 — Evaluator 검증 없이 커밋 진행" >&2
+  # merge conflict 마커 감지 (N1: MISSING 직후, awk 파서 보호)
+  if grep -q '^<<<<<<<' NOVA-STATE.md; then
+    echo "CONFLICT"
+    return
+  fi
+
+  # ## Last Activity 섹션 첫 "- " 라인 추출
+  LAST_LINE=$(awk '/^## Last Activity/{flag=1; next} flag && /^- /{print; exit}' NOVA-STATE.md)
+
+  if [ -z "$LAST_LINE" ]; then
+    echo "EMPTY"
+    return
+  fi
+
+  # PASS/CONDITIONAL 마커 확인 (화살표 이후만 인정, 서술형 오탐 방지)
+  if ! echo "$LAST_LINE" | grep -qE '→\s*(PASS|CONDITIONAL)'; then
+    echo "NO_PASS"
+    return
+  fi
+
+  # 타임스탬프 추출: "YYYY-MM-DD" 패턴
+  TS=$(echo "$LAST_LINE" | grep -oE '[0-9]{4}-[0-9]{2}-[0-9]{2}' | head -1)
+  if [ -z "$TS" ]; then
+    echo "TIMESTAMP_BROKEN"
+    return
+  fi
+
+  # 오늘 날짜와 비교
+  TODAY=$(date +%Y-%m-%d)
+  if [ "$TS" = "$TODAY" ]; then
+    echo "PASS"
   else
-    EVAL_STATUS=$(check_evaluator_pass)
-    if [ "$EVAL_STATUS" != "PASS" ]; then
-      cat >&2 << EOF
+    echo "STALE"
+  fi
+}
+
+STATE=$(check_evaluator_pass)
+
+# ── 이벤트 기록 헬퍼 (safe-default: 실패해도 Hard Gate 집행 영향 없음) ──
+record_gate_event() {
+  local event_type="$1"
+  local extra_json="$2"
+  local plugin_root="${CLAUDE_PLUGIN_ROOT:-$(cd "$(dirname "$0")/.." && pwd)}"
+  if [ -x "$plugin_root/hooks/record-event.sh" ]; then
+    bash "$plugin_root/hooks/record-event.sh" "$event_type" "$extra_json" 2>/dev/null || true
+  fi
+}
+
+# ── CONFLICT: EMERGENCY 초월 fail-closed (N3) ──
+if [ "$STATE" = "CONFLICT" ]; then
+  cat >&2 << 'EOF'
+[Nova Hard Gate] COMMIT BLOCKED — CONFLICT 상태
+
+NOVA-STATE.md에 merge conflict 마커(<<<<<<<)가 있습니다.
+NOVA_EMERGENCY 우회 불가 — merge conflict를 먼저 해결한 뒤 커밋하세요.
+
+해결:
+  1. NOVA-STATE.md를 열어 <<<<<<<, =======, >>>>>>> 마커 제거
+  2. git add NOVA-STATE.md
+  3. git commit
+EOF
+  record_gate_event commit_blocked "$(printf '{"state":"CONFLICT","emergency":false}')"
+  exit 2
+fi
+
+# ── 다른 차단 상태 (EMERGENCY 우회 가능) ──
+if [ "$STATE" != "PASS" ]; then
+  if [ "$EMERGENCY" = "1" ]; then
+    echo "[Nova Hard Gate] --emergency 우회 감지 — 상태: ${STATE}" >&2
+    record_gate_event commit_emergency "$(printf '{"state":"%s"}' "$STATE")"
+    # fall-through → 아래 리마인더 컨텍스트 주입
+  else
+    cat >&2 << EOF
 [Nova Hard Gate] COMMIT BLOCKED
-이유: Evaluator PASS 미확인 (상태: ${EVAL_STATUS})
+이유: Evaluator PASS 미확인 (상태: ${STATE})
 
 상태별 조치:
   MISSING           -> NOVA-STATE.md 없음. /nova:check 실행 후 커밋.
@@ -57,36 +138,39 @@ if echo "$INPUT" | grep -qE '^\s*git\s+(.*\s+)?commit(\s|$)'; then
 긴급 우회:
   git commit -m "메시지 --emergency"
   또는 NOVA_EMERGENCY=1 git commit ...
+
+  ※ CONFLICT 상태는 우회 불가 (merge 해결 선결)
 EOF
-      exit 2
-    fi
+    record_gate_event commit_blocked "$(printf '{"state":"%s","emergency":false}' "$STATE")"
+    exit 2
   fi
-  # ------ End Evaluator Hard Gate ------
+fi
 
-  # NOVA-STATE.md 갱신 여부 확인
-  STATE_STALE=""
-  if [ -f "NOVA-STATE.md" ]; then
-    # staged 파일에 NOVA-STATE.md가 포함되어 있는지 확인
-    if ! git diff --cached --name-only 2>/dev/null | grep -q "NOVA-STATE.md"; then
-      STATE_STALE="⚠️ NOVA-STATE.md가 이번 커밋에 포함되지 않았습니다. 갱신이 필요한지 확인하세요."
-    fi
+# ── 정상 경로 — NOVA-STATE.md / nova-meta.json 갱신 리마인더 ──
+
+# NOVA-STATE.md가 이번 커밋에 포함되었는지
+STATE_STALE=""
+if [ -f "NOVA-STATE.md" ]; then
+  if ! git diff --cached --name-only 2>/dev/null | grep -q "NOVA-STATE.md"; then
+    STATE_STALE="⚠️ NOVA-STATE.md가 이번 커밋에 포함되지 않았습니다. 갱신이 필요한지 확인하세요."
   fi
+fi
 
-  # nova-meta.json 최신 여부 확인
-  META_STALE=""
-  if [ -f "docs/nova-meta.json" ] && [ -f "scripts/generate-meta.sh" ]; then
-    META_VER=$(python3 -c "import json; print(json.load(open('docs/nova-meta.json'))['stats']['commands'])" 2>/dev/null || echo "0")
-    ACTUAL_CMD=$(ls -1 .claude/commands/*.md 2>/dev/null | wc -l | tr -d ' ')
-    if [ "$META_VER" != "$ACTUAL_CMD" ]; then
-      META_STALE="⚠️ nova-meta.json이 최신이 아닙니다 (meta: ${META_VER}개, 실제: ${ACTUAL_CMD}개). bash scripts/release.sh를 사용하세요."
-    fi
+# nova-meta.json 최신 여부
+META_STALE=""
+if [ -f "docs/nova-meta.json" ] && [ -f "scripts/generate-meta.sh" ]; then
+  META_VER=$(python3 -c "import json; print(json.load(open('docs/nova-meta.json'))['stats']['commands'])" 2>/dev/null || echo "0")
+  ACTUAL_CMD=$(ls -1 .claude/commands/*.md 2>/dev/null | wc -l | tr -d ' ')
+  if [ "$META_VER" != "$ACTUAL_CMD" ]; then
+    META_STALE="⚠️ nova-meta.json이 최신이 아닙니다 (meta: ${META_VER}개, 실제: ${ACTUAL_CMD}개). bash scripts/release.sh를 사용하세요."
   fi
+fi
 
-  # 변경 파일 수 감지
-  CHANGED_FILES=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
+# 변경 파일 수
+CHANGED_FILES=$(git diff --cached --name-only 2>/dev/null | wc -l | tr -d ' ')
 
-  if [ "$CHANGED_FILES" -ge 3 ]; then
-    cat << NOVA_EOF
+if [ "$CHANGED_FILES" -ge 3 ]; then
+  cat << NOVA_EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
@@ -94,8 +178,8 @@ EOF
   }
 }
 NOVA_EOF
-  else
-    cat << NOVA_EOF
+else
+  cat << NOVA_EOF
 {
   "hookSpecificOutput": {
     "hookEventName": "PreToolUse",
@@ -103,7 +187,6 @@ NOVA_EOF
   }
 }
 NOVA_EOF
-  fi
 fi
 
 exit 0

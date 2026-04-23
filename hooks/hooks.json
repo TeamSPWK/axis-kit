@@ -62,11 +62,11 @@
       },
       {
         "matcher": "Bash",
-        "if": "Bash(git *)",
         "hooks": [
           {
             "type": "command",
-            "command": "TOOL_INPUT=\"$TOOL_INPUT\" bash \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit-reminder.sh\""
+            "if": "Bash(git *)",
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/pre-commit-reminder.sh\""
           }
         ]
       }
