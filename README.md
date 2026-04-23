@@ -4,10 +4,12 @@
 [![Version](https://img.shields.io/badge/version-5.19.0-blue)](https://github.com/TeamSPWK/nova/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-**AI Agent Ops Framework for Claude Code.**
-**Verify Before You Ship. Every Time.**
+**Verify before you ship. Every time.**
+AI-generated code, cross-checked by an independent adversarial evaluator — before commit, before deploy.
 
-[한국어](README.ko.md)
+*A [Claude Code](https://claude.ai/code) plugin. 14 slash commands, 10 skills, 6 specialist agents, local MCP server.*
+
+[한국어](README.ko.md) · [Install](#quick-start) · [How It Works](#how-it-works-examples) · [FAQ](#faq)
 
 > AI coding tools make you type faster — but the real bottleneck isn't typing.
 > A single wrong decision in week 1 compounds into a full rewrite by week 4.

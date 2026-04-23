@@ -1,7 +1,7 @@
 {
   "name": "nova",
   "version": "5.19.0",
-  "description": "AI 개발 품질 게이트 — 적대적 코드 리뷰, 멀티 AI 교차검증, 설계-구현 정합성 검증으로 재작업을 제거한다.",
+  "description": "AI Agent Ops framework for Claude Code — independent evaluator, adversarial review, and pre-commit quality gate for AI-generated code.",
   "author": {
     "name": "Spacewalk Engineering",
     "email": "jay@spacewalk.dev",
