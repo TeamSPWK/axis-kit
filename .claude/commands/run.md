@@ -43,6 +43,7 @@ Safe-default: 기록 실패는 run 사이클 진행에 영향 없음.
 |--------|------|------|
 | (없음) | **Full Cycle** | Generator 서브에이전트 → Evaluator 서브에이전트 |
 | `--verify-only` | **Verify Only** | Evaluator 서브에이전트만 (현행 동작) |
+| `--with-refiner` | **GAN 3단** | Evaluator FAIL 시 refiner 서브에이전트 호출. 수정안 제시, 자동 적용 없음. |
 
 ### Preflight Check
 

@@ -1,0 +1,1 @@
+Nova를 진화시키자. 최근 Claude Code 훅/스킬 동향을 스캔하고 Nova에 반영해.

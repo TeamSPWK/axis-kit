@@ -1,6 +1,6 @@
 ---
 name: orchestrator
-description: Nova Orchestrator — 자연어 요청을 CPS 설계→에이전트 편성→구현→검증→수정 전체 사이클로 자동 실행
+description: "자연어 요청을 받아 전체 개발 사이클을 자동 처리해야 할 때. — MUST TRIGGER: /nova:auto 호출, 사용자가 '전체 알아서 해줘' 유형의 요청을 할 때, 다중 에이전트 편성이 필요한 복합 작업."
 user-invocable: false
 ---
 

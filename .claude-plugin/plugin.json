@@ -25,14 +25,55 @@
   "tool_contract": {
     "_nova_comment": "Nova 도구 제약 계약 (Sprint 2a). Claude Code v2.1.112 plugin.json 공식 스키마는 permission 필드를 지원하지 않음(U1 해소: docs/unknowns-resolution.md §U1). 이 필드는 scripts/audit-agent-tools.sh의 대조 소스이자 런타임 enforcement(Sprint 2b — .claude/settings.json PreToolUse 훅)의 선언적 근거로만 사용된다.",
     "version": 1,
-    "default": ["Read", "Glob", "Grep"],
+    "default": [
+      "Read",
+      "Glob",
+      "Grep"
+    ],
     "per_agent": {
-      "architect": ["Read", "Glob", "Grep", "Agent", "WebSearch"],
-      "devops-engineer": ["Read", "Glob", "Grep", "Edit", "Write", "Bash"],
-      "qa-engineer": ["Read", "Glob", "Grep", "Bash"],
-      "security-engineer": ["Read", "Glob", "Grep"],
-      "senior-dev": ["Read", "Glob", "Grep", "Edit", "Write", "Bash", "Agent"]
+      "architect": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Agent",
+        "WebSearch"
+      ],
+      "devops-engineer": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Edit",
+        "Write",
+        "Bash"
+      ],
+      "qa-engineer": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Bash"
+      ],
+      "security-engineer": [
+        "Read",
+        "Glob",
+        "Grep"
+      ],
+      "senior-dev": [
+        "Read",
+        "Glob",
+        "Grep",
+        "Edit",
+        "Write",
+        "Bash",
+        "Agent"
+      ],
+      "refiner": [
+        "Read",
+        "Glob",
+        "Grep"
+      ]
     },
-    "deferred_allow": ["ToolSearch"]
+    "deferred_allow": [
+      "ToolSearch"
+    ]
   }
 }

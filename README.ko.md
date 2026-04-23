@@ -308,15 +308,16 @@ MCP 서버는 Nova 설치 디렉토리에서 파일을 직접 읽는다. API 호
 <!-- AUTO-GEN:skills -->
 | Skill | Description |
 |-------|------------|
-| **context-chain** | Nova Context Chain — 세션 간 맥락 연속성 보장. NOVA-STATE.md 기반 상태 관리. |
-| **deepplan** | Nova DeepPlan — Explorer×3 병렬 탐색 → Synthesizer → Critic → Refiner 4단 파이프라인으로 깊이 있는 Plan 문서를 생성한다. |
-| **evaluator** | Nova Adversarial Evaluator — Nova Quality Gate의 핵심 검증 엔진. 독립 서브에이전트로 코드를 적대적 관점에서 검증. |
-| **evolution** | Nova Self-Evolution 엔진 — 기술 동향 스캔, 관련성 필터, 자율 범위 구현까지 전체 파이프라인 |
-| **field-test** | 실제 프로젝트에서 Nova를 사용해보며 개선 포인트를 찾는 실전 테스트. 워크트리 격리로 흔적 없이 진행. |
-| **jury** | Nova LLM Jury — 다중 관점 평가로 단일 Evaluator의 편향을 보정 |
-| **orchestrator** | Nova Orchestrator — 자연어 요청을 CPS 설계→에이전트 편성→구현→검증→수정 전체 사이클로 자동 실행 |
-| **ux-audit** | Nova UX Audit — 5인 적대적 평가자(Adversarial Jury)로 UI/UX를 다관점 심층 평가. 코드 기반 분석 + 선택적 화면 캡처. |
-| **worktree-setup** | Nova Worktree Setup — git worktree 진입 시 메인 레포의 .env·시크릿·설정 파일을 자동 심볼릭 링크한다. 환경 기둥의 첫 시민. |
+| **context-chain** | 세션 간 맥락을 연결해야 할 때. |
+| **deepplan** | Plan 문서의 탐색 폭/검증 깊이가 부족할 때 깊이 있는 Plan을 생성한다. |
+| **evaluator** | 코드 구현을 적대적 관점으로 검증해야 할 때. |
+| **evolution** | Nova 자체를 진화시킬 때 사용한다. |
+| **field-test** | Nova 방법론을 실제 프로젝트에서 검증해 개선 포인트를 찾을 때. |
+| **jury** | 단일 Evaluator의 편향이 우려되는 중요 판단일 때 여러 관점으로 재검토한다. |
+| **orchestrator** | 자연어 요청을 받아 전체 개발 사이클을 자동 처리해야 할 때. |
+| **ux-audit** | UI/UX 품질을 다관점·적대적으로 검증할 때. |
+| **worktree-setup** | git worktree에서 메인 레포의 환경 설정이 필요할 때. |
+| **writing-nova-skill** | 새 Nova 스킬을 작성하거나 기존 스킬 description을 수정할 때. |
 <!-- /AUTO-GEN:skills -->
 
 ## 전문 에이전트 (5종)
@@ -329,6 +330,7 @@ MCP 서버는 Nova 설치 디렉토리에서 파일을 직접 읽는다. API 호
 | `architect` | 시스템 아키텍처 설계, 기술 선택, 확장성/유지보수성 검토가 필요할 때 사용 |
 | `devops-engineer` | CI/CD 파이프라인, 인프라 설정, 배포 전략, 모니터링 구성이 필요할 때 사용 |
 | `qa-engineer` | 테스트 전략 수립, 엣지 케이스 식별, 품질 검증이 필요할 때 사용 |
+| `refiner` | evaluator FAIL 출력을 받아 수정안을 제안한다 |
 | `security-engineer` | 보안 취약점 점검, 위협 모델링, 인증/인가 검토가 필요할 때 사용 |
 | `senior-dev` | 코드 품질 개선, 리팩토링, 구현 전략 수립, 기술 부채 식별이 필요할 때 사용 |
 <!-- /AUTO-GEN:agents -->

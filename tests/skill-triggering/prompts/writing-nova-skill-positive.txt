@@ -1,0 +1,1 @@
+Nova에 새 스킬 하나 추가하려고 해. description은 어떻게 써야 Claude가 제대로 트리거하지?

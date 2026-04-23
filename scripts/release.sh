@@ -80,6 +80,25 @@ echo "━━━ Step 2/7: 테스트 실행 ━━━"
 bash tests/test-scripts.sh
 echo ""
 
+# ── Step 2.5: 제거 리포트 체크 ──
+# --removal="..." 플래그 또는 NOVA_REMOVAL_REPORT 환경변수로 제거 항목 기록.
+# 비어 있으면 경고만 (exit 0, 강제 아님).
+REMOVAL_REPORT="${NOVA_REMOVAL_REPORT:-}"
+for arg in "$@"; do
+  case "$arg" in
+    --removal=*) REMOVAL_REPORT="${arg#--removal=}" ;;
+  esac
+done
+
+if [[ -z "$REMOVAL_REPORT" ]]; then
+  echo "⚠️  제거 리포트가 비어 있습니다. 방법론 A/B 측정 문화를 유지하려면" >&2
+  echo "   이번 릴리스에서 가지치기한 항목을 기록하세요." >&2
+  echo "   방법: --removal=\"제거한 규칙·단계 설명\" 또는 NOVA_REMOVAL_REPORT=\"...\" 환경변수." >&2
+  echo "   superpowers v5.0.6 예시 참조 (25분 오버헤드 제거)." >&2
+  echo "" >&2
+fi
+echo ""
+
 # ── Step 3: 변경사항 커밋 ──
 echo "━━━ Step 3/7: 커밋 ━━━"
 # unstaged 파일이 있으면 staged만 커밋
@@ -119,9 +138,20 @@ echo "━━━ Step 7/7: GitHub 릴리스 ━━━"
 TITLE_FIRST_LINE=$(echo "$COMMIT_MSG" | head -1 | sed 's/^[a-z]*: //' | sed 's/^[a-z]*(.*): //')
 # "vX.Y.Z — " prefix 고려해 본문 240자 제한
 TITLE_TRIMMED=$(printf '%s' "$TITLE_FIRST_LINE" | cut -c1-240)
+# REMOVAL_REPORT가 있으면 GitHub release 본문에 ## Removed 섹션 삽입
+if [[ -n "$REMOVAL_REPORT" ]]; then
+  RELEASE_NOTES="${COMMIT_MSG}
+
+## Removed
+
+${REMOVAL_REPORT}"
+else
+  RELEASE_NOTES="${COMMIT_MSG}"
+fi
+
 gh release create "v${NEW_VERSION}" \
   --title "v${NEW_VERSION} — ${TITLE_TRIMMED}" \
-  --notes "${COMMIT_MSG}"
+  --notes "${RELEASE_NOTES}"
 echo ""
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

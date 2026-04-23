@@ -1,6 +1,6 @@
 ---
 name: worktree-setup
-description: "Nova Worktree Setup — git worktree 진입 시 메인 레포의 .env·시크릿·설정 파일을 자동 심볼릭 링크한다. 환경 기둥의 첫 시민. — MUST TRIGGER: 새 worktree 진입 직후, 사용자가 '환경변수 안 읽힘·시크릿 못 찾음'을 보고할 때, EnterWorktree 도구 호출 직후."
+description: "git worktree에서 메인 레포의 환경 설정이 필요할 때. — MUST TRIGGER: 새 worktree 진입 직후, 사용자가 '환경변수 안 읽힘·시크릿 못 찾음'을 보고할 때, EnterWorktree 도구 호출 직후."
 user-invocable: false
 ---
 

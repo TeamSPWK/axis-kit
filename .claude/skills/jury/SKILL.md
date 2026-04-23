@@ -1,6 +1,6 @@
 ---
 name: jury
-description: Nova LLM Jury — 다중 관점 평가로 단일 Evaluator의 편향을 보정
+description: "단일 Evaluator의 편향이 우려되는 중요 판단일 때 여러 관점으로 재검토한다. — MUST TRIGGER: 아키텍처 결정, 릴리스 게이트 의심 케이스, 사용자가 /nova:ask 또는 다관점 평가를 요청할 때."
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: deepplan
-description: "Nova DeepPlan — Explorer×3 병렬 탐색 → Synthesizer → Critic → Refiner 4단 파이프라인으로 깊이 있는 Plan 문서를 생성한다."
+description: "Plan 문서의 탐색 폭/검증 깊이가 부족할 때 깊이 있는 Plan을 생성한다. — MUST TRIGGER: 복잡도 8+ 작업, 아키텍처 분기 결정, /nova:plan 결과가 얕다고 판단되는 경우, 사용자가 /nova:deepplan 호출."
 user-invocable: false
 ---
 

@@ -1,6 +1,6 @@
 ---
 name: evolution
-description: "Nova Self-Evolution 엔진 — 기술 동향 스캔, 관련성 필터, 자율 범위 구현까지 전체 파이프라인"
+description: "Nova 자체를 진화시킬 때 사용한다. — MUST TRIGGER: /nova:evolve 호출, 외부 기술 동향을 Nova에 반영해야 할 때, Nova 메타-개선(규칙/스킬/훅 구조 변경) 작업."
 user-invocable: false
 ---
 
@@ -121,6 +121,46 @@ Scanner → Filter → Proposal → [Builder → Gate Chain → Merge]
    - patch + `--auto`: 커밋 메시지 자동 생성, `git add` + `git commit`
    - minor + `--auto`: 브랜치 생성 + PR
    - major: 제안서만 유지
+
+
+## Phase 1: Behavior Learning (옵트인)
+
+> 활성화: `/nova:evolve --from-observations`
+
+사용자의 실제 행동 패턴에서 CPS Problem 초안을 제안한다. 외부 스캔(WebSearch) 없이 내부 관찰 데이터만 사용한다.
+
+### 파이프라인
+
+```
+[1] analyze-observations.sh 호출
+      ↓
+[2] Top N 반복 패턴 추출 (--pattern 선택)
+      ↓
+[3] 패턴 → CPS Problem 초안 드래프트
+      ↓
+[4] 사용자 승인 요청 (자동 승격 금지)
+      ↓
+[5] 승인된 경우만 → Phase 3 Proposal 진입
+```
+
+### 실행 방법
+
+```bash
+# 도구 호출 빈도 분석 (기본)
+bash scripts/analyze-observations.sh --top 10 --pattern tool-frequency
+
+# 시퀀스 패턴 분석
+bash scripts/analyze-observations.sh --top 5 --pattern sequence
+
+# 반복 실패 패턴 분석
+bash scripts/analyze-observations.sh --top 10 --pattern failures
+```
+
+### 자율 승격 금지 원칙
+
+- analyze-observations.sh 결과는 **제안 재료**에 불과하다
+- Nova 철학 "AI는 제안, 인간은 결정" — 사용자 명시적 승인 없이 어떤 규칙도 자동 추가하지 않는다
+- 승인 전 CPS Problem 초안은 `docs/proposals/YYYY-MM-DD-from-observations.md`에 저장하고 대기한다
 
 ## Schedule 연동
 

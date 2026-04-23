@@ -1,6 +1,6 @@
 ---
 name: ux-audit
-description: "Nova UX Audit — 5인 적대적 평가자(Adversarial Jury)로 UI/UX를 다관점 심층 평가. 코드 기반 분석 + 선택적 화면 캡처. — MUST TRIGGER: UI/UX 변경 후 /review 전, 새 기능 론칭 전, 프론트엔드 리팩토링 후."
+description: "UI/UX 품질을 다관점·적대적으로 검증할 때. — MUST TRIGGER: UI/UX 변경 후 /review 전, 새 기능 론칭 전, 프론트엔드 리팩토링 후, 접근성(WCAG) 점검이 필요할 때."
 user-invocable: false
 ---
 

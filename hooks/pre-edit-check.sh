@@ -3,6 +3,7 @@
 # Nova Engineering — PreToolUse Hook (Write|Edit)
 # Write/Edit 호출 시 세션 내 편집 파일 수 누적 → 3파일 초과 시 Plan 승격 경고 주입.
 # Sprint 1: 경고만, 차단 없음 (exit 0 유지).
+# Tier 2: CPS 선행 권장 체크 추가 (NOVA_PROFILE=lean 시 스킵).
 
 INPUT="${TOOL_INPUT:-$(cat)}"
 
@@ -62,13 +63,77 @@ state = {
     'session_id': '${SESSION_ID}',
     'started_at': '${STARTED_AT}',
     'edited_files': [],
-    'warnings_emitted': {'plan_promotion': False}
+    'warnings_emitted': {'plan_promotion': False, 'cps_reminder': False}
 }
 with open('${STATE_FILE}', 'w') as f:
     json.dump(state, f, indent=2)
 " 2>/dev/null || exit 0
 fi
 
+# ── CPS 선행 권장 체크 (NOVA_PROFILE=lean 이면 스킵) ──
+# §4 실행검증의 편집 시점 당김("shift left"): 최근 7일 내 관련 Plan/Design 없으면 경고
+if [ "${NOVA_PROFILE:-standard}" != "lean" ]; then
+  CPS_WARNING=$(python3 -c "
+import os, sys, time
+
+# NOVA-STATE.md 최신 여부 확인 (7일 = 604800초)
+threshold = 7 * 86400
+now = time.time()
+has_recent = False
+
+state_file = 'NOVA-STATE.md'
+if os.path.exists(state_file):
+    mtime = os.path.getmtime(state_file)
+    if now - mtime <= threshold:
+        has_recent = True
+
+# docs/plans/*.md 또는 docs/designs/*.md 최근 7일 내 존재 여부
+for pattern_dir in ['docs/plans', 'docs/designs']:
+    if os.path.isdir(pattern_dir):
+        for fname in os.listdir(pattern_dir):
+            if fname.endswith('.md'):
+                fpath = os.path.join(pattern_dir, fname)
+                mtime = os.path.getmtime(fpath)
+                if now - mtime <= threshold:
+                    has_recent = True
+                    break
+
+# 이미 경고 발행됐는지 확인
+try:
+    import json
+    with open('${STATE_FILE}') as f:
+        state = json.load(f)
+    already_warned = state.get('warnings_emitted', {}).get('cps_reminder', False)
+except Exception:
+    already_warned = False
+
+if not has_recent and not already_warned:
+    print('CPS_WARN')
+else:
+    print('OK')
+" 2>/dev/null || echo "OK")
+
+  if [ "$CPS_WARNING" = "CPS_WARN" ]; then
+    # cps_reminder 경고 발행 기록
+    python3 -c "
+import json
+try:
+    with open('${STATE_FILE}') as f:
+        state = json.load(f)
+    if 'warnings_emitted' not in state:
+        state['warnings_emitted'] = {}
+    state['warnings_emitted']['cps_reminder'] = True
+    with open('${STATE_FILE}', 'w') as f:
+        json.dump(state, f, indent=2)
+except:
+    pass
+" 2>/dev/null
+
+    echo "[Nova] CPS Plan/Design 없이 편집 중입니다. 복잡 작업이면 /nova:plan 선행을 권장합니다." >&2
+  fi
+fi
+
+# ── 파일 수 누적 추적 ──
 # state json 읽기
 STATE=$(python3 -c "
 import json, sys

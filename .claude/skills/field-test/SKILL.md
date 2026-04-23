@@ -1,6 +1,6 @@
 ---
 name: field-test
-description: 실제 프로젝트에서 Nova를 사용해보며 개선 포인트를 찾는 실전 테스트. 워크트리 격리로 흔적 없이 진행.
+description: "Nova 방법론을 실제 프로젝트에서 검증해 개선 포인트를 찾을 때. — MUST TRIGGER: 신규 Nova 기능 검증, 사용자가 실전 피드백을 요청할 때, 워크트리 격리 환경에서 방법론을 리허설할 때."
 user-invocable: false
 ---
 

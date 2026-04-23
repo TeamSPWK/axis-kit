@@ -309,3 +309,71 @@ v5.14.0 이전에 `/nova:setup --permissions`를 실행했다면 `hooks.PreToolU
 
 **In-situ 검증 권장**:
 `tests/test-scripts.sh`는 stdin 모의 기반. 실제 Claude Code 런타임이 precheck-tool을 호출하는지 확인하려면 `field-test` 스킬로 격리된 worktree에서 실 플러그인 E2E 테스트 권장.
+
+## §12. Profile Gate (v5.18.0)
+
+`NOVA_PROFILE` 환경변수로 세션별 규칙 강도를 런타임에 선택한다. 기본값은 `standard`.
+
+| 프로파일 | 적용 규칙 | 사용 시점 |
+|----------|-----------|-----------|
+| **lean** | §1~§3만 (복잡도·검증 분리·검증 기준). antipatterns 체크 스킵. pre-edit-check CPS 경고 스킵. | hotfix, 긴급 장애 대응, 실험적 탐색 |
+| **standard** (기본) | 현재와 동일 — §1~§11 + 커맨드 전체. | 일반 개발 세션 |
+| **strict** | standard + `docs/nova-antipatterns.md` 요약 주입. | 릴리스 전, 중요 아키텍처 변경, 코드 리뷰 집중 세션 |
+
+**`--emergency` 호환성**: `hooks/session-start.sh`의 `--emergency` 플래그는 `lean` 프로파일의 별칭으로 동작한다. 기존 사용법(`bash session-start.sh --emergency`) 호환 유지.
+
+**사용 예시**:
+```bash
+# hotfix 세션
+NOVA_PROFILE=lean claude code .
+
+# 릴리스 전 엄격 검토
+NOVA_PROFILE=strict claude code .
+```
+
+**상세 카탈로그**: `docs/nova-antipatterns.md` — 12가지 합리화 패턴 + 차단 규칙.
+
+## §13. Subagent Bootstrap Isolation (v5.19.0)
+
+서브에이전트는 메인 컨텍스트에서 이미 전체 Nova 규칙을 받으므로, 동일한 1200~1900자 규칙을 재주입할 필요가 없다. `NOVA_SUBAGENT=1` 환경변수로 bootstrap을 격리해 토큰/속도를 절감한다.
+
+### 원칙
+
+- 서브에이전트가 session-start.sh를 받을 때, 메인 에이전트의 컨텍스트 창에 Nova 규칙이 이미 존재한다
+- 중복 주입은 서브에이전트 토큰 예산을 낭비하고 context window 혼잡을 유발한다
+- 격리는 **옵트인** — 환경변수 미설정 시 기존 동작(standard 프로파일) 유지
+
+### 설정 방법
+
+서브에이전트 spawn 시 환경변수를 설정한다:
+
+```bash
+# Claude Code 서브에이전트 launch 시
+NOVA_SUBAGENT=1 <subagent-command>
+
+# 또는 플랫폼 변수 (Claude Code 내부 서브에이전트 자동 감지용, 향후 지원 시)
+CLAUDE_CODE_SUBAGENT=1 <subagent-command>
+```
+
+`NOVA_SUBAGENT=1`이 설정되면 `hooks/session-start.sh`는 다음 최소 메시지만 반환한다:
+```
+Nova subagent bootstrap skipped — 상세 규칙은 메인 컨텍스트 참조.
+```
+
+### 우선순위
+
+`NOVA_SUBAGENT` 감지는 `NOVA_PROFILE` 분기보다 **우선** 처리된다. 서브에이전트에서는 NOVA_PROFILE 값에 관계없이 최소 메시지가 반환된다.
+
+### 토큰 절감 추정
+
+| 상황 | session-start.sh 출력 크기 | 절감 |
+|------|--------------------------|------|
+| 메인 에이전트 (standard) | ~1600 bytes | — |
+| 서브에이전트 (NOVA_SUBAGENT=1) | ~100 bytes | ~94% |
+
+서브에이전트가 1 세션에 N회 spawn되면 약 `(N × 1500) bytes`의 context window가 절감된다.
+
+### 알려진 제약
+
+- `NOVA_SUBAGENT` 감지는 환경변수 기반이므로 사용자가 직접 설정해야 한다. Claude Code가 서브에이전트를 자동으로 표시하는 플랫폼 변수(`CLAUDE_CODE_SUBAGENT`)가 공식 지원되면 자동 감지로 업그레이드 예정.
+- 서브에이전트가 메인 컨텍스트 없이 독립 실행되는 경우(예: 별도 터미널 세션)에는 `NOVA_SUBAGENT=1`을 설정하지 않아야 한다.

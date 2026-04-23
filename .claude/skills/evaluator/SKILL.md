@@ -1,6 +1,6 @@
 ---
 name: evaluator
-description: "Nova Adversarial Evaluator — Nova Quality Gate의 핵심 검증 엔진. 독립 서브에이전트로 코드를 적대적 관점에서 검증. — MUST TRIGGER: /run, /check, /review에서 서브에이전트로 호출. 스프린트 완료 시 필수."
+description: "코드 구현을 적대적 관점으로 검증해야 할 때. — MUST TRIGGER: /run, /check, /review 내부에서 독립 서브에이전트로 호출, 스프린트 완료 직후, 커밋 전 Evaluator PASS 필요 시."
 user-invocable: false
 ---
 
@@ -335,6 +335,36 @@ FAIL 시 이슈 목록을 구조화하여 반환한다:
 
 > Plan 검증 모드에서는 코드 파일을 참조하지 않는다. Plan 문서 텍스트만 분석한다.
 > "이 Plan대로 구현했을 때 실패할 3가지 시나리오"를 반드시 제시한다.
+
+## GAN 3단 확장 (옵트인, --with-refiner)
+
+> 활성화: `/nova:check --with-refiner`, `/nova:run --with-refiner`, `/nova:review --with-refiner`
+
+기본 비활성. `--with-refiner` 플래그 명시 시에만 Refiner 서브에이전트를 호출한다.
+
+### 3단 흐름
+
+```
+[Generator] 구현자 (메인 에이전트 또는 senior-dev 서브에이전트)
+    ↓ 구현 완료
+[Evaluator] 현재 스킬 — 적대적 검증, FAIL/CONDITIONAL/PASS 판정
+    ↓ FAIL 또는 CONDITIONAL (--with-refiner 플래그가 있을 때만)
+[Refiner]   agents/refiner.md — 수정안 제안 (코드 직접 변경 금지)
+    ↓
+[사용자]    수정안 승인 여부 결정 (자동 적용 없음)
+```
+
+### 동작 조건
+
+- `--with-refiner` 없음 (기본): Evaluator가 판정 후 종료. Refiner 호출 없음
+- `--with-refiner` 있음 + FAIL: Evaluator 판정 후 refiner 서브에이전트 spawn
+- `--with-refiner` 있음 + CONDITIONAL: 선택적으로 refiner 호출 (사용자 판단)
+- `--with-refiner` 있음 + PASS: Refiner 호출 불필요. 종료
+
+### 자율 적용 금지
+
+Refiner의 수정안은 **제안에 그친다**. 메인 에이전트가 사용자 승인 없이 자동 적용하지 않는다.
+Evaluator(이 스킬)는 Refiner 결과를 수용/거부하지 않는다 — 판정은 Evaluator 단독 권한이다.
 
 ## 평가 자세
 - "통과시키지 마라. 문제를 찾아라."

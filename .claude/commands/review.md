@@ -24,6 +24,7 @@ description: "코드를 적대적 관점에서 리뷰하고, 숨겨진 문제를
 - `--fix` : 자동 수정 모드 — 리뷰 후 Critical/Warning 이슈에 대해 수정 코드를 제안하고, 사용자 승인 시 자동 적용 + 재검증한다.
 - `--summary` : 요약 모드 — 내부 분석은 기본 모드와 동일하게 수행하되, 출력을 판정 + Critical/Warning 목록으로 축소한다. 상세 섹션(Rule Violation, Complexity, Refactoring, Nova Alignment)은 생략. 빠른 피드백 루프에 적합.
 - `--scope <영역>` : 리뷰 범위를 특정 관점으로 제한한다. 아래 스코프 참조.
+- `--with-refiner` : evaluator가 FAIL 판정 시 refiner 서브에이전트를 호출해 수정안을 제시한다. 자동 적용 없음, 사용자 판단 후 적용.
 - (기본) : 기본 강도는 Lite. 위험도 신호 감지 시 Standard/Full로 상향한다.
 
 ## --summary vs --fast: 언제 뭘 쓸까?

@@ -16,6 +16,7 @@ description: "기술 동향을 스캔하고 Nova를 자동으로 진화시킨다
 - `--apply` : 제안서 기반 구현 + 품질 게이트 실행
 - `--auto` : scan + apply + 자율 범위 내 자동 머지
 - `--sources` : 스캔 소스를 지정 (기본: 전체). 예: `--sources anthropic,opensource`
+- `--from-observations` : 외부 스캔 대신 사용자 행동 패턴에서 CPS Problem 초안 제안. `scripts/analyze-observations.sh`를 호출해 `.nova/events.jsonl`을 분석하고 Top N 반복 패턴을 CPS Problem 초안으로 드래프트한다. **자동 승격 금지, 사용자 승인 필수.**
 
 # Execution
 

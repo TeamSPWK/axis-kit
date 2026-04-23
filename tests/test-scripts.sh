@@ -101,9 +101,9 @@ echo ""
 
 echo -e "${YELLOW}[구조: 에이전트]${NC}"
 
-EXPECTED_AGENTS=(architect devops-engineer qa-engineer security-engineer senior-dev)
+EXPECTED_AGENTS=(architect devops-engineer qa-engineer security-engineer senior-dev refiner)
 AGENT_COUNT=$(ls "$ROOT_DIR/.claude/agents/"*.md 2>/dev/null | wc -l | tr -d ' ')
-assert "에이전트 5개" "[ '$AGENT_COUNT' -eq 5 ]"
+assert "에이전트 6개" "[ '$AGENT_COUNT' -eq 6 ]"
 
 for agent in "${EXPECTED_AGENTS[@]}"; do
   assert "에이전트: $agent.md" "[ -f '$ROOT_DIR/.claude/agents/$agent.md' ]"
@@ -1104,8 +1104,8 @@ assert "Sprint 2a: scripts/permissions-template.json 유효 JSON" \
   "jq -e . '$ROOT_DIR/scripts/permissions-template.json' > /dev/null 2>&1"
 
 # plugin.json tool_contract 구조
-assert "Sprint 2a: plugin.json tool_contract 필드 존재 + per_agent 5개" \
-  "jq -e '.tool_contract.per_agent | length == 5' '$ROOT_DIR/.claude-plugin/plugin.json' > /dev/null 2>&1"
+assert "Sprint 2a: plugin.json tool_contract 필드 존재 + per_agent 6개 이상" \
+  "jq -e '.tool_contract.per_agent | length >= 6' '$ROOT_DIR/.claude-plugin/plugin.json' > /dev/null 2>&1"
 assert "Sprint 2a: plugin.json tool_contract — _nova_comment에 U1 명시" \
   "jq -r '.tool_contract._nova_comment' '$ROOT_DIR/.claude-plugin/plugin.json' | grep -q 'U1'"
 assert "Sprint 2a: plugin.json tool_contract.deferred_allow에 ToolSearch 포함" \
@@ -1470,6 +1470,177 @@ assert "audit: NOVA_DISABLE_EVENTS=1 → 이벤트 기록 생략" \
     NOVA_DISABLE_EVENTS=1 NOVA_ORCH_AUDIT_THRESHOLD=180 bash '$ROOT_DIR/hooks/audit-orchestration.sh' && \
     [ ! -f .nova/events.jsonl ] \
   ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+echo ""
+
+# ═══════════════════════════════════════════
+# S3: SKILL Discipline — description workflow-lint + triggering fixtures (v5.17.0)
+# 근거: memory/project_nova_competitive_analysis_2026_04_23.md
+#      Jesse Vincent(obra/superpowers)의 writing-skills 실측 — description에
+#      workflow 요약이 포함되면 Claude가 본문을 스킵한다.
+# ═══════════════════════════════════════════
+
+assert "S3.1: SKILL description — workflow 화살표(→) 금지" \
+  "! grep -qE '^description:.*→' $ROOT_DIR/skills/*/SKILL.md"
+
+assert "S3.2: SKILL description — 단계 숫자 홍보(N단 파이프라인 / Explorer×N) 금지" \
+  "! grep -qE '^description:.*(단 파이프라인|Explorer×|Explorer x)' $ROOT_DIR/skills/*/SKILL.md"
+
+assert "S3.3: test-skill-triggering.sh — 각 skills/*에 positive fixture 존재" \
+  "bash $ROOT_DIR/tests/test-skill-triggering.sh"
+
+assert "S3.4: skills/writing-nova-skill/SKILL.md — MUST TRIGGER 명시" \
+  "grep -q 'MUST TRIGGER' $ROOT_DIR/skills/writing-nova-skill/SKILL.md"
+
+echo ""
+
+# ═══════════════════════════════════════════
+# S4: Adaptive Control (Tier 2, v5.18.0)
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[S4: Adaptive Control]${NC}"
+
+# S4.1: pre-edit-check.sh NOVA_PROFILE=lean에서 CPS 경고 스킵
+assert "S4.1: pre-edit-check.sh NOVA_PROFILE=lean → CPS 경고 없음 (lean 스킵)" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    INPUT='{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"test.ts\"}}' && \
+    ! NOVA_PROFILE=lean TOOL_INPUT=\"\$INPUT\" bash '$ROOT_DIR/hooks/pre-edit-check.sh' 2>&1 | grep -q 'CPS Plan' \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# S4.2: session-start.sh NOVA_PROFILE=strict에서 antipatterns 섹션 존재
+assert "S4.2: NOVA_PROFILE=strict → antipatterns 섹션 주입" \
+  "NOVA_PROFILE=strict bash '$ROOT_DIR/hooks/session-start.sh' | grep -q 'nova-antipatterns.md'"
+
+# S4.3: session-start.sh NOVA_PROFILE=lean에서 §1~§3만 (antipatterns, §4~§5 없음)
+assert "S4.3: NOVA_PROFILE=lean → antipatterns 섹션 없음" \
+  "! NOVA_PROFILE=lean bash '$ROOT_DIR/hooks/session-start.sh' | grep -q 'nova-antipatterns.md'"
+
+assert "S4.3b: NOVA_PROFILE=lean → 복잡도(§1) 포함" \
+  "NOVA_PROFILE=lean bash '$ROOT_DIR/hooks/session-start.sh' | grep -q '복잡도'"
+
+# S4.4: nova-antipatterns.md 존재 + §A/§B 섹션 + 항목 12개 이상
+assert "S4.4a: docs/nova-antipatterns.md 존재" \
+  "[ -f '$ROOT_DIR/docs/nova-antipatterns.md' ]"
+
+assert "S4.4b: nova-antipatterns.md §A 섹션 존재" \
+  "grep -q '^## §A' '$ROOT_DIR/docs/nova-antipatterns.md'"
+
+assert "S4.4c: nova-antipatterns.md §B 섹션 존재" \
+  "grep -q '^## §B' '$ROOT_DIR/docs/nova-antipatterns.md'"
+
+assert "S4.4d: nova-antipatterns.md 항목 12개 이상" \
+  "[ \"\$(grep -c '^### [AB][0-9]' '$ROOT_DIR/docs/nova-antipatterns.md' 2>/dev/null || echo 0)\" -ge 12 ]"
+
+# S4.5: release.sh에 removal report 경고 문구 존재
+assert "S4.5: scripts/release.sh — 제거 리포트 경고 문구 존재" \
+  "grep -q '제거 리포트가 비어 있습니다' '$ROOT_DIR/scripts/release.sh'"
+
+assert "S4.5b: scripts/release.sh — --removal 플래그 처리 존재" \
+  "grep -q -- '--removal=' '$ROOT_DIR/scripts/release.sh'"
+
+# S4.6: nova-rules.md §12 섹션 존재
+assert "S4.6: docs/nova-rules.md §12 Profile Gate 섹션 존재" \
+  "grep -q '^## §12' '$ROOT_DIR/docs/nova-rules.md'"
+
+# S4.7: --emergency가 lean 별칭으로 동작 (JSON 유효 + antipatterns 없음)
+assert "S4.7: session-start.sh --emergency → lean 별칭 (antipatterns 없음)" \
+  "bash '$ROOT_DIR/hooks/session-start.sh' --emergency | python3 -m json.tool > /dev/null 2>&1 && \
+   ! bash '$ROOT_DIR/hooks/session-start.sh' --emergency | grep -q 'nova-antipatterns.md'"
+
+echo ""
+
+# ═══════════════════════════════════════════
+# S5: Behavior Learning 엔진 (Tier 3)
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[S5: Behavior Learning]${NC}"
+
+# S5.1: analyze-observations.sh 존재 + 실행 권한
+assert "S5.1: scripts/analyze-observations.sh 존재 + 실행 권한" \
+  "[ -f '$ROOT_DIR/scripts/analyze-observations.sh' ] && [ -x '$ROOT_DIR/scripts/analyze-observations.sh' ]"
+
+# S5.2: commands/evolve.md에 --from-observations 문구
+assert "S5.2: commands/evolve.md — --from-observations 플래그 문서화" \
+  "grep -q '\-\-from-observations' '$ROOT_DIR/.claude/commands/evolve.md'"
+
+# S5.3: skills/evolution/SKILL.md에 "Behavior Learning" 또는 "Phase 1" 문구
+assert "S5.3: skills/evolution/SKILL.md — Behavior Learning 섹션 존재" \
+  "grep -q 'Behavior Learning\|Phase 1' '$ROOT_DIR/.claude/skills/evolution/SKILL.md'"
+
+# S5.4: 빈 fixture → 정상 종료 + "No observations" 메시지 or 빈 결과
+assert "S5.4: analyze-observations.sh 빈 파일 입력 → 정상 종료 + No observations" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    touch empty.jsonl && \
+    OUT=\$(bash '$ROOT_DIR/scripts/analyze-observations.sh' empty.jsonl 2>&1); RC=\$?; \
+    echo \"\$OUT\" | grep -q 'No observations\|비어 있습니다\|없음'; \
+    [ \$RC -eq 0 ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+# S5.5: 실제 fixture (10라인 이상) → Top 패턴 출력 포함
+assert "S5.5: analyze-observations.sh 실 fixture (10+ 라인) → 패턴 출력" \
+  "TMPD=\$(mktemp -d); (cd \"\$TMPD\" && \
+    for i in \$(seq 1 12); do \
+      echo '{\"event_type\":\"session_start\",\"timestamp\":\"2026-04-23T00:0'\$i':00Z\",\"schema_version\":1,\"session_id\":\"abc123\"}' >> events.jsonl; \
+    done && \
+    OUT=\$(bash '$ROOT_DIR/scripts/analyze-observations.sh' --top 5 --pattern tool-frequency events.jsonl 2>&1); RC=\$?; \
+    [ \$RC -eq 0 ] && [ -n \"\$OUT\" ] \
+  ); STATUS=\$?; rm -rf \"\$TMPD\"; [ \$STATUS -eq 0 ]"
+
+echo ""
+
+# ═══════════════════════════════════════════
+# S6: Evaluator GAN 3단 확장 (Tier 3)
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[S6: GAN 3단 확장]${NC}"
+
+# S6.1: agents/refiner.md 존재 + frontmatter에 name/description/tools 필드
+assert "S6.1: agents/refiner.md 존재 + name/description/tools frontmatter" \
+  "[ -f '$ROOT_DIR/.claude/agents/refiner.md' ] && \
+   head -10 '$ROOT_DIR/.claude/agents/refiner.md' | grep -q '^name:' && \
+   head -10 '$ROOT_DIR/.claude/agents/refiner.md' | grep -q '^description:' && \
+   head -10 '$ROOT_DIR/.claude/agents/refiner.md' | grep -q '^tools:'"
+
+# S6.2: skills/evaluator/SKILL.md에 "GAN" 또는 "refiner" 섹션 문구
+assert "S6.2: evaluator/SKILL.md — GAN 3단 확장 섹션 존재" \
+  "grep -q 'GAN\|refiner' '$ROOT_DIR/.claude/skills/evaluator/SKILL.md'"
+
+# S6.3: commands/{check,run,review}.md 모두에 --with-refiner 문구
+assert "S6.3: check.md — --with-refiner 문구" \
+  "grep -q '\-\-with-refiner' '$ROOT_DIR/.claude/commands/check.md'"
+assert "S6.3: run.md — --with-refiner 문구" \
+  "grep -q '\-\-with-refiner' '$ROOT_DIR/.claude/commands/run.md'"
+assert "S6.3: review.md — --with-refiner 문구" \
+  "grep -q '\-\-with-refiner' '$ROOT_DIR/.claude/commands/review.md'"
+
+# S6.4: refiner.md description에 "수정안" 또는 "제안" 키워드 + 코드 적용 금지 원칙 명시
+assert "S6.4: refiner.md — 수정안/제안 키워드 + 코드 직접 변경 금지 명시" \
+  "grep -q '수정안\|제안' '$ROOT_DIR/.claude/agents/refiner.md' && \
+   grep -q '직접 변경 금지\|코드 직접 변경' '$ROOT_DIR/.claude/agents/refiner.md'"
+
+echo ""
+
+# ═══════════════════════════════════════════
+# S7: SUBAGENT Bootstrap 격리 (Tier 3)
+# ═══════════════════════════════════════════
+
+echo -e "${YELLOW}[S7: Subagent Bootstrap 격리]${NC}"
+
+# S7.1: NOVA_SUBAGENT=1 → JSON 유효
+assert "S7.1: NOVA_SUBAGENT=1 → JSON 유효" \
+  "NOVA_SUBAGENT=1 bash '$ROOT_DIR/hooks/session-start.sh' | python3 -m json.tool > /dev/null 2>&1"
+
+# S7.2: NOVA_SUBAGENT=1 출력 길이가 standard 대비 현저히 작음 (<200자)
+assert "S7.2: NOVA_SUBAGENT=1 출력 < 200 bytes" \
+  "[ \$(NOVA_SUBAGENT=1 bash '$ROOT_DIR/hooks/session-start.sh' | wc -c | tr -d ' ') -lt 200 ]"
+
+# S7.3: NOVA_SUBAGENT 미설정 시 기존 동작 유지 (standard 크기 > 200자)
+assert "S7.3: NOVA_SUBAGENT 미설정 → 기존 standard 동작 유지 (>200 bytes)" \
+  "[ \$(bash '$ROOT_DIR/hooks/session-start.sh' | wc -c | tr -d ' ') -gt 200 ]"
+
+# S7.4: docs/nova-rules.md §13 섹션 존재
+assert "S7.4: docs/nova-rules.md §13 Subagent Bootstrap Isolation 섹션 존재" \
+  "grep -q '^## §13' '$ROOT_DIR/docs/nova-rules.md'"
 
 echo ""
 
