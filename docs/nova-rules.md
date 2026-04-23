@@ -310,6 +310,29 @@ v5.14.0 이전에 `/nova:setup --permissions`를 실행했다면 `hooks.PreToolU
 **In-situ 검증 권장**:
 `tests/test-scripts.sh`는 stdin 모의 기반. 실제 Claude Code 런타임이 precheck-tool을 호출하는지 확인하려면 `field-test` 스킬로 격리된 worktree에서 실 플러그인 E2E 테스트 권장.
 
+### autoMode `$defaults` 병행 사용 가이드 (Claude Code v2.1.118+)
+
+Claude Code v2.1.118부터 사용자 `settings.json`의 `autoMode.allow` / `autoMode.soft_deny` / `autoMode.environment` 배열에 `"$defaults"` 토큰을 포함하면 **built-in 규칙을 보존하면서 커스텀 규칙을 덧붙일 수 있다**. 이전 버전은 사용자 선언이 built-in을 전체 대체.
+
+Nova `permissions`와 autoMode는 **독립 스키마**다. autoMode는 사용자 전용 영역이고 Nova `setup-permissions.sh`는 건드리지 않는다. 하지만 autoMode를 쓰는 사용자가 Nova allow/deny를 병행할 때는 autoMode 쪽에서도 `$defaults`를 명시해야 Claude Code built-in을 유지한 채 Nova 영역이 그대로 동작한다.
+
+**권장 패턴** (사용자 `.claude/settings.json` 일부):
+
+```jsonc
+{
+  "permissions": { /* Nova가 관리. 수동 편집 지양 */ },
+  "autoMode": {
+    "allow": ["$defaults", "Bash(pnpm test)"],
+    "soft_deny": ["$defaults"],
+    "environment": ["$defaults"]
+  }
+}
+```
+
+`$defaults`를 생략하면 Claude Code built-in deny(예: `rm -rf` 계열)가 사라진다 → Nova `permissions.deny`만으로 방어. 둘 다 `$defaults`로 유지하는 것이 안전 기반선.
+
+> Nova §9 "환경 설정 안전 규칙"의 "설정 파일 직접 수정 금지"는 유지. 본 가이드는 사용자가 autoMode를 **이미 사용 중일 때** Nova와 병행하는 정석 패턴만 문서화한다.
+
 ## §12. Profile Gate (v5.18.0)
 
 `NOVA_PROFILE` 환경변수로 세션별 규칙 강도를 런타임에 선택한다. 기본값은 `standard`.

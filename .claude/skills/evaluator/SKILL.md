@@ -12,6 +12,25 @@ user-invocable: false
 - `docs/nova-rules.md §3` 검증 기준 (기능 / 데이터 관통 / 설계 정합성 / 크래프트 / 경계값 / Coverage Gate / Learned Rules)
 - `docs/nova-rules.md §10` 관찰성 계약 — 판정 직후 `hooks/record-event.sh evaluator_verdict` 호출
 
+## 공식 용어 매핑 (Anthropic eval framework)
+
+[Anthropic — Demystifying evals for AI agents](https://www.anthropic.com/engineering/demystifying-evals-for-ai-agents)의 5대 개념과 Nova의 매핑:
+
+| 공식 용어 | 정의 | Nova 대응 |
+|----------|------|----------|
+| **task** | 입력 + 성공 기준을 갖춘 단일 테스트 | `docs/nova-rules.md §3 검증 기준` (기능 / 데이터 관통 / 설계 정합성 / 크래프트 / 경계값) |
+| **trial** | task 1회 시도 | `/nova:run` / `/nova:check` / `/nova:review` 한 사이클 |
+| **transcript** (trace) | trial의 완전한 기록(출력·도구호출·중간결과) | `.nova/events.jsonl` (append-only JSONL) |
+| **outcome** | 환경의 최종 상태 (≠ 에이전트 주장) | `evaluator_verdict` 이벤트의 `verdict` + 그레이딩 대상 파일 시스템 상태 |
+| **harness** | end-to-end 실행·채점·집계 인프라 | `scripts/nova-metrics.sh` + `hooks/record-event.sh` + 본 Evaluator 서브에이전트 + `.nova/events.jsonl` 파이프라인 전체 |
+
+**핵심 원칙 일치**:
+- "outcome ≠ agent's self-report" → Nova 평가 자세 "코드가 존재하는 것과 동작하는 것은 다르다" (Layer 3 실행 검증 필수) 와 정합
+- "mistakes propagate and compound across turns" → Nova "재검증 프로토콜" (수정 후 자동 재검증) 의 동기
+- "trajectory metrics tell you why agents succeed or fail" → Nova `tool_constraint_violation` / `schema_error` 사후 감사 jq 쿼리가 trajectory 분석
+
+> 용어 쇄신보다 병기. Nova 기존 용어(Layer 1~3·검증 기준 5종)는 그대로 유지하고, 외부 문서 크로스 레퍼런스가 필요할 때 본 매핑을 사용한다.
+
 ## 관찰성 훅 (v5.12.0+)
 
 판정(PASS/CONDITIONAL/FAIL)을 내린 직후 **반드시** 이벤트 기록:

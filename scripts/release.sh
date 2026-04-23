@@ -39,6 +39,18 @@ if git diff --cached --quiet && git diff --quiet; then
   exit 1
 fi
 
+# ── Step 0: marketplace.json validate (Claude Code 2.1.118+, fail-open) ──
+# 공식 plugin CLI로 marketplace 매니페스트 스키마 검증. plugin.json은 Nova 커스텀
+# 필드(tool_contract) 때문에 validate 스킵 — 버전 일치는 bump-version.sh가 보장.
+if command -v claude >/dev/null 2>&1 && [[ -f .claude-plugin/marketplace.json ]]; then
+  echo "━━━ Step 0/7: marketplace.json validate ━━━"
+  if ! claude plugin validate .claude-plugin/marketplace.json; then
+    echo "❌ marketplace.json 검증 실패 — 릴리스 중단"
+    exit 1
+  fi
+  echo ""
+fi
+
 # ── Step 1: MCP dist 무결성 게이트 ──
 # v5.15.1/v5.15.2 사고 재발 방지: .mcp.json이 참조하는 빌드 산출물이 tracked이고
 # 최신 소스와 일치하는 빌드인지 검증한다.
